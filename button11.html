@@ -53,7 +53,34 @@
     #logList li:last-child { border-bottom: none; }
     .log-text { flex: 1; }
     .log-checkbox { flex-shrink: 0; }
-    .empty-text { font-size: 12px; opacity: 0.6; }
+
+    .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
+    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
+    .help-box {
+      border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
+      margin-top: 8px;
+    }
+
+    /* 간단 모달 */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      display: none; align-items: center; justify-content: center; padding: 16px;
+      z-index: 9999;
+    }
+    .modal {
+      width: min(720px, 100%);
+      background: #fff; border-radius: 12px; border: 1px solid #ddd;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      padding: 12px;
+    }
+    .modal h2 { font-size: 14px; margin: 0 0 8px; }
+    .modal textarea {
+      width: 100%; min-height: 180px; resize: vertical;
+      border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 13px;
+      outline: none;
+    }
+    .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
+    .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
   </style>
 </head>
 <body>
@@ -81,10 +108,11 @@
         <div class="panel-title">버튼 목록</div>
         <div class="buttons-area" id="buttonContainer"></div>
         <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
-        <div class="empty-text">
-          💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.<br />
-          1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다. 
-          
+
+        <!-- ✅ 안내문(수정 가능) -->
+        <div class="help-box">
+          <div class="empty-text" id="helpText"></div>
+          <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
         </div>
       </div>
 
@@ -103,6 +131,18 @@
         <div class="log-box">
           <ul id="logList"></ul>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 안내문 편집 모달 -->
+  <div class="modal-backdrop" id="helpModalBackdrop">
+    <div class="modal">
+      <h2>안내문 수정</h2>
+      <textarea id="helpEditor" placeholder="여기에 안내문을 입력하세요."></textarea>
+      <div class="modal-actions">
+        <button id="btnHelpCancel">취소</button>
+        <button class="btn-primary" id="btnHelpSave">저장</button>
       </div>
     </div>
   </div>
@@ -135,16 +175,15 @@
      ***********************/
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
+    const HELP_STORAGE_KEY = "buttonHelpText_v1"; // ✅ 안내문 저장 키
 
     /***********************
-     * 백업 경고(항상 띄우기)
+     * 백업 경고(예: 1000개 이상이면 경고)
      ***********************/
     const BACKUP_WARN_THRESHOLD = 1000;
-
     function showBackupWarningIfNeeded() {
       if (!Array.isArray(logs)) return;
       if (logs.length < BACKUP_WARN_THRESHOLD) return;
-
       alert(
         "⚠ 클릭 기록이 1,000개 이상입니다.\n\n" +
         "데이터 손실 위험이 있습니다.\n" +
@@ -158,14 +197,11 @@
     let tree = null;
     let currentParentId = "root";
     let logs = [];
+    let helpText = "";
 
     let currentUser = null;
     let unsubscribeDoc = null;
-
-    // 원격 적용 중에는 save 트리거 방지
     let isApplyingRemote = false;
-
-    // 저장 debounce
     let saveTimer = null;
 
     /***********************
@@ -195,13 +231,40 @@
         badge.textContent = "로컬 모드";
       }
     }
-
     function userDocRef(uid) {
       return db.collection("users").doc(uid);
     }
 
     /***********************
-     * 로컬 저장/불러오기
+     * ✅ 안내문 로컬 저장/불러오기 + 렌더
+     ***********************/
+    const DEFAULT_HELP_TEXT =
+`💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
+1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
+
+    function saveHelpLocal() {
+      try { localStorage.setItem(HELP_STORAGE_KEY, helpText); }
+      catch (e) { console.warn("localStorage 안내문 저장 오류:", e); }
+    }
+    function loadHelpLocal() {
+      let saved = "";
+      try { saved = localStorage.getItem(HELP_STORAGE_KEY) || ""; } catch {}
+      helpText = (saved && saved.trim() !== "") ? saved : DEFAULT_HELP_TEXT;
+      renderHelp();
+    }
+    function renderHelp() {
+      const el = document.getElementById("helpText");
+      if (!el) return;
+      el.textContent = helpText || "";
+    }
+    function saveHelp() {
+      saveHelpLocal();
+      scheduleCloudSave();
+      renderHelp();
+    }
+
+    /***********************
+     * 로컬 저장/불러오기 (트리/로그)
      ***********************/
     function saveTreeLocal() {
       try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
@@ -267,6 +330,7 @@
           await userDocRef(currentUser.uid).set({
             tree,
             logs,
+            helpText, // ✅ 안내문도 클라우드에 저장
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -276,23 +340,21 @@
       }, 300);
     }
 
-    // 로그인 시: "클라우드가 있으면 무조건 클라우드 적용"
-    // 클라우드가 비어있으면: 로컬을 최초 업로드(한 번만)
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
 
-      if (remote && (remote.tree || remote.logs)) {
+      if (remote && (remote.tree || remote.logs || remote.helpText)) {
         applyRemote(remote);
-        // 로컬을 클라우드로 맞춰 저장
         saveTreeLocal();
         saveLogsLocal();
+        saveHelpLocal();
         return;
       }
 
-      // 클라우드가 비어있으면: 로컬을 올려서 "클라우드가 기준"이 되게 만든다
       await userDocRef(uid).set({
         tree,
         logs,
+        helpText,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -309,11 +371,13 @@
         if (Array.isArray(remote.logs)) {
           logs = remote.logs;
         }
+        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") {
+          helpText = remote.helpText;
+        }
 
         renderLogs();
         render();
-
-        // ✅ 원격 반영 후에도(1000+면) 경고
+        renderHelp();
         showBackupWarningIfNeeded();
       } finally {
         isApplyingRemote = false;
@@ -326,14 +390,13 @@
       unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
         if (!snap.exists) return;
         const remote = snap.data() || {};
-        // 적용 중/저장 중 루프 방지
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs) return;
+        if (!remote.tree && !remote.logs && !remote.helpText) return;
 
-        // “클라우드가 기준”이므로, 원격이 오면 즉시 적용
         applyRemote(remote);
         saveTreeLocal();
         saveLogsLocal();
+        saveHelpLocal();
       }, (err) => {
         console.warn("onSnapshot 오류:", err);
       });
@@ -342,14 +405,8 @@
     /***********************
      * 저장 훅 (로컬 + 클라우드)
      ***********************/
-    function saveTree() {
-      saveTreeLocal();
-      scheduleCloudSave();
-    }
-    function saveLogs() {
-      saveLogsLocal();
-      scheduleCloudSave();
-    }
+    function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
+    function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
 
     /***********************
      * 트리 유틸
@@ -447,8 +504,6 @@
       logs.unshift({ time: timeStr, label, coord });
       saveLogs();
       renderLogs();
-
-      // ✅ 1000개 이상이면 매번 경고
       showBackupWarningIfNeeded();
     }
     function getSelectedLogItems() {
@@ -490,8 +545,6 @@
       saveLogs();
       renderLogs();
     }
-
-    // ✅ 전체 삭제
     function deleteAllLogs() {
       if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
       if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
@@ -682,13 +735,29 @@
     }
 
     /***********************
+     * ✅ 안내문 모달 동작
+     ***********************/
+    function openHelpModal() {
+      const backdrop = document.getElementById("helpModalBackdrop");
+      const editor = document.getElementById("helpEditor");
+      if (!backdrop || !editor) return;
+      editor.value = helpText || "";
+      backdrop.style.display = "flex";
+      setTimeout(() => editor.focus(), 0);
+    }
+    function closeHelpModal() {
+      const backdrop = document.getElementById("helpModalBackdrop");
+      if (!backdrop) return;
+      backdrop.style.display = "none";
+    }
+
+    /***********************
      * 초기화
      ***********************/
     loadTreeLocal();
     loadLogsLocal();
+    loadHelpLocal();
     render();
-
-    // ✅ 시작 시에도(1000+면) 경고
     showBackupWarningIfNeeded();
 
     /***********************
@@ -721,6 +790,22 @@
     document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
     document.getElementById("btnDeleteAllLog").addEventListener("click", deleteAllLogs);
 
+    // ✅ 안내문 수정 버튼
+    document.getElementById("btnEditHelp").addEventListener("click", openHelpModal);
+    document.getElementById("btnHelpCancel").addEventListener("click", closeHelpModal);
+    document.getElementById("btnHelpSave").addEventListener("click", () => {
+      const editor = document.getElementById("helpEditor");
+      const newText = (editor?.value || "").trim();
+      if (!newText) return alert("안내문은 비워둘 수 없어요.");
+      helpText = newText;
+      saveHelp();
+      closeHelpModal();
+    });
+    // 모달 바깥 클릭 닫기
+    document.getElementById("helpModalBackdrop").addEventListener("click", (e) => {
+      if (e.target.id === "helpModalBackdrop") closeHelpModal();
+    });
+
     document.getElementById("btnLogin").addEventListener("click", async () => {
       try {
         await auth.signInWithPopup(provider);
@@ -729,7 +814,6 @@
         alert("로그인 실패: 팝업 차단 또는 Firebase 도메인 설정 문제일 수 있어요.\n\nF12 콘솔의 에러코드(auth/...)를 확인해 주세요.");
       }
     });
-
     document.getElementById("btnLogout").addEventListener("click", async () => {
       try { await auth.signOut(); } catch (e) { console.error(e); }
     });
@@ -738,7 +822,6 @@
       currentUser = user || null;
       setAuthUI();
 
-      // 리스너 정리
       if (!currentUser) {
         if (unsubscribeDoc) unsubscribeDoc();
         unsubscribeDoc = null;
@@ -746,11 +829,9 @@
       }
 
       try {
-        // 로그인하면: 클라우드 우선 적용 (confirm 없음)
+        // 로그인하면: 클라우드 우선 적용
         await cloudFirstInit(currentUser.uid);
-        // 실시간 반영 켜기
         startRealtimeListener(currentUser.uid);
-        // 정합성 저장 한번
         scheduleCloudSave();
       } catch (e) {
         console.error(e);
@@ -762,5 +843,3 @@
   </script>
 </body>
 </html>
-
-
