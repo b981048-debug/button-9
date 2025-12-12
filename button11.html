@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>버튼 트리 기록 앱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; padding: 10px; background: #f5f5f5; }
+    .app { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    h1 { margin: 0 0 8px; font-size: 18px; }
+    .top-bar { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+    button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
+    button:active { transform: scale(.97); }
+    .btn-main { flex: 1; text-align: left; padding: 10px; border-radius: 10px; border: 1px solid #ccc; background: #fafafa; font-size: 14px; }
+    .btn-row { display: flex; gap: 4px; margin-bottom: 6px; }
+    .buttons-area { max-height: 55vh; overflow-y: auto; margin-bottom: 10px; }
+    .layout { display: flex; flex-direction: column; gap: 10px; }
+    @media (min-width: 720px) { .layout { flex-direction: row; } }
+    .left,.right { flex: 1; }
+    .log-box { background:#fafafa; border:1px solid #ddd; border-radius:10px; padding:8px; max-height:60vh; overflow-y:auto; }
+    #logList { list-style:none; padding:0; margin:0; font-size:12px; }
+    #logList li { display:flex; gap:4px; border-bottom:1px solid #eee; padding:4px 2px; }
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <h1>버튼 트리 기록 앱</h1>
+
+  <div class="top-bar">
+    <button onclick="login()">Google 로그인</button>
+    <button onclick="logout()">로그아웃</button>
+    <span id="loginState">로그인 안 됨</span>
+  </div>
+
+  <div class="layout">
+    <div class="left">
+      <div class="buttons-area" id="buttonContainer"></div>
+      <button onclick="addRoot()">+ 최상위 버튼 추가</button>
+    </div>
+
+    <div class="right">
+      <div class="log-box">
+        <ul id="logList"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+<script>
+/* ================= Firebase ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyC8kLsUhGLu4eGhTYLKh-tKCQkKjF0EvU",
+  authDomain: "button-tree.firebaseapp.com",
+  projectId: "button-tree",
+  storageBucket: "button-tree.firebasestorage.app",
+  messagingSenderId: "670872655484",
+  appId: "1:670872655484:web:a8f5a5201cd845a4075bf9",
+  measurementId: "G-9P3ZV8LLQ3"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function userDoc() {
+  const u = auth.currentUser;
+  if (!u) return null;
+  return db.collection("users").doc(u.uid).collection("apps").doc("button9");
+}
+
+function login() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+}
+
+function logout() {
+  auth.signOut();
+}
+
+/* ================= App State ================= */
+const TREE_KEY = "tree_local";
+const LOG_KEY = "logs_local";
+
+let tree = { id:"root", label:"ROOT", children:[] };
+let logs = [];
+
+/* ================= Storage ================= */
+async function saveAll() {
+  localStorage.setItem(TREE_KEY, JSON.stringify(tree));
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+  const ref = userDoc();
+  if (ref) await ref.set({ tree, logs, updated: Date.now() });
+}
+
+async function loadAll() {
+  const t = localStorage.getItem(TREE_KEY);
+  const l = localStorage.getItem(LOG_KEY);
+  if (t) tree = JSON.parse(t);
+  if (l) logs = JSON.parse(l);
+
+  const ref = userDoc();
+  if (ref) {
+    const snap = await ref.get();
+    if (snap.exists) {
+      const d = snap.data();
+      tree = d.tree || tree;
+      logs = d.logs || logs;
+    }
+  }
+  render();
+}
+
+auth.onAuthStateChanged(u => {
+  document.getElementById("loginState").textContent =
+    u ? `로그인: ${u.email}` : "로그인 안 됨";
+  loadAll();
+});
+
+/* ================= UI ================= */
+function render() {
+  const bc = document.getElementById("buttonContainer");
+  bc.innerHTML = "";
+  tree.children.forEach(btn => {
+    const b = document.createElement("button");
+    b.className = "btn-main";
+    b.textContent = btn.label;
+    b.onclick = () => {
+      logs.unshift({ time:new Date().toLocaleString(), label:btn.label });
+      saveAll(); render();
+    };
+    bc.appendChild(b);
+  });
+
+  const logList = document.getElementById("logList");
+  logList.innerHTML = "";
+  logs.forEach(l => {
+    const li = document.createElement("li");
+    li.textContent = `${l.time} - ${l.label}`;
+    logList.appendChild(li);
+  });
+}
+
+function addRoot() {
+  const name = prompt("버튼 이름?");
+  if (!name) return;
+  tree.children.push({ id:Date.now()+"", label:name, children:[] });
+  saveAll(); render();
+}
+
+loadAll();
+</script>
+</body>
+</html>
