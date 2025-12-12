@@ -1,35 +1,31 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>버튼 트리 기록 앱</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body { margin: 0; padding: 10px; background: #f5f5f5; }
-    .app { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    h1 { margin: 0 0 8px; font-size: 18px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
-    .pill { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 8px; background:#fafafa; }
-    button { cursor:pointer; border-radius:8px; border:1px solid #ddd; background:#fff; padding:6px 10px; font-size:13px; }
-    button:disabled { opacity:.5; cursor:not-allowed; }
-    .auth-bar { display:flex; gap:6px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
-    .auth-status { font-size:12px; opacity:.8; }
-  </style>
+<meta charset="UTF-8" />
+<title>버튼 트리 기록 앱</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+body{margin:0;padding:10px;background:#f5f5f5;font-family:system-ui}
+.app{max-width:900px;margin:auto;background:#fff;border-radius:12px;padding:12px}
+button{border:1px solid #ddd;border-radius:8px;padding:6px 10px;background:#fff;cursor:pointer}
+button:disabled{opacity:.5}
+.btn-main{width:100%;text-align:left;padding:10px;margin-bottom:6px}
+</style>
 </head>
 <body>
-<div class="app">
-  <h1>
-    버튼 트리 기록 앱
-    <span class="pill" id="syncMode">로컬 모드</span>
-  </h1>
 
-  <div class="auth-bar">
-    <button id="btnLogin">Google 로그인</button>
-    <button id="btnLogout" disabled>로그아웃</button>
-    <span class="auth-status" id="authStatus">로그인 안 됨</span>
+<div class="app">
+  <h2>버튼 트리 기록 앱 <small id="mode">로딩중…</small></h2>
+
+  <div>
+    <button id="loginBtn">Google 로그인</button>
+    <button id="logoutBtn" disabled>로그아웃</button>
+    <span id="status">로그인 안 됨</span>
   </div>
 
-  <div>※ 클라우드 데이터가 항상 우선 적용됩니다.</div>
+  <hr />
+
+  <div id="buttons"></div>
 </div>
 
 <!-- Firebase -->
@@ -38,116 +34,70 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
 <script>
-/* =======================
-   Firebase 설정
-======================= */
+/* Firebase 설정 */
 firebase.initializeApp({
   apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
   authDomain: "button-tree.firebaseapp.com",
-  projectId: "button-tree",
-  storageBucket: "button-tree.firebasestorage.app",
-  messagingSenderId: "670872655484",
-  appId: "1:670872655484:web:a8f5a5201cd845a4075bf9"
+  projectId: "button-tree"
 });
-
 const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
 const provider = new firebase.auth.GoogleAuthProvider();
 
-/* =======================
-   상태
-======================= */
-let currentUser = null;
-let cloudReady = false;
-let isApplyingRemote = false;
+let tree = null;
+let user = null;
 
-/* =======================
-   UI
-======================= */
-function setAuthUI() {
-  const status = document.getElementById("authStatus");
-  const login  = document.getElementById("btnLogin");
-  const logout = document.getElementById("btnLogout");
-  const badge  = document.getElementById("syncMode");
-
-  if (currentUser) {
-    status.textContent = "로그인됨: " + (currentUser.displayName || currentUser.email);
-    login.disabled = true;
-    logout.disabled = false;
-    badge.textContent = "클라우드 동기화";
-  } else {
-    status.textContent = "로그인 안 됨";
-    login.disabled = false;
-    logout.disabled = true;
-    badge.textContent = "로컬 모드";
-  }
+/* 기본 트리 */
+function defaultTree(){
+  return {
+    id:"root",
+    children:[
+      {id:"a1",label:"기상",children:[]},
+      {id:"a2",label:"책상정리",children:[]}
+    ]
+  };
 }
 
-/* =======================
-   Firestore helpers
-======================= */
-function userRef(uid) {
-  return db.collection("users").doc(uid);
-}
-
-async function cloudLoad(uid) {
-  const snap = await userRef(uid).get();
-  return snap.exists ? snap.data() : null;
-}
-
-async function cloudSave(uid, data) {
-  if (!cloudReady || isApplyingRemote) return;
-  await userRef(uid).set(data, { merge: true });
-}
-
-/* =======================
-   핵심: 항상 클라우드 우선
-======================= */
-async function firstSyncDecision(uid) {
-  const remote = await cloudLoad(uid);
-  const hasRemote = !!(remote && (remote.tree || (remote.logs && remote.logs.length)));
-
-  if (hasRemote) {
-    // 무조건 클라우드 적용
-    isApplyingRemote = true;
-    localStorage.setItem("tree", JSON.stringify(remote.tree || {}));
-    localStorage.setItem("logs", JSON.stringify(remote.logs || []));
-    isApplyingRemote = false;
-    cloudReady = true;
-    return;
-  }
-
-  // 클라우드 비어있으면 로컬 최초 업로드
-  cloudReady = true;
-  await cloudSave(uid, {
-    tree: JSON.parse(localStorage.getItem("tree") || "{}"),
-    logs: JSON.parse(localStorage.getItem("logs") || "[]"),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+/* 렌더 */
+function render(){
+  const box = document.getElementById("buttons");
+  box.innerHTML = "";
+  tree.children.forEach(n=>{
+    const b=document.createElement("button");
+    b.className="btn-main";
+    b.textContent=n.label;
+    box.appendChild(b);
   });
 }
 
-/* =======================
-   이벤트
-======================= */
-document.getElementById("btnLogin").onclick = async () => {
-  await auth.signInWithRedirect(provider);
-};
+/* 로그인 상태 */
+auth.onAuthStateChanged(async u=>{
+  user=u;
+  document.getElementById("loginBtn").disabled=!!u;
+  document.getElementById("logoutBtn").disabled=!u;
+  document.getElementById("status").textContent =
+    u ? "로그인됨" : "로그인 안 됨";
 
-document.getElementById("btnLogout").onclick = async () => {
-  await auth.signOut();
-};
+  if(!u) return;
 
-auth.onAuthStateChanged(async user => {
-  currentUser = user || null;
-  cloudReady = false;
-  setAuthUI();
+  document.getElementById("mode").textContent="클라우드 모드";
 
-  if (!currentUser) return;
-  await firstSyncDecision(currentUser.uid);
-  cloudReady = true;
+  const ref=db.collection("users").doc(u.uid);
+  const snap=await ref.get();
+
+  if(snap.exists){
+    tree=snap.data().tree;
+  }else{
+    tree=defaultTree();
+    await ref.set({tree});
+  }
+
+  render();
 });
 
-setAuthUI();
+/* 버튼 */
+loginBtn.onclick=()=>auth.signInWithPopup(provider);
+logoutBtn.onclick=()=>auth.signOut();
 </script>
 </body>
 </html>
