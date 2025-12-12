@@ -175,7 +175,7 @@
      ***********************/
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
-    const HELP_STORAGE_KEY = "buttonHelpText_v1"; // ✅ 안내문 저장 키
+    const HELP_STORAGE_KEY = "buttonHelpText_v1";
 
     /***********************
      * 백업 경고(예: 1000개 이상이면 경고)
@@ -330,7 +330,7 @@
           await userDocRef(currentUser.uid).set({
             tree,
             logs,
-            helpText, // ✅ 안내문도 클라우드에 저장
+            helpText,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -360,14 +360,23 @@
       }, { merge: true });
     }
 
+    /***********************
+     * ✅✅ 여기부터가 핵심 수정: 원격 반영 시 위치 유지
+     ***********************/
     function applyRemote(remote) {
       try {
         isApplyingRemote = true;
 
+        const prevParentId = currentParentId; // ✅ 현재 위치 기억
+
         if (remote.tree && remote.tree.id && Array.isArray(remote.tree.children)) {
           tree = remote.tree;
-          currentParentId = "root";
+
+          // ✅ 이전 위치가 새 트리에도 존재하면 유지, 없으면 root
+          const stillExists = findNodeById(tree, prevParentId);
+          currentParentId = stillExists ? prevParentId : "root";
         }
+
         if (Array.isArray(remote.logs)) {
           logs = remote.logs;
         }
@@ -452,7 +461,9 @@
       return s;
     }
     function getCurrentParentNode() {
+      // ✅ currentParentId가 꼬이면 자동 복구
       const node = findNodeById(tree, currentParentId);
+      if (!node) currentParentId = "root";
       return node || tree;
     }
     function moveSibling(parentNode, index, delta) {
@@ -729,6 +740,10 @@
     }
 
     function render() {
+      // ✅ 혹시 currentParentId가 꼬였으면 여기서도 한 번 복구
+      if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) {
+        currentParentId = "root";
+      }
       updateBreadcrumb();
       renderButtons();
       updateLogCount();
@@ -780,7 +795,7 @@
         if (!parentNode.children) parentNode.children = [];
         parentNode.children.push({ id: genId(), label: name.trim(), children: [] });
         saveTree();
-        render();
+        render(); // ✅ 위치 유지됨
       }
     });
 
@@ -801,7 +816,6 @@
       saveHelp();
       closeHelpModal();
     });
-    // 모달 바깥 클릭 닫기
     document.getElementById("helpModalBackdrop").addEventListener("click", (e) => {
       if (e.target.id === "helpModalBackdrop") closeHelpModal();
     });
@@ -829,7 +843,6 @@
       }
 
       try {
-        // 로그인하면: 클라우드 우선 적용
         await cloudFirstInit(currentUser.uid);
         startRealtimeListener(currentUser.uid);
         scheduleCloudSave();
@@ -843,6 +856,3 @@
   </script>
 </body>
 </html>
-
-
-
