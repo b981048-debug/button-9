@@ -1,103 +1,728 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<title>버튼 트리 기록 앱</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<style>
-body{margin:0;padding:10px;background:#f5f5f5;font-family:system-ui}
-.app{max-width:900px;margin:auto;background:#fff;border-radius:12px;padding:12px}
-button{border:1px solid #ddd;border-radius:8px;padding:6px 10px;background:#fff;cursor:pointer}
-button:disabled{opacity:.5}
-.btn-main{width:100%;text-align:left;padding:10px;margin-bottom:6px}
-</style>
+  <meta charset="UTF-8" />
+  <title>버튼 트리 기록 앱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; padding: 10px; background: #f5f5f5; }
+    .app {
+      max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 12px;
+      padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+    .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
+    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+    .auth-status { font-size:12px; opacity:.85; }
+    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
+
+    .top-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+    .top-bar small { opacity: 0.8; }
+
+    button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-main {
+      flex: 1; text-align: left; padding: 10px; border-radius: 10px;
+      border: 1px solid #ccc; background: #fafafa; font-size: 14px; min-height: 40px;
+    }
+    .btn-row { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+    .btn-controls { display: flex; gap: 2px; }
+    .btn-controls button { padding: 4px 6px; font-size: 11px; }
+
+    .buttons-area { margin-top: 6px; margin-bottom: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
+    .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
+
+    .layout { display: flex; flex-direction: column; gap: 10px; }
+    @media (min-width: 720px) { .layout { flex-direction: row; } }
+    .left, .right { flex: 1; min-width: 0; }
+    .panel-title { font-size: 14px; margin-bottom: 4px; font-weight: 600; }
+
+    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+    .log-count { font-size: 12px; opacity: 0.7; }
+    .log-actions { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+
+    .log-box { background: #fafafa; border-radius: 10px; border: 1px solid #ddd; padding: 8px; max-height: 60vh; overflow-y: auto; }
+    #logList { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+    #logList li {
+      padding: 4px 2px; border-bottom: 1px solid #eee; word-break: break-all;
+      display: flex; align-items: center; gap: 4px;
+    }
+    #logList li:last-child { border-bottom: none; }
+    .log-text { flex: 1; }
+    .log-checkbox { flex-shrink: 0; }
+    .empty-text { font-size: 12px; opacity: 0.6; }
+  </style>
 </head>
 <body>
+  <div class="app">
+    <h1>
+      버튼 트리 기록 앱
+      <span class="badge" id="syncBadge">로컬 모드</span>
+    </h1>
 
-<div class="app">
-  <h2>버튼 트리 기록 앱 <small id="mode">로딩중…</small></h2>
+    <div class="auth-bar">
+      <button id="btnLogin">Google 로그인</button>
+      <button id="btnLogout" disabled>로그아웃</button>
+      <span class="auth-status" id="authStatus">로그인 안 됨</span>
+    </div>
+    <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
 
-  <div>
-    <button id="loginBtn">Google 로그인</button>
-    <button id="logoutBtn" disabled>로그아웃</button>
-    <span id="status">로그인 안 됨</span>
+    <div class="top-bar">
+      <button id="btnUp">◀ 상위로</button>
+      <button id="btnRoot">⬆ 최상위로</button>
+      <small id="breadcrumb">위치: ROOT</small>
+    </div>
+
+    <div class="layout">
+      <div class="left">
+        <div class="panel-title">버튼 목록</div>
+        <div class="buttons-area" id="buttonContainer"></div>
+        <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
+        <div class="empty-text">
+          💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.<br />
+          [A1], [B2] 같은 표시는 엑셀의 열(A,B,...)과 행(1,2,...)을 의미합니다.
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="log-header">
+          <div class="panel-title">클릭 기록</div>
+          <div class="log-count">(총 <span id="logCount">0</span>개)</div>
+          <div class="log-actions">
+            <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
+            <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
+            <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
+            <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
+          </div>
+        </div>
+        <div class="log-box">
+          <ul id="logList"></ul>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <hr />
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
-  <div id="buttons"></div>
-</div>
+  <script>
+    /***********************
+     * Firebase 설정 (네 프로젝트 값)
+     ***********************/
+    const firebaseConfig = {
+      apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
+      authDomain: "button-tree.firebaseapp.com",
+      projectId: "button-tree",
+      storageBucket: "button-tree.firebasestorage.app",
+      messagingSenderId: "670872655484",
+      appId: "1:670872655484:web:a8f5a5201cd845a4075bf9",
+      measurementId: "G-9P3ZV8LLQ3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const provider = new firebase.auth.GoogleAuthProvider();
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    /***********************
+     * 로컬 키
+     ***********************/
+    const TREE_STORAGE_KEY = "buttonTree_v_local";
+    const LOG_STORAGE_KEY  = "buttonLogs_v1";
 
-<script>
-/* Firebase 설정 */
-firebase.initializeApp({
-  apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
-  authDomain: "button-tree.firebaseapp.com",
-  projectId: "button-tree"
-});
-const auth = firebase.auth();
-const db = firebase.firestore();
-const provider = new firebase.auth.GoogleAuthProvider();
+    /***********************
+     * 상태
+     ***********************/
+    let tree = null;
+    let currentParentId = "root";
+    let logs = [];
 
-let tree = null;
-let user = null;
+    let currentUser = null;
+    let unsubscribeDoc = null;
 
-/* 기본 트리 */
-function defaultTree(){
-  return {
-    id:"root",
-    children:[
-      {id:"a1",label:"기상",children:[]},
-      {id:"a2",label:"책상정리",children:[]}
-    ]
-  };
-}
+    // 원격 적용 중에는 save 트리거 방지
+    let isApplyingRemote = false;
 
-/* 렌더 */
-function render(){
-  const box = document.getElementById("buttons");
-  box.innerHTML = "";
-  tree.children.forEach(n=>{
-    const b=document.createElement("button");
-    b.className="btn-main";
-    b.textContent=n.label;
-    box.appendChild(b);
-  });
-}
+    // 저장 debounce
+    let saveTimer = null;
 
-/* 로그인 상태 */
-auth.onAuthStateChanged(async u=>{
-  user=u;
-  document.getElementById("loginBtn").disabled=!!u;
-  document.getElementById("logoutBtn").disabled=!u;
-  document.getElementById("status").textContent =
-    u ? "로그인됨" : "로그인 안 됨";
+    /***********************
+     * 유틸
+     ***********************/
+    function genId() {
+      return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+    }
+    function nowMs() { return Date.now(); }
 
-  if(!u) return;
+    function setAuthUI() {
+      const status = document.getElementById("authStatus");
+      const btnLogin = document.getElementById("btnLogin");
+      const btnLogout = document.getElementById("btnLogout");
+      const badge = document.getElementById("syncBadge");
 
-  document.getElementById("mode").textContent="클라우드 모드";
+      if (currentUser) {
+        const name = currentUser.displayName || currentUser.email || "사용자";
+        status.textContent = `로그인됨: ${name}`;
+        btnLogin.disabled = true;
+        btnLogout.disabled = false;
+        badge.textContent = "클라우드 동기화";
+      } else {
+        status.textContent = "로그인 안 됨";
+        btnLogin.disabled = false;
+        btnLogout.disabled = true;
+        badge.textContent = "로컬 모드";
+      }
+    }
 
-  const ref=db.collection("users").doc(u.uid);
-  const snap=await ref.get();
+    function userDocRef(uid) {
+      return db.collection("users").doc(uid);
+    }
 
-  if(snap.exists){
-    tree=snap.data().tree;
-  }else{
-    tree=defaultTree();
-    await ref.set({tree});
-  }
+    /***********************
+     * 로컬 저장/불러오기
+     ***********************/
+    function saveTreeLocal() {
+      try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
+      catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
+    }
+    function saveLogsLocal() {
+      try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs)); }
+      catch (e) { console.warn("localStorage 로그 저장 오류:", e); }
+    }
 
-  render();
-});
+    function loadTreeLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(TREE_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.id && Array.isArray(parsed.children)) { tree = parsed; return; }
+        } catch {}
+      }
+      tree = {
+        id: "root",
+        label: "ROOT",
+        children: [
+          { id: genId(), label: "예시 버튼 1", children: [] },
+          { id: genId(), label: "예시 버튼 2", children: [
+            { id: genId(), label: "예시 2-1", children: [] },
+            { id: genId(), label: "예시 2-2", children: [] }
+          ] }
+        ]
+      };
+      saveTreeLocal();
+    }
 
-/* 버튼 */
-loginBtn.onclick=()=>auth.signInWithPopup(provider);
-logoutBtn.onclick=()=>auth.signOut();
-</script>
+    function loadLogsLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(LOG_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) { logs = parsed; renderLogs(); return; }
+        } catch {}
+      }
+      logs = [];
+      renderLogs();
+    }
+
+    /***********************
+     * 클라우드 (항상 클라우드 우선)
+     ***********************/
+    async function cloudLoad(uid) {
+      const snap = await userDocRef(uid).get();
+      if (!snap.exists) return null;
+      return snap.data();
+    }
+
+    function scheduleCloudSave() {
+      if (!currentUser) return;
+      if (isApplyingRemote) return;
+
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async () => {
+        try {
+          await userDocRef(currentUser.uid).set({
+            tree,
+            logs,
+            updatedAtMs: nowMs(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        } catch (e) {
+          console.warn("cloud save 실패:", e);
+        }
+      }, 300);
+    }
+
+    // 로그인 시: "클라우드가 있으면 무조건 클라우드 적용"
+    // 클라우드가 비어있으면: 로컬을 최초 업로드(한 번만)
+    async function cloudFirstInit(uid) {
+      const remote = await cloudLoad(uid);
+
+      if (remote && (remote.tree || remote.logs)) {
+        applyRemote(remote);
+        // 로컬을 클라우드로 맞춰 저장
+        saveTreeLocal();
+        saveLogsLocal();
+        return;
+      }
+
+      // 클라우드가 비어있으면: 로컬을 올려서 "클라우드가 기준"이 되게 만든다
+      await userDocRef(uid).set({
+        tree,
+        logs,
+        updatedAtMs: nowMs(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
+    function applyRemote(remote) {
+      try {
+        isApplyingRemote = true;
+
+        if (remote.tree && remote.tree.id && Array.isArray(remote.tree.children)) {
+          tree = remote.tree;
+          currentParentId = "root";
+        }
+        if (Array.isArray(remote.logs)) {
+          logs = remote.logs;
+        }
+
+        renderLogs();
+        render();
+      } finally {
+        isApplyingRemote = false;
+      }
+    }
+
+    function startRealtimeListener(uid) {
+      if (unsubscribeDoc) unsubscribeDoc();
+
+      unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
+        if (!snap.exists) return;
+        const remote = snap.data() || {};
+        // 내 저장 직후에도 스냅샷 오니까, 그냥 적용해도 되지만
+        // 적용 중/저장 중 루프 방지
+        if (isApplyingRemote) return;
+        if (!remote.tree && !remote.logs) return;
+
+        // “클라우드가 기준”이므로, 원격이 오면 즉시 적용
+        applyRemote(remote);
+        saveTreeLocal();
+        saveLogsLocal();
+      }, (err) => {
+        console.warn("onSnapshot 오류:", err);
+      });
+    }
+
+    /***********************
+     * 저장 훅 (로컬 + 클라우드)
+     ***********************/
+    function saveTree() {
+      saveTreeLocal();
+      scheduleCloudSave();
+    }
+    function saveLogs() {
+      saveLogsLocal();
+      scheduleCloudSave();
+    }
+
+    /***********************
+     * 트리 유틸
+     ***********************/
+    function findNodeById(node, id) {
+      if (!node) return null;
+      if (node.id === id) return node;
+      const children = node.children || [];
+      for (let i = 0; i < children.length; i++) {
+        const found = findNodeById(children[i], id);
+        if (found) return found;
+      }
+      return null;
+    }
+    function findParentId(root, targetId, parentId) {
+      if (root.id === targetId) return parentId;
+      const children = root.children || [];
+      for (let i = 0; i < children.length; i++) {
+        const found = findParentId(children[i], targetId, root.id);
+        if (found !== null && found !== undefined) return found;
+      }
+      return null;
+    }
+    function getDepthById(node, targetId, depth) {
+      if (depth === undefined) depth = 0;
+      if (!node) return -1;
+      if (node.id === targetId) return depth;
+      const children = node.children || [];
+      for (let i = 0; i < children.length; i++) {
+        const d = getDepthById(children[i], targetId, depth + 1);
+        if (d !== -1) return d;
+      }
+      return -1;
+    }
+    function columnIndexToLetters(n) {
+      if (!n || n <= 0) n = 1;
+      let s = "";
+      while (n > 0) {
+        const rem = (n - 1) % 26;
+        s = String.fromCharCode(65 + rem) + s;
+        n = Math.floor((n - 1) / 26);
+      }
+      return s;
+    }
+    function getCurrentParentNode() {
+      const node = findNodeById(tree, currentParentId);
+      return node || tree;
+    }
+    function moveSibling(parentNode, index, delta) {
+      if (!parentNode || !parentNode.children) return;
+      const newIndex = index + delta;
+      if (newIndex < 0 || newIndex >= parentNode.children.length) return;
+      const arr = parentNode.children;
+      const tmp = arr[index];
+      arr[index] = arr[newIndex];
+      arr[newIndex] = tmp;
+      saveTree();
+      render();
+    }
+
+    /***********************
+     * 로그 렌더링
+     ***********************/
+    function updateLogCount() {
+      const countSpan = document.getElementById("logCount");
+      if (!countSpan) return;
+      countSpan.textContent = logs.length;
+    }
+    function createLogLi(log, index) {
+      const li = document.createElement("li");
+      li.dataset.index = index;
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "log-checkbox";
+
+      const textSpan = document.createElement("span");
+      textSpan.className = "log-text";
+      textSpan.textContent = `${log.time} - [${log.coord}] ${log.label}`;
+
+      li.appendChild(checkbox);
+      li.appendChild(textSpan);
+      return li;
+    }
+    function renderLogs() {
+      const logList = document.getElementById("logList");
+      if (!logList) return;
+      logList.innerHTML = "";
+      logs.forEach((log, idx) => logList.appendChild(createLogLi(log, idx)));
+      updateLogCount();
+    }
+    function appendLog(label, coord) {
+      const now = new Date();
+      const timeStr = now.toLocaleString();
+      logs.unshift({ time: timeStr, label, coord });
+      saveLogs();
+      renderLogs();
+    }
+    function getSelectedLogItems() {
+      const logList = document.getElementById("logList");
+      if (!logList) return [];
+      const items = Array.from(logList.querySelectorAll("li"));
+      return items.filter(li => {
+        const cb = li.querySelector(".log-checkbox");
+        return cb && cb.checked;
+      });
+    }
+    function deleteSelectedLogs() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("삭제할 기록을 선택하세요.");
+      if (!confirm(selected.length + "개의 기록을 삭제할까요?")) return;
+
+      const indexes = selected
+        .map(li => Number(li.dataset.index))
+        .filter(n => !Number.isNaN(n))
+        .sort((a, b) => b - a);
+
+      indexes.forEach(idx => { if (idx >= 0 && idx < logs.length) logs.splice(idx, 1); });
+      saveLogs();
+      renderLogs();
+    }
+    function editSelectedLog() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("수정할 기록을 선택하세요.");
+      if (selected.length > 1) return alert("한 번에 하나의 기록만 수정할 수 있습니다.");
+
+      const idx = Number(selected[0].dataset.index);
+      if (Number.isNaN(idx) || idx < 0 || idx >= logs.length) return alert("로그 인덱스 오류입니다.");
+
+      const old = logs[idx];
+      const newLabel = prompt("새 내용(라벨)을 입력하세요:", old.label);
+      if (!newLabel || newLabel.trim() === "") return;
+
+      logs[idx].label = newLabel.trim();
+      saveLogs();
+      renderLogs();
+    }
+
+    /***********************
+     * 클립보드
+     ***********************/
+    function fallbackCopyText(text, count, label) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        alert(label + " 기록이 클립보드에 복사되었습니다. (" + count + "개)");
+      } catch (e) {
+        alert("복사 중 오류가 발생했습니다. 직접 선택해서 복사해 주세요.");
+      }
+      document.body.removeChild(textarea);
+    }
+    function copyTextWithClipboard(text, count, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => alert(label + " 기록이 클립보드에 복사되었습니다. (" + count + "개)"))
+          .catch(() => fallbackCopyText(text, count, label));
+      } else {
+        fallbackCopyText(text, count, label);
+      }
+    }
+    function copyAllLogs() {
+      if (logs.length === 0) return alert("복사할 기록이 없습니다.");
+      const lines = logs.map(log => `${log.time} - [${log.coord}] ${log.label}`);
+      copyTextWithClipboard(lines.join("\n"), lines.length, "전체");
+    }
+    function copySelectedLogs() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("복사할 기록을 선택하세요.");
+
+      const indexes = selected
+        .map(li => Number(li.dataset.index))
+        .filter(n => !Number.isNaN(n))
+        .sort((a, b) => a - b);
+
+      const lines = indexes.map(idx => {
+        const log = logs[idx];
+        return `${log.time} - [${log.coord}] ${log.label}`;
+      });
+      copyTextWithClipboard(lines.join("\n"), lines.length, "선택한");
+    }
+
+    /***********************
+     * 화면 렌더링 (트리)
+     ***********************/
+    function updateBreadcrumb() {
+      const bc = document.getElementById("breadcrumb");
+      if (!bc) return;
+
+      if (currentParentId === "root") return bc.textContent = "위치: ROOT";
+
+      const pathNodes = [];
+      function dfs(node, targetId, path) {
+        path.push(node);
+        if (node.id === targetId) return true;
+        const children = node.children || [];
+        for (let i = 0; i < children.length; i++) {
+          if (dfs(children[i], targetId, path)) return true;
+        }
+        path.pop();
+        return false;
+      }
+      dfs(tree, currentParentId, pathNodes);
+      const names = pathNodes.map(n => n.label);
+      bc.textContent = "위치: " + names.join(" > ");
+    }
+
+    function renderButtons() {
+      const container = document.getElementById("buttonContainer");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const parentNode = getCurrentParentNode();
+      const children = parentNode.children || [];
+
+      let parentDepth = getDepthById(tree, parentNode.id, 0);
+      if (parentDepth < 0) parentDepth = 0;
+      const childDepth = parentDepth + 1;
+      const colLetters = columnIndexToLetters(childDepth);
+
+      if (children.length === 0) {
+        const div = document.createElement("div");
+        div.className = "empty-text";
+        div.textContent = "이 위치에는 버튼이 없습니다. 아래에서 새 버튼을 추가하세요.";
+        container.appendChild(div);
+        return;
+      }
+
+      children.forEach((child, index) => {
+        const row = document.createElement("div");
+        row.className = "btn-row";
+
+        const rowNumber = index + 1;
+        const coord = colLetters + rowNumber;
+
+        const mainBtn = document.createElement("button");
+        mainBtn.className = "btn-main";
+        mainBtn.textContent = "[" + coord + "] " + child.label;
+
+        mainBtn.addEventListener("click", () => {
+          if (child.children && child.children.length > 0) {
+            currentParentId = child.id;
+            render();
+          } else {
+            appendLog(child.label, coord);
+          }
+        });
+
+        const controls = document.createElement("div");
+        controls.className = "btn-controls";
+
+        const upBtn = document.createElement("button");
+        upBtn.textContent = "↑";
+        upBtn.title = "위로";
+        upBtn.addEventListener("click", () => moveSibling(parentNode, index, -1));
+
+        const downBtn = document.createElement("button");
+        downBtn.textContent = "↓";
+        downBtn.title = "아래로";
+        downBtn.addEventListener("click", () => moveSibling(parentNode, index, 1));
+
+        const addChildBtn = document.createElement("button");
+        addChildBtn.textContent = "+하위";
+        addChildBtn.title = "하위 버튼 추가";
+        addChildBtn.addEventListener("click", () => {
+          const name = prompt("하위 버튼 이름을 입력하세요:");
+          if (name && name.trim() !== "") {
+            if (!child.children) child.children = [];
+            child.children.push({ id: genId(), label: name.trim(), children: [] });
+            saveTree();
+            render();
+          }
+        });
+
+        const renameBtn = document.createElement("button");
+        renameBtn.textContent = "이름변경";
+        renameBtn.title = "버튼 이름 변경";
+        renameBtn.addEventListener("click", () => {
+          const newName = prompt("새 버튼 이름을 입력하세요:", child.label);
+          if (newName && newName.trim() !== "") {
+            child.label = newName.trim();
+            saveTree();
+            render();
+          }
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "삭제";
+        delBtn.title = "이 버튼 삭제";
+        delBtn.addEventListener("click", () => {
+          if (!confirm("'" + child.label + "' 버튼을 삭제할까요? (하위 버튼도 함께 삭제됩니다)")) return;
+          parentNode.children.splice(index, 1);
+          saveTree();
+          render();
+        });
+
+        controls.appendChild(upBtn);
+        controls.appendChild(downBtn);
+        controls.appendChild(addChildBtn);
+        controls.appendChild(renameBtn);
+        controls.appendChild(delBtn);
+
+        row.appendChild(mainBtn);
+        row.appendChild(controls);
+        container.appendChild(row);
+      });
+    }
+
+    function render() {
+      updateBreadcrumb();
+      renderButtons();
+      updateLogCount();
+    }
+
+    /***********************
+     * 초기화
+     ***********************/
+    loadTreeLocal();
+    loadLogsLocal();
+    render();
+
+    /***********************
+     * 이벤트 바인딩
+     ***********************/
+    document.getElementById("btnUp").addEventListener("click", () => {
+      if (currentParentId === "root") return;
+      const parentId = findParentId(tree, currentParentId, null);
+      currentParentId = parentId || "root";
+      render();
+    });
+    document.getElementById("btnRoot").addEventListener("click", () => {
+      currentParentId = "root";
+      render();
+    });
+    document.getElementById("btnAddHere").addEventListener("click", () => {
+      const parentNode = getCurrentParentNode();
+      const name = prompt("새 버튼 이름을 입력하세요:");
+      if (name && name.trim() !== "") {
+        if (!parentNode.children) parentNode.children = [];
+        parentNode.children.push({ id: genId(), label: name.trim(), children: [] });
+        saveTree();
+        render();
+      }
+    });
+
+    document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
+    document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
+    document.getElementById("btnCopyAllLog").addEventListener("click", copyAllLogs);
+    document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
+
+    document.getElementById("btnLogin").addEventListener("click", async () => {
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (e) {
+        console.error(e);
+        // 팝업 차단/도메인 미허용이 가장 흔함
+        alert("로그인 실패: 팝업 차단 또는 Firebase 도메인 설정 문제일 수 있어요.\n\nF12 콘솔의 에러코드(auth/...)를 확인해 주세요.");
+      }
+    });
+
+    document.getElementById("btnLogout").addEventListener("click", async () => {
+      try { await auth.signOut(); } catch (e) { console.error(e); }
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      currentUser = user || null;
+      setAuthUI();
+
+      // 리스너 정리
+      if (!currentUser) {
+        if (unsubscribeDoc) unsubscribeDoc();
+        unsubscribeDoc = null;
+        return;
+      }
+
+      try {
+        // 로그인하면: 클라우드 우선 적용 (confirm 없음)
+        await cloudFirstInit(currentUser.uid);
+        // 실시간 반영 켜기
+        startRealtimeListener(currentUser.uid);
+        // 정합성 저장 한번
+        scheduleCloudSave();
+      } catch (e) {
+        console.error(e);
+        alert("클라우드 동기화 중 오류가 발생했습니다. (F12 콘솔 확인)");
+      }
+    });
+
+    setAuthUI();
+  </script>
 </body>
 </html>
