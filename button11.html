@@ -92,6 +92,7 @@
           <div class="panel-title">클릭 기록</div>
           <div class="log-count">(총 <span id="logCount">0</span>개)</div>
           <div class="log-actions">
+            <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
             <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
             <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
             <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
@@ -305,7 +306,6 @@
       unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
         if (!snap.exists) return;
         const remote = snap.data() || {};
-        // 내 저장 직후에도 스냅샷 오니까, 그냥 적용해도 되지만
         // 적용 중/저장 중 루프 방지
         if (isApplyingRemote) return;
         if (!remote.tree && !remote.logs) return;
@@ -464,6 +464,16 @@
       if (!newLabel || newLabel.trim() === "") return;
 
       logs[idx].label = newLabel.trim();
+      saveLogs();
+      renderLogs();
+    }
+
+    // ✅ 전체 삭제 추가
+    function deleteAllLogs() {
+      if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
+      if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
+
+      logs = [];
       saveLogs();
       renderLogs();
     }
@@ -683,13 +693,13 @@
     document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
     document.getElementById("btnCopyAllLog").addEventListener("click", copyAllLogs);
     document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
+    document.getElementById("btnDeleteAllLog").addEventListener("click", deleteAllLogs);
 
     document.getElementById("btnLogin").addEventListener("click", async () => {
       try {
         await auth.signInWithPopup(provider);
       } catch (e) {
         console.error(e);
-        // 팝업 차단/도메인 미허용이 가장 흔함
         alert("로그인 실패: 팝업 차단 또는 Firebase 도메인 설정 문제일 수 있어요.\n\nF12 콘솔의 에러코드(auth/...)를 확인해 주세요.");
       }
     });
