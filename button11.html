@@ -96,7 +96,6 @@
       word-break: break-word;
     }
 
-    /* 간단 모달 */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.35);
       display: none; align-items: center; justify-content: center; padding: 16px;
@@ -117,7 +116,6 @@
     .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
     .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
 
-    /* 할일/완료한일 표 */
     .todo-box{
       border: 1px solid #ddd;
       border-radius: 10px;
@@ -138,10 +136,7 @@
       gap: 2px;
       margin-top: 8px;
     }
-    .todo-cell {
-      border: 1px solid #ccc;
-      background: #fff;
-    }
+    .todo-cell { border: 1px solid #ccc; background: #fff; }
     .todo-cell.header {
       background: #eef7ff;
       font-weight: 700;
@@ -164,7 +159,7 @@
       box-shadow: inset 0 0 0 2px rgba(179, 212, 255, .35);
     }
 
-    /* ✅ 정신력 점수 입력 UI */
+    /* ✅ 정신력 점수 */
     .mind-box{
       border: 1px solid #ddd;
       border-radius: 10px;
@@ -198,6 +193,11 @@
       opacity: .7;
       margin-top: 4px;
       line-height: 1.35;
+    }
+    .minus-btn.on{
+      background:#111;
+      color:#fff;
+      border-color:#111;
     }
   </style>
 </head>
@@ -239,11 +239,11 @@
       </div>
 
       <div class="right">
-        <!-- ✅ 정신력 점수 입력칸(오른쪽 상단) -->
         <div class="mind-box">
           <div class="panel-title">정신력 점수</div>
-          <div class="mind-hint">점수 입력 후 Enter 또는 “기록”을 누르면 클릭 기록에 저장됩니다.</div>
+          <div class="mind-hint">점수 입력 후 Enter 또는 “기록”을 누르면 클릭 기록에 저장됩니다. (허용범위: 0~100 / -100~0)</div>
           <div class="mind-row">
+            <button id="btnMinus" class="minus-btn" title="마이너스 토글">-</button>
             <input id="mindScoreInput" inputmode="numeric" placeholder="예: 87" />
             <button id="btnMindRecord" class="btn-primary">기록</button>
           </div>
@@ -316,13 +316,15 @@
     let logs = [];
     let helpText = "";
 
-    // 2열 x 10행(헤더 제외)
     let todoTableData = Array.from({ length: 10 }, () => ["", ""]);
 
     let currentUser = null;
     let unsubscribeDoc = null;
     let isApplyingRemote = false;
     let saveTimer = null;
+
+    // ✅ 정신력 마이너스 토글 상태
+    let mindIsNegative = false;
 
     function genId() {
       return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
@@ -382,7 +384,7 @@
     }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
-    /* ✅ 표 로컬 저장/불러오기 */
+    /* ✅ 표 */
     function saveTodoLocal() {
       try { localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todoTableData)); }
       catch (e) { console.warn("localStorage 표 저장 오류:", e); }
@@ -665,22 +667,80 @@
       showBackupWarningIfNeeded();
     }
 
-    /* ✅ 정신력 점수 기록(핵심 추가) */
+    /* ✅ 정신력 점수: 입력 정리(숫자만) */
+    function sanitizeMindInput() {
+      const input = document.getElementById("mindScoreInput");
+      if (!input) return;
+
+      // 숫자만 남기고 제거 (공백/문자 제거)
+      let v = (input.value || "").trim();
+      v = v.replace(/[^\d]/g, ""); // 숫자만
+
+      input.value = v;
+    }
+
+    function setMindNegative(on) {
+      mindIsNegative = !!on;
+      const btn = document.getElementById("btnMinus");
+      const input = document.getElementById("mindScoreInput");
+      if (btn) btn.classList.toggle("on", mindIsNegative);
+      if (input) {
+        // placeholder 힌트만 바꾸고 입력값은 숫자만 유지
+        input.placeholder = mindIsNegative ? "예: 50  (기록: -50)" : "예: 87";
+        input.focus();
+      }
+    }
+
+    function toggleMindNegative() {
+      setMindNegative(!mindIsNegative);
+    }
+
+    function parseAndValidateMindScore({ showAlert }) {
+      const input = document.getElementById("mindScoreInput");
+      if (!input) return { ok:false, score: null };
+
+      // 입력값 정리(숫자만) 후 숫자로 변환
+      sanitizeMindInput();
+      const rawDigits = (input.value || "").trim();
+      if (!rawDigits) {
+        if (showAlert) alert("정신력 점수를 입력하세요.");
+        return { ok:false, score: null };
+      }
+
+      const absVal = Number(rawDigits);
+      if (!Number.isFinite(absVal)) {
+        if (showAlert) alert("숫자로 입력해 주세요. 예: 87");
+        return { ok:false, score: null };
+      }
+
+      if (absVal < 0 || absVal > 100) {
+        if (showAlert) alert("점수는 0~100 사이만 입력할 수 있어요.");
+        return { ok:false, score: null };
+      }
+
+      const score = mindIsNegative ? -absVal : absVal;
+
+      // 마이너스 모드면 -100~0, 플러스 모드면 0~100 자동 만족
+      if (!mindIsNegative && (score < 0 || score > 100)) {
+        if (showAlert) alert("점수는 0~100 사이만 기록할 수 있어요.");
+        return { ok:false, score: null };
+      }
+      if (mindIsNegative && (score < -100 || score > 0)) {
+        if (showAlert) alert("마이너스 점수는 -100~0 사이만 기록할 수 있어요.");
+        return { ok:false, score: null };
+      }
+
+      return { ok:true, score };
+    }
+
     function recordMindScore() {
       const input = document.getElementById("mindScoreInput");
       if (!input) return;
 
-      const raw = (input.value || "").trim();
-      if (!raw) return alert("정신력 점수를 입력하세요.");
+      const { ok, score } = parseAndValidateMindScore({ showAlert: true });
+      if (!ok) return;
 
-      // 숫자만 허용(원하면 이 부분 완화 가능)
-      const num = Number(raw);
-      if (!Number.isFinite(num)) return alert("숫자로 입력해 주세요. 예: 87");
-
-      // 원하는 라벨 형식
-      const label = `정신력: ${num}점`;
-
-      // 버튼과 같은 형식: 시간 - [좌표] 내용
+      const label = `정신력: ${score}점`;
       appendLog(label, "MIND");
 
       input.value = "";
@@ -889,7 +949,6 @@
       updateLogCount();
     }
 
-    /* 안내문 모달 */
     function openHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
       const editor = document.getElementById("helpEditor");
@@ -903,7 +962,7 @@
       if (backdrop) backdrop.style.display = "none";
     }
 
-    /* 초기화 */
+    /* ✅ 초기화 */
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
@@ -912,8 +971,9 @@
     render();
     showBackupWarningIfNeeded();
     setAuthUI();
+    setMindNegative(false);
 
-    /* 이벤트 */
+    /* ✅ 이벤트 */
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -986,12 +1046,53 @@
       }
     });
 
-    /* ✅ 정신력 입력 이벤트 연결 */
+    /* ✅ 정신력 점수 이벤트 */
     document.getElementById("btnMindRecord").addEventListener("click", recordMindScore);
+
+    document.getElementById("mindScoreInput").addEventListener("input", () => {
+      sanitizeMindInput();
+      // 범위 초과는 입력 중엔 바로 막지 않고, 기록 시/포커스 아웃 시 경고로 처리해도 되는데,
+      // 요청이 "막아줘"라서 여기서도 체크해서 안내.
+      const input = document.getElementById("mindScoreInput");
+      if (!input) return;
+      const v = (input.value || "").trim();
+      if (!v) return;
+      const n = Number(v);
+      if (Number.isFinite(n) && n > 100) {
+        alert("점수는 0~100 사이만 입력할 수 있어요.");
+        input.value = "100";
+        input.focus();
+      }
+    });
+
+    document.getElementById("mindScoreInput").addEventListener("blur", () => {
+      // 포커스 아웃 시에도 범위 검사(사용자가 999 입력해두고 나갈 수 있으니)
+      const input = document.getElementById("mindScoreInput");
+      if (!input) return;
+      sanitizeMindInput();
+      const v = (input.value || "").trim();
+      if (!v) return;
+      const n = Number(v);
+      if (!Number.isFinite(n) || n < 0 || n > 100) {
+        alert("점수는 0~100 사이만 입력할 수 있어요.");
+        input.value = "";
+      }
+    });
+
     document.getElementById("mindScoreInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
         recordMindScore();
+      }
+    });
+
+    document.getElementById("btnMinus").addEventListener("click", () => {
+      toggleMindNegative();
+      // 입력이 이미 있으면 현재 모드 기준으로 범위 체크만 해줌(값은 절대값으로 유지)
+      const { ok } = parseAndValidateMindScore({ showAlert: false });
+      if (!ok) {
+        const input = document.getElementById("mindScoreInput");
+        if (input) input.value = "";
       }
     });
   </script>
