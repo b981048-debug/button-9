@@ -33,7 +33,6 @@
     .buttons-area { margin-top: 6px; margin-bottom: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
     .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
 
-    /* ✅ 전체를 1열(위에서 아래로)로 배치 */
     .stack { display:flex; flex-direction:column; gap:10px; }
 
     .panel-title { font-size: 14px; font-weight: 600; }
@@ -77,7 +76,6 @@
     .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
     .help-box {
       border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
-      margin-top: 0;
       width: 100%;
     }
 
@@ -114,50 +112,6 @@
     }
     .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
     .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
-
-    /* 할일/완료한일 표 */
-    .todo-box{
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 10px;
-      background: #fafafa;
-      margin-top: 8px;
-      width: 100%;
-    }
-    .todo-sub {
-      font-size: 12px;
-      opacity: .7;
-      margin-top: 4px;
-      line-height: 1.35;
-    }
-    .todo-table {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2px;
-      margin-top: 8px;
-    }
-    .todo-cell { border: 1px solid #ccc; background: #fff; }
-    .todo-cell.header {
-      background: #eef7ff;
-      font-weight: 700;
-      text-align: center;
-      padding: 8px 6px;
-      font-size: 12px;
-    }
-    .todo-cell input {
-      width: 100%;
-      height: 34px;
-      border: none;
-      padding: 4px 6px;
-      font-size: 12px;
-      outline: none;
-      background: transparent;
-      text-align: center;
-    }
-    .todo-cell input:focus {
-      background: #f0f8ff;
-      box-shadow: inset 0 0 0 2px rgba(179, 212, 255, .35);
-    }
 
     /* ✅ 정신력 점수 */
     .mind-box{
@@ -234,12 +188,6 @@
         <div class="buttons-area" id="buttonContainer"></div>
         <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
-        <div class="todo-box">
-          <div class="panel-title">할 일 / 완료한 일</div>
-          <div class="todo-sub">Enter: 아래칸 이동 · 방향키: 셀 이동</div>
-          <div class="todo-table" id="todoTable"></div>
-        </div>
-
         <div class="moved-area">
           <div class="auth-bar">
             <button id="btnLogin">Google 로그인</button>
@@ -312,7 +260,6 @@
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
     const HELP_STORAGE_KEY = "buttonHelpText_v1";
-    const TODO_STORAGE_KEY = "todoTable_v2";
 
     const BACKUP_WARN_THRESHOLD = 1000;
 
@@ -320,8 +267,6 @@
     let currentParentId = "root";
     let logs = [];
     let helpText = "";
-
-    let todoTableData = Array.from({ length: 10 }, () => ["", ""]);
 
     let currentUser = null;
     let unsubscribeDoc = null;
@@ -387,73 +332,6 @@
     }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
-    function saveTodoLocal() {
-      try { localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todoTableData)); }
-      catch (e) { console.warn("localStorage 표 저장 오류:", e); }
-    }
-    function loadTodoLocal() {
-      let saved = null;
-      try { saved = localStorage.getItem(TODO_STORAGE_KEY); } catch {}
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length === 10) {
-            todoTableData = parsed.map(r => Array.isArray(r) ? [String(r[0] ?? ""), String(r[1] ?? "")] : ["",""]);
-          }
-        } catch {}
-      }
-    }
-    function saveTodo() { saveTodoLocal(); scheduleCloudSave(); }
-
-    function focusCell(r, c) {
-      const el = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
-      if (!el) return;
-      el.focus();
-      try { el.setSelectionRange(el.value.length, el.value.length); } catch {}
-    }
-
-    function renderTodoTable() {
-      const container = document.getElementById("todoTable");
-      if (!container) return;
-      container.innerHTML = "";
-
-      ["할일", "완료한 일이"].forEach(text => {
-        const div = document.createElement("div");
-        div.className = "todo-cell header";
-        div.textContent = text;
-        container.appendChild(div);
-      });
-
-      todoTableData.forEach((row, r) => {
-        row.forEach((val, c) => {
-          const cell = document.createElement("div");
-          cell.className = "todo-cell";
-
-          const input = document.createElement("input");
-          input.value = val;
-          input.dataset.r = String(r);
-          input.dataset.c = String(c);
-
-          input.addEventListener("input", () => {
-            todoTableData[r][c] = input.value;
-            saveTodo();
-          });
-
-          input.addEventListener("keydown", (e) => {
-            const key = e.key;
-            if (key === "Enter") { e.preventDefault(); focusCell(Math.min(9, r + 1), c); return; }
-            if (key === "ArrowUp") { e.preventDefault(); focusCell(Math.max(0, r - 1), c); return; }
-            if (key === "ArrowDown") { e.preventDefault(); focusCell(Math.min(9, r + 1), c); return; }
-            if (key === "ArrowLeft") { e.preventDefault(); focusCell(r, Math.max(0, c - 1)); return; }
-            if (key === "ArrowRight") { e.preventDefault(); focusCell(r, Math.min(1, c + 1)); return; }
-          });
-
-          cell.appendChild(input);
-          container.appendChild(cell);
-        });
-      });
-    }
-
     function saveTreeLocal() {
       try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
       catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
@@ -506,7 +384,6 @@
             tree,
             logs,
             helpText,
-            todoTableData,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -519,14 +396,14 @@
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
 
-      if (remote && (remote.tree || remote.logs || remote.helpText || remote.todoTableData)) {
+      if (remote && (remote.tree || remote.logs || remote.helpText)) {
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveTodoLocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal();
         return;
       }
 
       await userDocRef(uid).set({
-        tree, logs, helpText, todoTableData,
+        tree, logs, helpText,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -545,11 +422,7 @@
         if (Array.isArray(remote.logs)) logs = remote.logs;
         if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
 
-        if (Array.isArray(remote.todoTableData) && remote.todoTableData.length === 10) {
-          todoTableData = remote.todoTableData.map(r => Array.isArray(r) ? [String(r[0] ?? ""), String(r[1] ?? "")] : ["",""]);
-        }
-
-        renderLogs(); render(); renderHelp(); renderTodoTable();
+        renderLogs(); render(); renderHelp();
         showBackupWarningIfNeeded();
       } finally {
         isApplyingRemote = false;
@@ -562,10 +435,10 @@
         if (!snap.exists) return;
         const remote = snap.data() || {};
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText && !remote.todoTableData) return;
+        if (!remote.tree && !remote.logs && !remote.helpText) return;
 
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveTodoLocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal();
       }, (err) => console.warn("onSnapshot 오류:", err));
     }
 
@@ -665,7 +538,6 @@
       showBackupWarningIfNeeded();
     }
 
-    /* ✅ 정신력 점수 */
     function sanitizeMindInput() {
       const input = document.getElementById("mindScoreInput");
       if (!input) return;
@@ -947,18 +819,14 @@
       if (backdrop) backdrop.style.display = "none";
     }
 
-    // 초기화
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
-    loadTodoLocal();
-    renderTodoTable();
     render();
     showBackupWarningIfNeeded();
     setAuthUI();
     setMindNegative(false);
 
-    // 이벤트
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
