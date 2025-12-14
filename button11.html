@@ -165,7 +165,7 @@
       border-radius: 10px;
       padding: 10px;
       background: #fafafa;
-      margin-bottom: 10px;
+      margin-bottom: 10px; /* ✅ 맨 위로 왔으니 아래 여백 */
     }
     .mind-row{
       display:flex;
@@ -209,7 +209,21 @@
     </h1>
 
     <div class="layout">
+      <!-- ✅ LEFT: 정신력 점수(맨 위) → 버튼목록(그 밑) -->
       <div class="left">
+
+        <!-- ✅ 정신력 점수: 맨 위로 이동 -->
+        <div class="mind-box">
+          <div class="panel-title">정신력 점수</div>
+          <div class="mind-hint">점수 입력 후 Enter 또는 “기록”을 누르면 클릭 기록에 저장됩니다. (허용범위: 0~100 / -100~0)</div>
+          <div class="mind-row">
+            <button id="btnMinus" class="minus-btn" title="마이너스 토글">-</button>
+            <input id="mindScoreInput" inputmode="numeric" placeholder="예: 87" />
+            <button id="btnMindRecord" class="btn-primary">기록</button>
+          </div>
+        </div>
+
+        <!-- 버튼 목록 -->
         <div class="panel-header-row">
           <div class="panel-title">버튼 목록</div>
           <div class="nav-mini">
@@ -238,17 +252,8 @@
         </div>
       </div>
 
+      <!-- ✅ RIGHT: 클릭기록 + 안내문 -->
       <div class="right">
-        <div class="mind-box">
-          <div class="panel-title">정신력 점수</div>
-          <div class="mind-hint">점수 입력 후 Enter 또는 “기록”을 누르면 클릭 기록에 저장됩니다. (허용범위: 0~100 / -100~0)</div>
-          <div class="mind-row">
-            <button id="btnMinus" class="minus-btn" title="마이너스 토글">-</button>
-            <input id="mindScoreInput" inputmode="numeric" placeholder="예: 87" />
-            <button id="btnMindRecord" class="btn-primary">기록</button>
-          </div>
-        </div>
-
         <div class="log-header">
           <div class="panel-title">클릭 기록</div>
           <div class="log-count">(총 <span id="logCount">0</span>개)</div>
@@ -323,7 +328,6 @@
     let isApplyingRemote = false;
     let saveTimer = null;
 
-    // ✅ 정신력 마이너스 토글 상태
     let mindIsNegative = false;
 
     function genId() {
@@ -362,7 +366,6 @@
     }
     function userDocRef(uid) { return db.collection("users").doc(uid); }
 
-    /* ✅ 안내문 */
     const DEFAULT_HELP_TEXT =
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
 1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
@@ -384,7 +387,6 @@
     }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
-    /* ✅ 표 */
     function saveTodoLocal() {
       try { localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todoTableData)); }
       catch (e) { console.warn("localStorage 표 저장 오류:", e); }
@@ -452,7 +454,6 @@
       });
     }
 
-    /* ✅ 로컬 저장 */
     function saveTreeLocal() {
       try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
       catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
@@ -488,7 +489,6 @@
       renderLogs();
     }
 
-    /* ✅ 클라우드 */
     async function cloudLoad(uid) {
       const snap = await userDocRef(uid).get();
       if (!snap.exists) return null;
@@ -572,7 +572,6 @@
     function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
     function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
 
-    /* ✅ 트리 유틸 */
     function findNodeById(node, id) {
       if (!node) return null;
       if (node.id === id) return node;
@@ -630,7 +629,6 @@
       render();
     }
 
-    /* ✅ 로그 */
     function updateLogCount() {
       const countSpan = document.getElementById("logCount");
       if (!countSpan) return;
@@ -667,15 +665,11 @@
       showBackupWarningIfNeeded();
     }
 
-    /* ✅ 정신력 점수: 입력 정리(숫자만) */
     function sanitizeMindInput() {
       const input = document.getElementById("mindScoreInput");
       if (!input) return;
-
-      // 숫자만 남기고 제거 (공백/문자 제거)
       let v = (input.value || "").trim();
-      v = v.replace(/[^\d]/g, ""); // 숫자만
-
+      v = v.replace(/[^\d]/g, "");
       input.value = v;
     }
 
@@ -685,21 +679,16 @@
       const input = document.getElementById("mindScoreInput");
       if (btn) btn.classList.toggle("on", mindIsNegative);
       if (input) {
-        // placeholder 힌트만 바꾸고 입력값은 숫자만 유지
         input.placeholder = mindIsNegative ? "예: 50  (기록: -50)" : "예: 87";
         input.focus();
       }
     }
-
-    function toggleMindNegative() {
-      setMindNegative(!mindIsNegative);
-    }
+    function toggleMindNegative() { setMindNegative(!mindIsNegative); }
 
     function parseAndValidateMindScore({ showAlert }) {
       const input = document.getElementById("mindScoreInput");
       if (!input) return { ok:false, score: null };
 
-      // 입력값 정리(숫자만) 후 숫자로 변환
       sanitizeMindInput();
       const rawDigits = (input.value || "").trim();
       if (!rawDigits) {
@@ -720,7 +709,6 @@
 
       const score = mindIsNegative ? -absVal : absVal;
 
-      // 마이너스 모드면 -100~0, 플러스 모드면 0~100 자동 만족
       if (!mindIsNegative && (score < 0 || score > 100)) {
         if (showAlert) alert("점수는 0~100 사이만 기록할 수 있어요.");
         return { ok:false, score: null };
@@ -740,9 +728,7 @@
       const { ok, score } = parseAndValidateMindScore({ showAlert: true });
       if (!ok) return;
 
-      const label = `정신력: ${score}점`;
-      appendLog(label, "MIND");
-
+      appendLog(`정신력: ${score}점`, "MIND");
       input.value = "";
       input.focus();
     }
@@ -791,7 +777,6 @@
       renderLogs();
     }
 
-    /* 클립보드 */
     function fallbackCopyText(text, count, label) {
       const textarea = document.createElement("textarea");
       textarea.value = text;
@@ -829,7 +814,6 @@
       copyTextWithClipboard(lines.join("\n"), lines.length, "선택한");
     }
 
-    /* 트리 렌더 */
     function updateBreadcrumb() {
       const bc = document.getElementById("breadcrumb");
       if (!bc) return;
@@ -962,7 +946,6 @@
       if (backdrop) backdrop.style.display = "none";
     }
 
-    /* ✅ 초기화 */
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
@@ -973,7 +956,6 @@
     setAuthUI();
     setMindNegative(false);
 
-    /* ✅ 이벤트 */
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -1046,13 +1028,10 @@
       }
     });
 
-    /* ✅ 정신력 점수 이벤트 */
     document.getElementById("btnMindRecord").addEventListener("click", recordMindScore);
 
     document.getElementById("mindScoreInput").addEventListener("input", () => {
       sanitizeMindInput();
-      // 범위 초과는 입력 중엔 바로 막지 않고, 기록 시/포커스 아웃 시 경고로 처리해도 되는데,
-      // 요청이 "막아줘"라서 여기서도 체크해서 안내.
       const input = document.getElementById("mindScoreInput");
       if (!input) return;
       const v = (input.value || "").trim();
@@ -1066,7 +1045,6 @@
     });
 
     document.getElementById("mindScoreInput").addEventListener("blur", () => {
-      // 포커스 아웃 시에도 범위 검사(사용자가 999 입력해두고 나갈 수 있으니)
       const input = document.getElementById("mindScoreInput");
       if (!input) return;
       sanitizeMindInput();
@@ -1088,7 +1066,6 @@
 
     document.getElementById("btnMinus").addEventListener("click", () => {
       toggleMindNegative();
-      // 입력이 이미 있으면 현재 모드 기준으로 범위 체크만 해줌(값은 절대값으로 유지)
       const { ok } = parseAndValidateMindScore({ showAlert: false });
       if (!ok) {
         const input = document.getElementById("mindScoreInput");
