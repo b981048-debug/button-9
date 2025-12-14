@@ -14,6 +14,10 @@
     h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
     .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
+    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+    .auth-status { font-size:12px; opacity:.85; }
+    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
+
     button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
     button:active { transform: scale(0.97); }
     button:disabled { opacity: .5; cursor: not-allowed; }
@@ -35,7 +39,6 @@
 
     .panel-title { font-size: 14px; font-weight: 600; }
 
-    /* ✅ 버튼 목록 옆 상위/최상위 */
     .panel-header-row{
       display:flex;
       align-items:center;
@@ -77,10 +80,6 @@
       margin-top: 8px;
     }
 
-    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
-    .auth-status { font-size:12px; opacity:.85; }
-    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
-
     .moved-area {
       margin-top: 10px;
       border: 1px solid #eee;
@@ -95,6 +94,7 @@
       word-break: break-word;
     }
 
+    /* 간단 모달 */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.35);
       display: none; align-items: center; justify-content: center; padding: 16px;
@@ -116,14 +116,14 @@
     .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
 
     /* =========================
-       ✅ 엑셀형 표(2x11) - 맨 아래로 내림
+       ✅ 할일/완료한일 표(2열 x 11행) - 폭: help-box와 동일(= left 컬럼 안)
        ========================= */
-    .todo-wrap { margin-top: 12px; } /* ✅ 레이아웃 아래 여백 */
-    .todo-box {
+    .todo-box{
       border: 1px solid #ddd;
       border-radius: 10px;
       padding: 10px;
       background: #fafafa;
+      margin-top: 8px;
     }
     .todo-sub {
       font-size: 12px;
@@ -157,14 +157,13 @@
       outline: none;
       background: transparent;
 
-      /* ✅ 요청 1: 자동 가운데 정렬 */
+      /* ✅ 자동 가운데 정렬 */
       text-align: center;
     }
     .todo-cell input:focus {
       background: #f0f8ff;
       box-shadow: inset 0 0 0 2px rgba(179, 212, 255, .35);
     }
-    /* ========================= */
   </style>
 </head>
 <body>
@@ -174,7 +173,6 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <!-- ✅ 1) 버튼목록/클릭기록을 위로 -->
     <div class="layout">
       <div class="left">
         <div class="panel-header-row">
@@ -188,6 +186,14 @@
         <div class="buttons-area" id="buttonContainer"></div>
         <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
+        <!-- ✅✅ (요청) 위치 교체: 표가 안내문보다 위로 올라옴 -->
+        <div class="todo-box">
+          <div class="panel-title">할 일 / 완료한 일</div>
+          <div class="todo-sub">Enter: 아래칸 이동 · 방향키: 셀 이동</div>
+          <div class="todo-table" id="todoTable"></div>
+        </div>
+
+        <!-- ✅✅ 안내문은 표 아래로 내려옴 -->
         <div class="help-box">
           <div class="empty-text" id="helpText"></div>
           <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
@@ -221,17 +227,9 @@
         </div>
       </div>
     </div>
-
-    <!-- ✅ 2) 표는 아래로 -->
-    <div class="todo-wrap">
-      <div class="todo-box">
-        <div class="panel-title">할 일 / 완료한 일</div>
-        <div class="todo-sub">Enter: 아래칸 이동 · 방향키: 셀 이동</div>
-        <div class="todo-table" id="todoTable"></div>
-      </div>
-    </div>
   </div>
 
+  <!-- 안내문 편집 모달 -->
   <div class="modal-backdrop" id="helpModalBackdrop">
     <div class="modal">
       <h2>안내문 수정</h2>
@@ -275,7 +273,7 @@
     let logs = [];
     let helpText = "";
 
-    // ✅ 10행 x 2열 (헤더는 고정)
+    // ✅ 2열 x (헤더 제외) 10행
     let todoTableData = Array.from({ length: 10 }, () => ["", ""]);
 
     let currentUser = null;
@@ -360,7 +358,6 @@
     }
     function saveTodo() { saveTodoLocal(); scheduleCloudSave(); }
 
-    /* ✅ 표 커서 이동 */
     function focusCell(r, c) {
       const el = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
       if (!el) return;
@@ -368,13 +365,12 @@
       try { el.setSelectionRange(el.value.length, el.value.length); } catch {}
     }
 
-    /* ✅ 표 렌더 + Enter/방향키 이동 */
     function renderTodoTable() {
       const container = document.getElementById("todoTable");
       if (!container) return;
       container.innerHTML = "";
 
-      // 헤더(1행)
+      // 헤더
       ["할일", "완료한 일이"].forEach(text => {
         const div = document.createElement("div");
         div.className = "todo-cell header";
@@ -382,7 +378,7 @@
         container.appendChild(div);
       });
 
-      // 입력칸(10행)
+      // 10행 입력칸
       todoTableData.forEach((row, r) => {
         row.forEach((val, c) => {
           const cell = document.createElement("div");
@@ -400,37 +396,15 @@
 
           input.addEventListener("keydown", (e) => {
             const key = e.key;
-            const R = r, C = c;
-
-            // Enter → 아래칸(같은 열)
             if (key === "Enter") {
               e.preventDefault();
-              const nextR = Math.min(9, R + 1);
-              focusCell(nextR, C);
+              focusCell(Math.min(9, r + 1), c);
               return;
             }
-
-            // 방향키 이동
-            if (key === "ArrowUp") {
-              e.preventDefault();
-              focusCell(Math.max(0, R - 1), C);
-              return;
-            }
-            if (key === "ArrowDown") {
-              e.preventDefault();
-              focusCell(Math.min(9, R + 1), C);
-              return;
-            }
-            if (key === "ArrowLeft") {
-              e.preventDefault();
-              focusCell(R, Math.max(0, C - 1));
-              return;
-            }
-            if (key === "ArrowRight") {
-              e.preventDefault();
-              focusCell(R, Math.min(1, C + 1));
-              return;
-            }
+            if (key === "ArrowUp") { e.preventDefault(); focusCell(Math.max(0, r - 1), c); return; }
+            if (key === "ArrowDown") { e.preventDefault(); focusCell(Math.min(9, r + 1), c); return; }
+            if (key === "ArrowLeft") { e.preventDefault(); focusCell(r, Math.max(0, c - 1)); return; }
+            if (key === "ArrowRight") { e.preventDefault(); focusCell(r, Math.min(1, c + 1)); return; }
           });
 
           cell.appendChild(input);
