@@ -33,10 +33,9 @@
     .buttons-area { margin-top: 6px; margin-bottom: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
     .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
 
-    .layout { display: flex; flex-direction: column; gap: 10px; }
-    @media (min-width: 720px) { .layout { flex-direction: row; } }
+    /* ✅ 전체를 1열(위에서 아래로)로 배치 */
+    .stack { display:flex; flex-direction:column; gap:10px; }
 
-    .left, .right { flex: 1 1 0; min-width: 0; }
     .panel-title { font-size: 14px; font-weight: 600; }
 
     .panel-header-row{
@@ -78,7 +77,7 @@
     .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
     .help-box {
       border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
-      margin-top: 10px;
+      margin-top: 0;
       width: 100%;
     }
 
@@ -116,6 +115,7 @@
     .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
     .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
 
+    /* 할일/완료한일 표 */
     .todo-box{
       border: 1px solid #ddd;
       border-radius: 10px;
@@ -165,7 +165,6 @@
       border-radius: 10px;
       padding: 10px;
       background: #fafafa;
-      margin-bottom: 10px; /* ✅ 맨 위로 왔으니 아래 여백 */
     }
     .mind-row{
       display:flex;
@@ -208,22 +207,22 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <div class="layout">
-      <!-- ✅ LEFT: 정신력 점수(맨 위) → 버튼목록(그 밑) -->
-      <div class="left">
+    <!-- ✅ 요청 순서: 1) 정신력점수 2) 버튼목록 3) 클릭기록 4) 안내문 -->
+    <div class="stack">
 
-        <!-- ✅ 정신력 점수: 맨 위로 이동 -->
-        <div class="mind-box">
-          <div class="panel-title">정신력 점수</div>
-          <div class="mind-hint">점수 입력 후 Enter 또는 “기록”을 누르면 클릭 기록에 저장됩니다. (허용범위: 0~100 / -100~0)</div>
-          <div class="mind-row">
-            <button id="btnMinus" class="minus-btn" title="마이너스 토글">-</button>
-            <input id="mindScoreInput" inputmode="numeric" placeholder="예: 87" />
-            <button id="btnMindRecord" class="btn-primary">기록</button>
-          </div>
+      <!-- 1) 정신력 점수 -->
+      <div class="mind-box">
+        <div class="panel-title">정신력 점수</div>
+        <div class="mind-hint">점수 입력 후 Enter 또는 “기록”을 누르면 클릭 기록에 저장됩니다. (허용범위: 0~100 / -100~0)</div>
+        <div class="mind-row">
+          <button id="btnMinus" class="minus-btn" title="마이너스 토글">-</button>
+          <input id="mindScoreInput" inputmode="numeric" placeholder="예: 87" />
+          <button id="btnMindRecord" class="btn-primary">기록</button>
         </div>
+      </div>
 
-        <!-- 버튼 목록 -->
+      <!-- 2) 버튼 목록 -->
+      <div>
         <div class="panel-header-row">
           <div class="panel-title">버튼 목록</div>
           <div class="nav-mini">
@@ -252,8 +251,8 @@
         </div>
       </div>
 
-      <!-- ✅ RIGHT: 클릭기록 + 안내문 -->
-      <div class="right">
+      <!-- 3) 클릭 기록 -->
+      <div>
         <div class="log-header">
           <div class="panel-title">클릭 기록</div>
           <div class="log-count">(총 <span id="logCount">0</span>개)</div>
@@ -265,17 +264,18 @@
             <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
           </div>
         </div>
-
         <div class="log-box">
           <ul id="logList"></ul>
         </div>
-
-        <div class="help-box">
-          <div class="panel-title" style="margin-bottom:6px;">안내문</div>
-          <div class="empty-text" id="helpText"></div>
-          <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
-        </div>
       </div>
+
+      <!-- 4) 안내문 -->
+      <div class="help-box">
+        <div class="panel-title" style="margin-bottom:6px;">안내문</div>
+        <div class="empty-text" id="helpText"></div>
+        <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
+      </div>
+
     </div>
   </div>
 
@@ -665,6 +665,7 @@
       showBackupWarningIfNeeded();
     }
 
+    /* ✅ 정신력 점수 */
     function sanitizeMindInput() {
       const input = document.getElementById("mindScoreInput");
       if (!input) return;
@@ -946,6 +947,7 @@
       if (backdrop) backdrop.style.display = "none";
     }
 
+    // 초기화
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
@@ -956,6 +958,7 @@
     setAuthUI();
     setMindNegative(false);
 
+    // 이벤트
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
