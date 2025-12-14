@@ -35,10 +35,13 @@
 
     .layout { display: flex; flex-direction: column; gap: 10px; }
     @media (min-width: 720px) { .layout { flex-direction: row; } }
-    .left, .right { flex: 1; min-width: 0; }
+
+    /* ✅ (요청2) 좌/우 폭을 항상 동일하게 고정 */
+    .left, .right { flex: 1 1 0; min-width: 0; }
 
     .panel-title { font-size: 14px; font-weight: 600; }
 
+    /* ✅ (요청1) 버튼목록 제목 바로 옆에 상위/최상위 버튼 */
     .panel-header-row{
       display:flex;
       align-items:center;
@@ -78,6 +81,7 @@
     .help-box {
       border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
       margin-top: 8px;
+      width: 100%; /* ✅ 폭 100% 고정 */
     }
 
     .moved-area {
@@ -115,15 +119,14 @@
     .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
     .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
 
-    /* =========================
-       ✅ 할일/완료한일 표(2열 x 11행) - 폭: help-box와 동일(= left 컬럼 안)
-       ========================= */
+    /* 할일/완료한일 표 */
     .todo-box{
       border: 1px solid #ddd;
       border-radius: 10px;
       padding: 10px;
       background: #fafafa;
       margin-top: 8px;
+      width: 100%;
     }
     .todo-sub {
       font-size: 12px;
@@ -156,9 +159,7 @@
       font-size: 12px;
       outline: none;
       background: transparent;
-
-      /* ✅ 자동 가운데 정렬 */
-      text-align: center;
+      text-align: center; /* ✅ 가운데 정렬 */
     }
     .todo-cell input:focus {
       background: #f0f8ff;
@@ -175,6 +176,7 @@
 
     <div class="layout">
       <div class="left">
+        <!-- ✅ (요청1) 버튼 목록 바로 옆에 상위/최상위 -->
         <div class="panel-header-row">
           <div class="panel-title">버튼 목록</div>
           <div class="nav-mini">
@@ -186,14 +188,14 @@
         <div class="buttons-area" id="buttonContainer"></div>
         <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
-        <!-- ✅✅ (요청) 위치 교체: 표가 안내문보다 위로 올라옴 -->
+        <!-- 표 -->
         <div class="todo-box">
           <div class="panel-title">할 일 / 완료한 일</div>
           <div class="todo-sub">Enter: 아래칸 이동 · 방향키: 셀 이동</div>
           <div class="todo-table" id="todoTable"></div>
         </div>
 
-        <!-- ✅✅ 안내문은 표 아래로 내려옴 -->
+        <!-- ✅ (요청2) help-box 폭은 left=right 고정으로 클릭기록 폭과 동일 -->
         <div class="help-box">
           <div class="empty-text" id="helpText"></div>
           <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
@@ -273,7 +275,7 @@
     let logs = [];
     let helpText = "";
 
-    // ✅ 2열 x (헤더 제외) 10행
+    // 2열 x 10행(헤더 제외)
     let todoTableData = Array.from({ length: 10 }, () => ["", ""]);
 
     let currentUser = null;
@@ -317,7 +319,7 @@
     }
     function userDocRef(uid) { return db.collection("users").doc(uid); }
 
-    /* ✅ 안내문 */
+    /* 안내문 */
     const DEFAULT_HELP_TEXT =
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
 1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
@@ -339,7 +341,7 @@
     }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
-    /* ✅ 표 로컬 저장/불러오기 */
+    /* 표 로컬 저장/불러오기 */
     function saveTodoLocal() {
       try { localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todoTableData)); }
       catch (e) { console.warn("localStorage 표 저장 오류:", e); }
@@ -370,7 +372,6 @@
       if (!container) return;
       container.innerHTML = "";
 
-      // 헤더
       ["할일", "완료한 일이"].forEach(text => {
         const div = document.createElement("div");
         div.className = "todo-cell header";
@@ -378,7 +379,6 @@
         container.appendChild(div);
       });
 
-      // 10행 입력칸
       todoTableData.forEach((row, r) => {
         row.forEach((val, c) => {
           const cell = document.createElement("div");
@@ -396,11 +396,7 @@
 
           input.addEventListener("keydown", (e) => {
             const key = e.key;
-            if (key === "Enter") {
-              e.preventDefault();
-              focusCell(Math.min(9, r + 1), c);
-              return;
-            }
+            if (key === "Enter") { e.preventDefault(); focusCell(Math.min(9, r + 1), c); return; }
             if (key === "ArrowUp") { e.preventDefault(); focusCell(Math.max(0, r - 1), c); return; }
             if (key === "ArrowDown") { e.preventDefault(); focusCell(Math.min(9, r + 1), c); return; }
             if (key === "ArrowLeft") { e.preventDefault(); focusCell(r, Math.max(0, c - 1)); return; }
