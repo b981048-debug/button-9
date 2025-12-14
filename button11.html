@@ -39,11 +39,10 @@
     .left, .right { flex: 1 1 0; min-width: 0; }
     .panel-title { font-size: 14px; font-weight: 600; }
 
-    /* ✅ (수정1) 버튼 목록 텍스트 바로 옆에 상위/최상위 버튼 붙이기 */
     .panel-header-row{
       display:flex;
       align-items:center;
-      justify-content:flex-start; /* ← 벌어지지 않게 */
+      justify-content:flex-start;
       gap:8px;
       flex-wrap:wrap;
       margin-bottom: 4px;
@@ -53,7 +52,7 @@
       gap:6px;
       flex-wrap:wrap;
       align-items:center;
-      margin-left: 6px; /* 버튼목록 글씨 바로 옆 간격 */
+      margin-left: 6px;
     }
     .nav-mini button{
       padding: 6px 10px;
@@ -158,11 +157,47 @@
       font-size: 12px;
       outline: none;
       background: transparent;
-      text-align: center; /* ✅ 가운데 정렬 */
+      text-align: center;
     }
     .todo-cell input:focus {
       background: #f0f8ff;
       box-shadow: inset 0 0 0 2px rgba(179, 212, 255, .35);
+    }
+
+    /* ✅ 정신력 점수 입력 UI */
+    .mind-box{
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafafa;
+      margin-bottom: 10px;
+    }
+    .mind-row{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top: 6px;
+    }
+    .mind-row input{
+      flex: 1 1 160px;
+      height: 34px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+    .mind-row input:focus{
+      box-shadow: inset 0 0 0 2px rgba(179, 212, 255, .35);
+      border-color: #b3d4ff;
+    }
+    .mind-hint{
+      font-size: 12px;
+      opacity: .7;
+      margin-top: 4px;
+      line-height: 1.35;
     }
   </style>
 </head>
@@ -204,6 +239,16 @@
       </div>
 
       <div class="right">
+        <!-- ✅ 정신력 점수 입력칸(오른쪽 상단) -->
+        <div class="mind-box">
+          <div class="panel-title">정신력 점수</div>
+          <div class="mind-hint">점수 입력 후 Enter 또는 “기록”을 누르면 클릭 기록에 저장됩니다.</div>
+          <div class="mind-row">
+            <input id="mindScoreInput" inputmode="numeric" placeholder="예: 87" />
+            <button id="btnMindRecord" class="btn-primary">기록</button>
+          </div>
+        </div>
+
         <div class="log-header">
           <div class="panel-title">클릭 기록</div>
           <div class="log-count">(총 <span id="logCount">0</span>개)</div>
@@ -220,7 +265,6 @@
           <ul id="logList"></ul>
         </div>
 
-        <!-- ✅ (수정2) 안내문을 오른쪽 컬럼으로 이동 -->
         <div class="help-box">
           <div class="panel-title" style="margin-bottom:6px;">안내문</div>
           <div class="empty-text" id="helpText"></div>
@@ -316,7 +360,7 @@
     }
     function userDocRef(uid) { return db.collection("users").doc(uid); }
 
-    /* 안내문 */
+    /* ✅ 안내문 */
     const DEFAULT_HELP_TEXT =
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
 1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
@@ -338,7 +382,7 @@
     }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
-    /* 표 로컬 저장/불러오기 */
+    /* ✅ 표 로컬 저장/불러오기 */
     function saveTodoLocal() {
       try { localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todoTableData)); }
       catch (e) { console.warn("localStorage 표 저장 오류:", e); }
@@ -406,7 +450,7 @@
       });
     }
 
-    /* 로컬 저장 */
+    /* ✅ 로컬 저장 */
     function saveTreeLocal() {
       try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
       catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
@@ -442,7 +486,7 @@
       renderLogs();
     }
 
-    /* 클라우드 */
+    /* ✅ 클라우드 */
     async function cloudLoad(uid) {
       const snap = await userDocRef(uid).get();
       if (!snap.exists) return null;
@@ -526,7 +570,7 @@
     function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
     function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
 
-    /* 트리 유틸 */
+    /* ✅ 트리 유틸 */
     function findNodeById(node, id) {
       if (!node) return null;
       if (node.id === id) return node;
@@ -584,7 +628,7 @@
       render();
     }
 
-    /* 로그 */
+    /* ✅ 로그 */
     function updateLogCount() {
       const countSpan = document.getElementById("logCount");
       if (!countSpan) return;
@@ -619,6 +663,28 @@
       saveLogs();
       renderLogs();
       showBackupWarningIfNeeded();
+    }
+
+    /* ✅ 정신력 점수 기록(핵심 추가) */
+    function recordMindScore() {
+      const input = document.getElementById("mindScoreInput");
+      if (!input) return;
+
+      const raw = (input.value || "").trim();
+      if (!raw) return alert("정신력 점수를 입력하세요.");
+
+      // 숫자만 허용(원하면 이 부분 완화 가능)
+      const num = Number(raw);
+      if (!Number.isFinite(num)) return alert("숫자로 입력해 주세요. 예: 87");
+
+      // 원하는 라벨 형식
+      const label = `정신력: ${num}점`;
+
+      // 버튼과 같은 형식: 시간 - [좌표] 내용
+      appendLog(label, "MIND");
+
+      input.value = "";
+      input.focus();
     }
 
     function getSelectedLogItems() {
@@ -917,6 +983,15 @@
       } catch (e) {
         console.error(e);
         alert("클라우드 동기화 중 오류가 발생했습니다. (F12 콘솔 확인)");
+      }
+    });
+
+    /* ✅ 정신력 입력 이벤트 연결 */
+    document.getElementById("btnMindRecord").addEventListener("click", recordMindScore);
+    document.getElementById("mindScoreInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        recordMindScore();
       }
     });
   </script>
