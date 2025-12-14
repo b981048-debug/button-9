@@ -14,10 +14,141 @@
     h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
     .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
-    /* ✅ 위쪽을 비워두기 위한 빈 영역 */
+    /* ✅ 상단 빈칸 영역: 여기 상황판(레트로 패널) 배치 */
     .top-blank {
-      height: 16px; /* 원하는 만큼 늘리면 됨 */
+      margin: 6px 0 10px;
     }
+
+    /* =========================
+       ✅ 레트로 상황판 스타일 (이미지 분위기 참고)
+       ========================= */
+    .retro-panel {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #111;
+      background: #111;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+    .retro-titlebar {
+      background: linear-gradient(#d8d8d8, #bdbdbd);
+      border-bottom: 1px solid #666;
+      padding: 4px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #111;
+      user-select: none;
+    }
+    .retro-titlebar .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e7e7e7;
+      border: 1px solid #8c8c8c;
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-weight: 600;
+    }
+    .retro-titlebar .tog {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+    }
+    .retro-titlebar .tog .led {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      border: 1px solid #6a6a6a;
+      background: #43ff6e; /* ON 느낌 */
+      box-shadow: 0 0 6px rgba(67,255,110,0.45);
+    }
+    .retro-titlebar .spacer { flex: 1; }
+    .retro-titlebar .winbtns { display:flex; gap:4px; }
+    .retro-titlebar .winbtn {
+      width: 16px; height: 16px;
+      border-radius: 2px;
+      border: 1px solid #6d6d6d;
+      background: #e9e9e9;
+      display:flex; align-items:center; justify-content:center;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .retro-screen-wrap{
+      padding: 8px;
+      background: #0b0b0b;
+    }
+
+    .retro-screen {
+      border-radius: 8px;
+      border: 1px solid #004b2b;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(0,255,120,0.14), transparent 40%),
+        radial-gradient(circle at 70% 60%, rgba(0,255,120,0.10), transparent 45%),
+        #001a10;
+      padding: 10px 10px 8px;
+      color: #49ff95;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      box-shadow: inset 0 0 0 1px rgba(0,255,160,0.10);
+    }
+
+    .retro-label {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 8px;
+      font-size: 12px;
+      opacity: .95;
+      margin-bottom: 6px;
+    }
+    .retro-label b {
+      letter-spacing: .4px;
+    }
+
+    .retro-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .retro-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(0,255,160,0.18);
+    }
+    .retro-row .name {
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 68%;
+      opacity: 0.95;
+    }
+    .retro-row .count {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      min-width: 72px;
+      text-align: right;
+      text-shadow: 0 0 8px rgba(73,255,149,0.22);
+    }
+
+    .retro-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      opacity: .8;
+      line-height: 1.35;
+    }
+
+    /* ========================= */
 
     .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
     .auth-status { font-size:12px; opacity:.85; }
@@ -67,7 +198,7 @@
       margin-top: 8px;
     }
 
-    /* ✅ 이동된 “노란 영역”을 안내문 아래에 깔끔히 보여주기 위한 박스 */
+    /* 이동된 영역 */
     .moved-area {
       margin-top: 10px;
       border: 1px solid #eee;
@@ -77,7 +208,7 @@
     }
     .moved-area .note { margin-top: 6px; }
 
-    /* 간단 모달 */
+    /* 모달 */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.35);
       display: none; align-items: center; justify-content: center; padding: 16px;
@@ -106,8 +237,47 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <!-- ✅ 위쪽은 빈칸으로 유지 -->
-    <div class="top-blank"></div>
+    <!-- ✅ 상단 빈칸에 레트로 상황판 추가 -->
+    <div class="top-blank">
+      <div class="retro-panel" aria-label="상황판">
+        <div class="retro-titlebar">
+          <span class="pill">setup</span>
+          <span class="tog"><span class="led"></span>on</span>
+          <span class="spacer"></span>
+          <div class="winbtns" aria-hidden="true">
+            <div class="winbtn">?</div>
+            <div class="winbtn">–</div>
+            <div class="winbtn">×</div>
+          </div>
+        </div>
+        <div class="retro-screen-wrap">
+          <div class="retro-screen">
+            <div class="retro-label">
+              <b>keystrokes</b>
+              <span style="opacity:.85;font-size:11px;">(로그 삭제해도 유지)</span>
+            </div>
+            <div class="retro-grid">
+              <div class="retro-row">
+                <div class="name" title="잠금(스마트폰)">잠금(스마트폰)</div>
+                <div class="count" id="statPhoneLock">0</div>
+              </div>
+              <div class="retro-row">
+                <div class="name" title="잠금(테블릿)">잠금(테블릿)</div>
+                <div class="count" id="statTabletLock">0</div>
+              </div>
+              <div class="retro-row">
+                <div class="name" title="번아웃">번아웃</div>
+                <div class="count" id="statBurnout">0</div>
+              </div>
+            </div>
+            <div class="retro-hint">
+              • 아래 3개 버튼을 “눌러서 기록이 찍힐 때”만 누적됩니다.<br>
+              • 클릭기록을 삭제해도 이 숫자는 줄어들지 않습니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="layout">
       <div class="left">
@@ -115,13 +285,13 @@
         <div class="buttons-area" id="buttonContainer"></div>
         <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
-        <!-- ✅ 안내문(수정 가능) -->
+        <!-- 안내문 -->
         <div class="help-box">
           <div class="empty-text" id="helpText"></div>
           <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
         </div>
 
-        <!-- ✅✅ 노란 형광펜 영역을 여기로 이동 -->
+        <!-- 노란 영역 이동분 -->
         <div class="moved-area">
           <div class="auth-bar">
             <button id="btnLogin">Google 로그인</button>
@@ -136,7 +306,6 @@
             <small id="breadcrumb">위치: ROOT</small>
           </div>
         </div>
-        <!-- ✅✅ 이동 끝 -->
       </div>
 
       <div class="right">
@@ -158,7 +327,7 @@
     </div>
   </div>
 
-  <!-- ✅ 안내문 편집 모달 -->
+  <!-- 안내문 편집 모달 -->
   <div class="modal-backdrop" id="helpModalBackdrop">
     <div class="modal">
       <h2>안내문 수정</h2>
@@ -200,6 +369,9 @@
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
     const HELP_STORAGE_KEY = "buttonHelpText_v1";
 
+    // ✅ 상황판 누적 카운터 저장 키(로그와 분리!)
+    const STATS_STORAGE_KEY = "buttonStats_v1";
+
     /***********************
      * 백업 경고(예: 1000개 이상이면 경고)
      ***********************/
@@ -221,6 +393,13 @@
     let currentParentId = "root";
     let logs = [];
     let helpText = "";
+
+    // ✅ 상황판 통계(로그 삭제와 무관하게 누적)
+    let stats = {
+      phoneLock: 0,
+      tabletLock: 0,
+      burnout: 0
+    };
 
     let currentUser = null;
     let unsubscribeDoc = null;
@@ -259,6 +438,33 @@
     }
 
     /***********************
+     * ✅ 상황판 렌더링
+     ***********************/
+    function renderStats() {
+      const a = document.getElementById("statPhoneLock");
+      const b = document.getElementById("statTabletLock");
+      const c = document.getElementById("statBurnout");
+      if (a) a.textContent = String(stats.phoneLock ?? 0);
+      if (b) b.textContent = String(stats.tabletLock ?? 0);
+      if (c) c.textContent = String(stats.burnout ?? 0);
+    }
+
+    function bumpStatsIfMatch(label) {
+      // “버튼을 눌렀을 때”만 증가: appendLog에서만 호출됨
+      if (label === "잠금(스마트폰)") {
+        stats.phoneLock = (stats.phoneLock ?? 0) + 1;
+      } else if (label === "잠금(테블릿)") {
+        stats.tabletLock = (stats.tabletLock ?? 0) + 1;
+      } else if (label === "번아웃") {
+        stats.burnout = (stats.burnout ?? 0) + 1;
+      } else {
+        return;
+      }
+      saveStats();     // 로컬 + (로그인시) 클라우드 저장
+      renderStats();
+    }
+
+    /***********************
      * ✅ 안내문 로컬 저장/불러오기 + 렌더
      ***********************/
     const DEFAULT_HELP_TEXT =
@@ -284,6 +490,35 @@
       saveHelpLocal();
       scheduleCloudSave();
       renderHelp();
+    }
+
+    /***********************
+     * ✅ 통계(상황판) 로컬 저장/불러오기
+     ***********************/
+    function saveStatsLocal() {
+      try { localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats)); }
+      catch (e) { console.warn("localStorage 통계 저장 오류:", e); }
+    }
+    function loadStatsLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(STATS_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") {
+            stats = {
+              phoneLock: Number(parsed.phoneLock || 0),
+              tabletLock: Number(parsed.tabletLock || 0),
+              burnout: Number(parsed.burnout || 0)
+            };
+          }
+        } catch {}
+      }
+      renderStats();
+    }
+    function saveStats() {
+      saveStatsLocal();
+      scheduleCloudSave();
     }
 
     /***********************
@@ -354,6 +589,7 @@
             tree,
             logs,
             helpText,
+            stats,                 // ✅ 통계도 같이 저장/동기화
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -366,11 +602,12 @@
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
 
-      if (remote && (remote.tree || remote.logs || remote.helpText)) {
+      if (remote && (remote.tree || remote.logs || remote.helpText || remote.stats)) {
         applyRemote(remote);
         saveTreeLocal();
         saveLogsLocal();
         saveHelpLocal();
+        saveStatsLocal();
         return;
       }
 
@@ -378,13 +615,14 @@
         tree,
         logs,
         helpText,
+        stats,                   // ✅ 최초 생성 시도 포함
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
     }
 
     /***********************
-     * ✅✅ 핵심: 원격 반영 시 위치 유지
+     * 원격 반영 시 위치 유지 + 통계 반영
      ***********************/
     function applyRemote(remote) {
       try {
@@ -405,9 +643,19 @@
           helpText = remote.helpText;
         }
 
+        // ✅ 통계(상황판)도 원격 우선 적용
+        if (remote.stats && typeof remote.stats === "object") {
+          stats = {
+            phoneLock: Number(remote.stats.phoneLock || 0),
+            tabletLock: Number(remote.stats.tabletLock || 0),
+            burnout: Number(remote.stats.burnout || 0)
+          };
+        }
+
         renderLogs();
         render();
         renderHelp();
+        renderStats();
         showBackupWarningIfNeeded();
       } finally {
         isApplyingRemote = false;
@@ -421,12 +669,13 @@
         if (!snap.exists) return;
         const remote = snap.data() || {};
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText) return;
+        if (!remote.tree && !remote.logs && !remote.helpText && !remote.stats) return;
 
         applyRemote(remote);
         saveTreeLocal();
         saveLogsLocal();
         saveHelpLocal();
+        saveStatsLocal();
       }, (err) => {
         console.warn("onSnapshot 오류:", err);
       });
@@ -529,14 +778,21 @@
       logs.forEach((log, idx) => logList.appendChild(createLogLi(log, idx)));
       updateLogCount();
     }
+
     function appendLog(label, coord) {
       const now = new Date();
       const timeStr = now.toLocaleString();
+
+      // ✅ 로그는 그대로 저장
       logs.unshift({ time: timeStr, label, coord });
       saveLogs();
       renderLogs();
       showBackupWarningIfNeeded();
+
+      // ✅ 상황판 통계는 “로그 삭제와 무관하게” 별도로 누적
+      bumpStatsIfMatch(label);
     }
+
     function getSelectedLogItems() {
       const logList = document.getElementById("logList");
       if (!logList) return [];
@@ -559,6 +815,7 @@
       indexes.forEach(idx => { if (idx >= 0 && idx < logs.length) logs.splice(idx, 1); });
       saveLogs();
       renderLogs();
+      // ✅ 통계(stats)는 절대 줄지 않음
     }
     function editSelectedLog() {
       const selected = getSelectedLogItems();
@@ -575,6 +832,7 @@
       logs[idx].label = newLabel.trim();
       saveLogs();
       renderLogs();
+      // ✅ 로그 수정으로 통계(stats)는 바뀌지 않음 (요구사항: “버튼 눌렀을 때”만 증가)
     }
     function deleteAllLogs() {
       if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
@@ -583,6 +841,7 @@
       logs = [];
       saveLogs();
       renderLogs();
+      // ✅ 통계(stats)는 유지
     }
 
     /***********************
@@ -769,7 +1028,7 @@
     }
 
     /***********************
-     * ✅ 안내문 모달 동작
+     * 안내문 모달 동작
      ***********************/
     function openHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
@@ -791,7 +1050,9 @@
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
+    loadStatsLocal();   // ✅ 상황판 통계 로드
     render();
+    renderStats();      // ✅ 상황판 렌더
     showBackupWarningIfNeeded();
 
     /***********************
