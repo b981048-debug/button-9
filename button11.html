@@ -14,104 +14,27 @@
     h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
     .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
-    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
-    .auth-status { font-size:12px; opacity:.85; }
-    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
-
     button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
     button:active { transform: scale(0.97); }
     button:disabled { opacity: .5; cursor: not-allowed; }
 
-    .btn-main {
-      flex: 1; text-align: left; padding: 10px; border-radius: 10px;
-      border: 1px solid #ccc; background: #fafafa; font-size: 14px; min-height: 40px;
-    }
-    .btn-row { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
-    .btn-controls { display: flex; gap: 2px; }
-    .btn-controls button { padding: 4px 6px; font-size: 11px; }
-
-    .buttons-area { margin-top: 6px; margin-bottom: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
-    .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
-
-    .stack { display:flex; flex-direction:column; gap:10px; }
-
     .panel-title { font-size: 14px; font-weight: 600; }
 
-    .panel-header-row{
-      display:flex;
-      align-items:center;
-      justify-content:flex-start;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-bottom: 4px;
+    /* ✅ 1번 위, 2/3 나란히, 4번 아래 */
+    .page {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    .nav-mini{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-left: 6px;
+    .row23 {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    .nav-mini button{
-      padding: 6px 10px;
-      font-size: 13px;
-      border-radius: 10px;
+    @media (min-width: 720px) {
+      .row23 { flex-direction: row; }
+      .col2, .col3 { flex: 1 1 0; min-width: 0; }
     }
-
-    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
-    .log-count { font-size: 12px; opacity: 0.7; }
-    .log-actions { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
-
-    .log-box { background: #fafafa; border-radius: 10px; border: 1px solid #ddd; padding: 8px; max-height: 60vh; overflow-y: auto; }
-    #logList { list-style: none; padding: 0; margin: 0; font-size: 12px; }
-    #logList li {
-      padding: 4px 2px; border-bottom: 1px solid #eee; word-break: break-all;
-      display: flex; align-items: center; gap: 4px;
-    }
-    #logList li:last-child { border-bottom: none; }
-    .log-text { flex: 1; }
-    .log-checkbox { flex-shrink: 0; }
-
-    .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
-    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
-    .help-box {
-      border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
-      width: 100%;
-    }
-
-    .moved-area {
-      margin-top: 10px;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      padding: 10px;
-      background: #fafafa;
-    }
-    .breadcrumb-line{
-      font-size: 12px;
-      opacity: .8;
-      margin-top: 6px;
-      word-break: break-word;
-    }
-
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-      display: none; align-items: center; justify-content: center; padding: 16px;
-      z-index: 9999;
-    }
-    .modal {
-      width: min(720px, 100%);
-      background: #fff; border-radius: 12px; border: 1px solid #ddd;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-      padding: 12px;
-    }
-    .modal h2 { font-size: 14px; margin: 0 0 8px; }
-    .modal textarea {
-      width: 100%; min-height: 180px; resize: vertical;
-      border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 13px;
-      outline: none;
-    }
-    .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
-    .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
 
     /* ✅ 정신력 점수 */
     .mind-box{
@@ -152,6 +75,100 @@
       color:#fff;
       border-color:#111;
     }
+    .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
+
+    /* ✅ 버튼 목록 */
+    .btn-main {
+      width: 100%;
+      text-align: left; padding: 10px; border-radius: 10px;
+      border: 1px solid #ccc; background: #fafafa; font-size: 14px; min-height: 40px;
+    }
+    .btn-row { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+    .btn-controls { display: flex; gap: 2px; }
+    .btn-controls button { padding: 4px 6px; font-size: 11px; }
+    .buttons-area { margin-top: 6px; margin-bottom: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
+    .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
+
+    .panel-header-row{
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom: 4px;
+    }
+    .nav-mini{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-left: 6px;
+    }
+    .nav-mini button{
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
+
+    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+    .auth-status { font-size:12px; opacity:.85; }
+    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
+    .moved-area {
+      margin-top: 10px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafafa;
+    }
+    .breadcrumb-line{
+      font-size: 12px;
+      opacity: .8;
+      margin-top: 6px;
+      word-break: break-word;
+    }
+
+    /* ✅ 클릭 기록 */
+    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+    .log-count { font-size: 12px; opacity: 0.7; }
+    .log-actions { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+
+    .log-box { background: #fafafa; border-radius: 10px; border: 1px solid #ddd; padding: 8px; max-height: 60vh; overflow-y: auto; }
+    #logList { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+    #logList li {
+      padding: 4px 2px; border-bottom: 1px solid #eee; word-break: break-all;
+      display: flex; align-items: center; gap: 4px;
+    }
+    #logList li:last-child { border-bottom: none; }
+    .log-text { flex: 1; }
+    .log-checkbox { flex-shrink: 0; }
+
+    /* ✅ 안내문 */
+    .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
+    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
+    .help-box {
+      border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
+      width: 100%;
+    }
+
+    /* 모달 */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      display: none; align-items: center; justify-content: center; padding: 16px;
+      z-index: 9999;
+    }
+    .modal {
+      width: min(720px, 100%);
+      background: #fff; border-radius: 12px; border: 1px solid #ddd;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      padding: 12px;
+    }
+    .modal h2 { font-size: 14px; margin: 0 0 8px; }
+    .modal textarea {
+      width: 100%; min-height: 180px; resize: vertical;
+      border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 13px;
+      outline: none;
+    }
+    .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
   </style>
 </head>
 <body>
@@ -161,10 +178,8 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <!-- ✅ 요청 순서: 1) 정신력점수 2) 버튼목록 3) 클릭기록 4) 안내문 -->
-    <div class="stack">
-
-      <!-- 1) 정신력 점수 -->
+    <div class="page">
+      <!-- 1) 정신력점수 -->
       <div class="mind-box">
         <div class="panel-title">정신력 점수</div>
         <div class="mind-hint">점수 입력 후 Enter 또는 “기록”을 누르면 클릭 기록에 저장됩니다. (허용범위: 0~100 / -100~0)</div>
@@ -175,45 +190,48 @@
         </div>
       </div>
 
-      <!-- 2) 버튼 목록 -->
-      <div>
-        <div class="panel-header-row">
-          <div class="panel-title">버튼 목록</div>
-          <div class="nav-mini">
-            <button id="btnUp">◀ 상위로</button>
-            <button id="btnRoot">⬆ 최상위로</button>
+      <!-- 2) 버튼목록  +  3) 클릭기록 (나란히) -->
+      <div class="row23">
+        <!-- 2) 버튼목록 -->
+        <div class="col2">
+          <div class="panel-header-row">
+            <div class="panel-title">버튼 목록</div>
+            <div class="nav-mini">
+              <button id="btnUp">◀ 상위로</button>
+              <button id="btnRoot">⬆ 최상위로</button>
+            </div>
+          </div>
+
+          <div class="buttons-area" id="buttonContainer"></div>
+          <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
+
+          <div class="moved-area">
+            <div class="auth-bar">
+              <button id="btnLogin">Google 로그인</button>
+              <button id="btnLogout" disabled>로그아웃</button>
+              <span class="auth-status" id="authStatus">로그인 안 됨</span>
+            </div>
+            <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
+            <div class="breadcrumb-line" id="breadcrumb">위치: ROOT</div>
           </div>
         </div>
 
-        <div class="buttons-area" id="buttonContainer"></div>
-        <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
-
-        <div class="moved-area">
-          <div class="auth-bar">
-            <button id="btnLogin">Google 로그인</button>
-            <button id="btnLogout" disabled>로그아웃</button>
-            <span class="auth-status" id="authStatus">로그인 안 됨</span>
+        <!-- 3) 클릭기록 -->
+        <div class="col3">
+          <div class="log-header">
+            <div class="panel-title">클릭 기록</div>
+            <div class="log-count">(총 <span id="logCount">0</span>개)</div>
+            <div class="log-actions">
+              <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
+              <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
+              <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
+              <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
+              <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
+            </div>
           </div>
-          <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
-          <div class="breadcrumb-line" id="breadcrumb">위치: ROOT</div>
-        </div>
-      </div>
-
-      <!-- 3) 클릭 기록 -->
-      <div>
-        <div class="log-header">
-          <div class="panel-title">클릭 기록</div>
-          <div class="log-count">(총 <span id="logCount">0</span>개)</div>
-          <div class="log-actions">
-            <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
-            <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
-            <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
-            <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
-            <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
+          <div class="log-box">
+            <ul id="logList"></ul>
           </div>
-        </div>
-        <div class="log-box">
-          <ul id="logList"></ul>
         </div>
       </div>
 
@@ -223,7 +241,6 @@
         <div class="empty-text" id="helpText"></div>
         <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
       </div>
-
     </div>
   </div>
 
@@ -929,10 +946,7 @@
     });
 
     document.getElementById("mindScoreInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        recordMindScore();
-      }
+      if (e.key === "Enter") { e.preventDefault(); recordMindScore(); }
     });
 
     document.getElementById("btnMinus").addEventListener("click", () => {
