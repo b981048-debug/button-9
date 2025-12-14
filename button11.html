@@ -14,123 +14,8 @@
     h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
     .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
-    /* ✅ 상단 빈칸 영역: 여기 상황판 배치 */
+    /* ✅ 상단 영역: 표를 올려놓는 자리 */
     .top-blank { margin: 6px 0 10px; }
-
-    /* =========================
-       ✅ 레트로 상황판 스타일
-       ========================= */
-    .retro-panel {
-      width: 100%;
-      max-width: 560px;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid #111;
-      background: #111;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-    }
-    .retro-titlebar {
-      background: linear-gradient(#d8d8d8, #bdbdbd);
-      border-bottom: 1px solid #666;
-      padding: 4px 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #111;
-      user-select: none;
-    }
-    .retro-titlebar .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #e7e7e7;
-      border: 1px solid #8c8c8c;
-      border-radius: 6px;
-      padding: 2px 6px;
-      font-weight: 600;
-    }
-    .retro-titlebar .tog {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-weight: 700;
-    }
-    .retro-titlebar .tog .led {
-      width: 10px; height: 10px;
-      border-radius: 2px;
-      border: 1px solid #6a6a6a;
-      background: #43ff6e;
-      box-shadow: 0 0 6px rgba(67,255,110,0.45);
-    }
-    .retro-titlebar .spacer { flex: 1; }
-    .retro-titlebar .winbtns { display:flex; gap:4px; }
-    .retro-titlebar .winbtn {
-      width: 16px; height: 16px;
-      border-radius: 2px;
-      border: 1px solid #6d6d6d;
-      background: #e9e9e9;
-      display:flex; align-items:center; justify-content:center;
-      font-size: 11px;
-      line-height: 1;
-    }
-
-    .retro-screen-wrap{ padding: 8px; background: #0b0b0b; }
-    .retro-screen {
-      border-radius: 8px;
-      border: 1px solid #004b2b;
-      background:
-        radial-gradient(circle at 30% 20%, rgba(0,255,120,0.14), transparent 40%),
-        radial-gradient(circle at 70% 60%, rgba(0,255,120,0.10), transparent 45%),
-        #001a10;
-      padding: 10px 10px 8px;
-      color: #49ff95;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      box-shadow: inset 0 0 0 1px rgba(0,255,160,0.10);
-    }
-
-    .retro-label {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 8px;
-      font-size: 12px;
-      opacity: .95;
-      margin-bottom: 8px;
-    }
-    .retro-label b { letter-spacing: .4px; }
-
-    /* ✅ 3x2 그리드 */
-    .retro-table {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-    }
-    .cell {
-      border-radius: 8px;
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(0,255,160,0.18);
-      padding: 8px;
-      min-height: 48px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-    }
-    .cell.title {
-      font-size: 12px;
-      opacity: .95;
-      line-height: 1.25;
-      word-break: keep-all;
-    }
-    .cell.value {
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: 1px;
-      text-shadow: 0 0 8px rgba(73,255,149,0.22);
-    }
-
-    /* ========================= */
 
     .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
     .auth-status { font-size:12px; opacity:.85; }
@@ -157,7 +42,7 @@
 
     .panel-title { font-size: 14px; font-weight: 600; }
 
-    /* ✅ (요청) 버튼 목록 옆에 상위/최상위 버튼 배치 */
+    /* ✅ 버튼 목록 옆에 상위/최상위 */
     .panel-header-row{
       display:flex;
       align-items:center;
@@ -234,20 +119,25 @@
     .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
 
     /* =========================
-       ✅✅ 추가: 엑셀형 표(2x11)
+       ✅ 엑셀형 표(2x11) - 상단으로 올림
        ========================= */
     .todo-box {
-      margin-top: 10px;
       border: 1px solid #ddd;
       border-radius: 10px;
-      padding: 8px;
+      padding: 10px;
       background: #fafafa;
+    }
+    .todo-sub {
+      font-size: 12px;
+      opacity: .7;
+      margin-top: 4px;
+      line-height: 1.35;
     }
     .todo-table {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 2px;
-      margin-top: 6px;
+      margin-top: 8px;
     }
     .todo-cell {
       border: 1px solid #ccc;
@@ -257,20 +147,24 @@
       background: #eef7ff;
       font-weight: 700;
       text-align: center;
-      padding: 6px;
+      padding: 8px 6px;
       font-size: 12px;
     }
     .todo-cell input {
       width: 100%;
-      height: 32px;
+      height: 34px;
       border: none;
       padding: 4px 6px;
       font-size: 12px;
       outline: none;
       background: transparent;
+
+      /* ✅ 요청 1: 자동 가운데 정렬 */
+      text-align: center;
     }
     .todo-cell input:focus {
       background: #f0f8ff;
+      box-shadow: inset 0 0 0 2px rgba(179, 212, 255, .35);
     }
     /* ========================= */
   </style>
@@ -282,38 +176,12 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <!-- ✅ 상단 빈칸: 3x2 상황판 (초록색 설명 제거됨) -->
+    <!-- ✅ setup 상황판 제거 / 대신 표를 위로 올림 -->
     <div class="top-blank">
-      <div class="retro-panel" aria-label="상황판">
-        <div class="retro-titlebar">
-          <span class="pill">setup</span>
-          <span class="tog"><span class="led"></span>on</span>
-          <span class="spacer"></span>
-          <div class="winbtns" aria-hidden="true">
-            <div class="winbtn">?</div>
-            <div class="winbtn">–</div>
-            <div class="winbtn">×</div>
-          </div>
-        </div>
-        <div class="retro-screen-wrap">
-          <div class="retro-screen">
-            <div class="retro-label">
-              <b>keystrokes</b>
-              <span style="opacity:.85;font-size:11px;">(로그 삭제해도 유지)</span>
-            </div>
-
-            <div class="retro-table">
-              <div class="cell title">잠금(스마트폰)</div>
-              <div class="cell title">잠금(테블릿)</div>
-              <div class="cell title">번아웃(3단계)</div>
-
-              <div class="cell value" id="statPhoneLock">0</div>
-              <div class="cell value" id="statTabletLock">0</div>
-              <div class="cell value" id="statBurnout3">0</div>
-            </div>
-
-          </div>
-        </div>
+      <div class="todo-box">
+        <div class="panel-title">할 일 / 완료한 일</div>
+        <div class="todo-sub">Enter: 아래칸 이동 · 방향키: 셀 이동</div>
+        <div class="todo-table" id="todoTable"></div>
       </div>
     </div>
 
@@ -335,12 +203,6 @@
           <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
         </div>
 
-        <!-- ✅✅ 여기 추가: 엑셀형 표(2x11) -->
-        <div class="todo-box">
-          <div class="panel-title">할 일 / 완료한 일</div>
-          <div class="todo-table" id="todoTable"></div>
-        </div>
-
         <div class="moved-area">
           <div class="auth-bar">
             <button id="btnLogin">Google 로그인</button>
@@ -348,7 +210,6 @@
             <span class="auth-status" id="authStatus">로그인 안 됨</span>
           </div>
           <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
-
           <div class="breadcrumb-line" id="breadcrumb">위치: ROOT</div>
         </div>
       </div>
@@ -383,6 +244,7 @@
     </div>
   </div>
 
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -405,10 +267,9 @@
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
     const HELP_STORAGE_KEY = "buttonHelpText_v1";
-    const STATS_STORAGE_KEY = "buttonStats_v2";
 
-    /* ✅✅ 추가: 표 저장 키 */
-    const TODO_STORAGE_KEY = "todoTable_v1";
+    /* ✅ 표 저장 키 */
+    const TODO_STORAGE_KEY = "todoTable_v2";
 
     const BACKUP_WARN_THRESHOLD = 1000;
 
@@ -417,9 +278,7 @@
     let logs = [];
     let helpText = "";
 
-    let stats = { phoneLock: 0, tabletLock: 0, burnout3: 0 };
-
-    /* ✅✅ 추가: 10행(입력) x 2열 데이터 (1행은 헤더) */
+    /* ✅ 10행(입력) x 2열 데이터 (헤더는 고정) */
     let todoTableData = Array.from({ length: 10 }, () => ["", ""]);
 
     let currentUser = null;
@@ -463,53 +322,6 @@
     }
     function userDocRef(uid) { return db.collection("users").doc(uid); }
 
-    /* ✅ 상황판 */
-    function renderStats() {
-      const a = document.getElementById("statPhoneLock");
-      const b = document.getElementById("statTabletLock");
-      const c = document.getElementById("statBurnout3");
-      if (a) a.textContent = String(stats.phoneLock ?? 0);
-      if (b) b.textContent = String(stats.tabletLock ?? 0);
-      if (c) c.textContent = String(stats.burnout3 ?? 0);
-    }
-
-    function saveStatsLocal() {
-      try { localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats)); }
-      catch (e) { console.warn("localStorage 통계 저장 오류:", e); }
-    }
-    function loadStatsLocal() {
-      let saved = null;
-      try { saved = localStorage.getItem(STATS_STORAGE_KEY); } catch {}
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed === "object") {
-            stats = {
-              phoneLock: Number(parsed.phoneLock || 0),
-              tabletLock: Number(parsed.tabletLock || 0),
-              burnout3: Number(parsed.burnout3 || 0)
-            };
-          }
-        } catch {}
-      }
-      renderStats();
-    }
-    function saveStats() { saveStatsLocal(); scheduleCloudSave(); }
-
-    function bumpStatsIfMatch(label) {
-      if (label === "잠금(스마트폰)") {
-        stats.phoneLock = (stats.phoneLock ?? 0) + 1;
-      } else if (label === "잠금(테블릿)") {
-        stats.tabletLock = (stats.tabletLock ?? 0) + 1;
-      } else if (label === "번아웃(3단계)") {
-        stats.burnout3 = (stats.burnout3 ?? 0) + 1;
-      } else {
-        return;
-      }
-      saveStats();
-      renderStats();
-    }
-
     /* ✅ 안내문 */
     const DEFAULT_HELP_TEXT =
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
@@ -532,7 +344,7 @@
     }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
-    /* ✅✅ 표 로컬 저장/불러오기 */
+    /* ✅ 표 로컬 저장/불러오기 */
     function saveTodoLocal() {
       try { localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todoTableData)); }
       catch (e) { console.warn("localStorage 표 저장 오류:", e); }
@@ -551,6 +363,16 @@
     }
     function saveTodo() { saveTodoLocal(); scheduleCloudSave(); }
 
+    /* ✅ 표 커서 이동 */
+    function focusCell(r, c) {
+      const el = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+      if (!el) return;
+      el.focus();
+      // 커서 맨 뒤로
+      try { el.setSelectionRange(el.value.length, el.value.length); } catch {}
+    }
+
+    /* ✅ 표 렌더 + Enter/방향키 이동 */
     function renderTodoTable() {
       const container = document.getElementById("todoTable");
       if (!container) return;
@@ -572,10 +394,49 @@
 
           const input = document.createElement("input");
           input.value = val;
+          input.dataset.r = String(r);
+          input.dataset.c = String(c);
 
           input.addEventListener("input", () => {
             todoTableData[r][c] = input.value;
             saveTodo();
+          });
+
+          input.addEventListener("keydown", (e) => {
+            const key = e.key;
+            const R = r, C = c;
+
+            // ✅ 요청 2: Enter → 아래칸(같은 열)
+            if (key === "Enter") {
+              e.preventDefault();
+              const nextR = Math.min(9, R + 1);
+              focusCell(nextR, C);
+              return;
+            }
+
+            // ✅ 요청 3: 방향키 이동
+            if (key === "ArrowUp") {
+              e.preventDefault();
+              focusCell(Math.max(0, R - 1), C);
+              return;
+            }
+            if (key === "ArrowDown") {
+              e.preventDefault();
+              focusCell(Math.min(9, R + 1), C);
+              return;
+            }
+            if (key === "ArrowLeft") {
+              e.preventDefault();
+              // 왼쪽 열로 이동(0→0 유지)
+              focusCell(R, Math.max(0, C - 1));
+              return;
+            }
+            if (key === "ArrowRight") {
+              e.preventDefault();
+              // 오른쪽 열로 이동(1→1 유지)
+              focusCell(R, Math.min(1, C + 1));
+              return;
+            }
           });
 
           cell.appendChild(input);
@@ -638,8 +499,7 @@
             tree,
             logs,
             helpText,
-            stats,
-            todoTableData, /* ✅✅ 추가 */
+            todoTableData,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -652,14 +512,14 @@
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
 
-      if (remote && (remote.tree || remote.logs || remote.helpText || remote.stats || remote.todoTableData)) {
+      if (remote && (remote.tree || remote.logs || remote.helpText || remote.todoTableData)) {
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal(); saveTodoLocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveTodoLocal();
         return;
       }
 
       await userDocRef(uid).set({
-        tree, logs, helpText, stats, todoTableData,
+        tree, logs, helpText, todoTableData,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -678,21 +538,11 @@
         if (Array.isArray(remote.logs)) logs = remote.logs;
         if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
 
-        if (remote.stats && typeof remote.stats === "object") {
-          stats = {
-            phoneLock: Number(remote.stats.phoneLock || 0),
-            tabletLock: Number(remote.stats.tabletLock || 0),
-            burnout3: Number(remote.stats.burnout3 || 0)
-          };
-        }
-
-        /* ✅✅ 표 동기화 */
         if (Array.isArray(remote.todoTableData) && remote.todoTableData.length === 10) {
           todoTableData = remote.todoTableData.map(r => Array.isArray(r) ? [String(r[0] ?? ""), String(r[1] ?? "")] : ["",""]);
         }
 
-        renderLogs(); render(); renderHelp(); renderStats();
-        renderTodoTable();
+        renderLogs(); render(); renderHelp(); renderTodoTable();
         showBackupWarningIfNeeded();
       } finally {
         isApplyingRemote = false;
@@ -705,10 +555,10 @@
         if (!snap.exists) return;
         const remote = snap.data() || {};
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText && !remote.stats && !remote.todoTableData) return;
+        if (!remote.tree && !remote.logs && !remote.helpText && !remote.todoTableData) return;
 
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal(); saveTodoLocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveTodoLocal();
       }, (err) => console.warn("onSnapshot 오류:", err));
     }
 
@@ -808,7 +658,6 @@
       saveLogs();
       renderLogs();
       showBackupWarningIfNeeded();
-      bumpStatsIfMatch(label);
     }
 
     function getSelectedLogItems() {
@@ -1031,14 +880,9 @@
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
-    loadStatsLocal();
-
-    /* ✅✅ 표 초기화 */
     loadTodoLocal();
     renderTodoTable();
-
     render();
-    renderStats();
     showBackupWarningIfNeeded();
     setAuthUI();
 
