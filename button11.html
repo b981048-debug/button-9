@@ -11,187 +11,947 @@
       max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 12px;
       padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    h1 { margin: 0 0 8px; font-size: 18px; display:flex; justify-content:space-between; }
+    h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
     .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
     button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
     button:active { transform: scale(0.97); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
 
-    .layout { display: flex; gap: 10px; }
-    @media (max-width: 720px) { .layout { flex-direction: column; } }
-    .left, .right { flex: 1; }
+    .btn-main {
+      flex: 1; text-align: left; padding: 10px; border-radius: 10px;
+      border: 1px solid #ccc; background: #fafafa; font-size: 14px; min-height: 40px;
+    }
+    .btn-row { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+    .btn-controls { display: flex; gap: 2px; }
+    .btn-controls button { padding: 4px 6px; font-size: 11px; }
+
+    .buttons-area { margin-top: 6px; margin-bottom: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
+    .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
+
+    .layout { display: flex; flex-direction: column; gap: 10px; }
+    @media (min-width: 720px) { .layout { flex-direction: row; } }
+    .left, .right { flex: 1; min-width: 0; }
 
     .panel-title { font-size: 14px; font-weight: 600; }
 
-    /* ===== 버튼 목록 ===== */
-    .panel-header-row {
-      display:flex; justify-content:space-between; align-items:center; gap:8px;
+    /* ✅ 버튼 목록 옆 상위/최상위 */
+    .panel-header-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom: 4px;
     }
-    .buttons-area { margin: 6px 0 10px; max-height: 55vh; overflow-y: auto; }
-    .btn-row { display:flex; gap:4px; margin-bottom:6px; }
-    .btn-main {
-      flex:1; padding:10px; border-radius:10px;
-      border:1px solid #ccc; background:#fafafa; text-align:left;
+    .nav-mini{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      align-items:center;
     }
-    .btn-controls button { font-size:11px; padding:4px 6px; }
-
-    .add-current {
-      width:100%; background:#eef7ff; border-color:#b3d4ff; margin-bottom:8px;
-    }
-
-    /* ===== 표 & 안내문 공통 폭 ===== */
-    .left-box {
-      border:1px dashed #ddd;
-      border-radius:10px;
-      padding:10px;
-      background:#fbfbfb;
-      margin-bottom:10px;
+    .nav-mini button{
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 10px;
     }
 
-    /* ===== 엑셀형 표 ===== */
+    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+    .log-count { font-size: 12px; opacity: 0.7; }
+    .log-actions { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+
+    .log-box { background: #fafafa; border-radius: 10px; border: 1px solid #ddd; padding: 8px; max-height: 60vh; overflow-y: auto; }
+    #logList { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+    #logList li {
+      padding: 4px 2px; border-bottom: 1px solid #eee; word-break: break-all;
+      display: flex; align-items: center; gap: 4px;
+    }
+    #logList li:last-child { border-bottom: none; }
+    .log-text { flex: 1; }
+    .log-checkbox { flex-shrink: 0; }
+
+    .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
+    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
+    .help-box {
+      border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
+      margin-top: 8px;
+    }
+
+    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+    .auth-status { font-size:12px; opacity:.85; }
+    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
+
+    .moved-area {
+      margin-top: 10px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafafa;
+    }
+    .breadcrumb-line{
+      font-size: 12px;
+      opacity: .8;
+      margin-top: 6px;
+      word-break: break-word;
+    }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      display: none; align-items: center; justify-content: center; padding: 16px;
+      z-index: 9999;
+    }
+    .modal {
+      width: min(720px, 100%);
+      background: #fff; border-radius: 12px; border: 1px solid #ddd;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      padding: 12px;
+    }
+    .modal h2 { font-size: 14px; margin: 0 0 8px; }
+    .modal textarea {
+      width: 100%; min-height: 180px; resize: vertical;
+      border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 13px;
+      outline: none;
+    }
+    .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
+    .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
+
+    /* =========================
+       ✅ 엑셀형 표(2x11) - 맨 아래로 내림
+       ========================= */
+    .todo-wrap { margin-top: 12px; } /* ✅ 레이아웃 아래 여백 */
+    .todo-box {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafafa;
+    }
+    .todo-sub {
+      font-size: 12px;
+      opacity: .7;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
     .todo-table {
-      display:grid;
+      display: grid;
       grid-template-columns: 1fr 1fr;
-      gap:2px;
-      margin-top:6px;
+      gap: 2px;
+      margin-top: 8px;
     }
-    .todo-cell { border:1px solid #ccc; background:#fff; }
+    .todo-cell {
+      border: 1px solid #ccc;
+      background: #fff;
+    }
     .todo-cell.header {
-      background:#eef7ff;
-      font-weight:700;
-      text-align:center;
-      padding:6px;
-      font-size:12px;
+      background: #eef7ff;
+      font-weight: 700;
+      text-align: center;
+      padding: 8px 6px;
+      font-size: 12px;
     }
     .todo-cell input {
-      width:100%;
-      height:34px;
-      border:none;
-      outline:none;
-      text-align:center;
-      font-size:12px;
-      background:transparent;
+      width: 100%;
+      height: 34px;
+      border: none;
+      padding: 4px 6px;
+      font-size: 12px;
+      outline: none;
+      background: transparent;
+
+      /* ✅ 요청 1: 자동 가운데 정렬 */
+      text-align: center;
     }
-    .todo-cell input:focus { background:#f0f8ff; }
-
-    /* ===== 클릭 기록 ===== */
-    .log-box {
-      border:1px solid #ddd; border-radius:10px;
-      padding:8px; background:#fafafa;
-      max-height:65vh; overflow-y:auto;
+    .todo-cell input:focus {
+      background: #f0f8ff;
+      box-shadow: inset 0 0 0 2px rgba(179, 212, 255, .35);
     }
-    #logList { list-style:none; padding:0; margin:0; font-size:12px; }
-    #logList li { display:flex; gap:4px; border-bottom:1px solid #eee; padding:4px 2px; }
-    .log-text { flex:1; }
-
-    .help-edit-btn { margin-top:6px; width:100%; font-size:12px; }
-
+    /* ========================= */
   </style>
 </head>
 <body>
-<div class="app">
-  <h1>
-    복한아름 기록공책
-    <span class="badge">로컬 모드</span>
-  </h1>
+  <div class="app">
+    <h1>
+      복한아름 기록공책
+      <span class="badge" id="syncBadge">로컬 모드</span>
+    </h1>
 
-  <div class="layout">
-    <!-- ===== LEFT ===== -->
-    <div class="left">
+    <!-- ✅ 1) 버튼목록/클릭기록을 위로 -->
+    <div class="layout">
+      <div class="left">
+        <div class="panel-header-row">
+          <div class="panel-title">버튼 목록</div>
+          <div class="nav-mini">
+            <button id="btnUp">◀ 상위로</button>
+            <button id="btnRoot">⬆ 최상위로</button>
+          </div>
+        </div>
 
-      <!-- 🔽 표가 먼저 -->
-      <div class="left-box">
-        <div class="panel-title">할 일 / 완료한 일</div>
-        <div class="todo-table" id="todoTable"></div>
-      </div>
+        <div class="buttons-area" id="buttonContainer"></div>
+        <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
-      <!-- 🔽 안내문은 아래 -->
-      <div class="left-box">
-        <div id="helpText" style="font-size:12px; opacity:.75;"></div>
-        <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
-      </div>
+        <div class="help-box">
+          <div class="empty-text" id="helpText"></div>
+          <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
+        </div>
 
-      <!-- 버튼 목록 -->
-      <div class="panel-header-row">
-        <div class="panel-title">버튼 목록</div>
-        <div>
-          <button id="btnUp">◀ 상위</button>
-          <button id="btnRoot">⬆ 최상위</button>
+        <div class="moved-area">
+          <div class="auth-bar">
+            <button id="btnLogin">Google 로그인</button>
+            <button id="btnLogout" disabled>로그아웃</button>
+            <span class="auth-status" id="authStatus">로그인 안 됨</span>
+          </div>
+          <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
+          <div class="breadcrumb-line" id="breadcrumb">위치: ROOT</div>
         </div>
       </div>
 
-      <div class="buttons-area" id="buttonContainer"></div>
-      <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
+      <div class="right">
+        <div class="log-header">
+          <div class="panel-title">클릭 기록</div>
+          <div class="log-count">(총 <span id="logCount">0</span>개)</div>
+          <div class="log-actions">
+            <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
+            <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
+            <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
+            <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
+            <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
+          </div>
+        </div>
+        <div class="log-box">
+          <ul id="logList"></ul>
+        </div>
+      </div>
     </div>
 
-    <!-- ===== RIGHT ===== -->
-    <div class="right">
-      <div class="panel-title">클릭 기록 (<span id="logCount">0</span>)</div>
-      <div class="log-box">
-        <ul id="logList"></ul>
+    <!-- ✅ 2) 표는 아래로 -->
+    <div class="todo-wrap">
+      <div class="todo-box">
+        <div class="panel-title">할 일 / 완료한 일</div>
+        <div class="todo-sub">Enter: 아래칸 이동 · 방향키: 셀 이동</div>
+        <div class="todo-table" id="todoTable"></div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-/* ===== 할 일 / 완료한 일 표 ===== */
-const TODO_KEY = "todoTable_v3";
-let todo = Array.from({length:10},()=>["",""]);
+  <div class="modal-backdrop" id="helpModalBackdrop">
+    <div class="modal">
+      <h2>안내문 수정</h2>
+      <textarea id="helpEditor" placeholder="여기에 안내문을 입력하세요."></textarea>
+      <div class="modal-actions">
+        <button id="btnHelpCancel">취소</button>
+        <button class="btn-primary" id="btnHelpSave">저장</button>
+      </div>
+    </div>
+  </div>
 
-function loadTodo(){
-  const s = localStorage.getItem(TODO_KEY);
-  if(s) try{ todo = JSON.parse(s);}catch{}
-}
-function saveTodo(){ localStorage.setItem(TODO_KEY, JSON.stringify(todo)); }
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
-function focusCell(r,c){
-  const el = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
-  if(el){ el.focus(); }
-}
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
+      authDomain: "button-tree.firebaseapp.com",
+      projectId: "button-tree",
+      storageBucket: "button-tree.firebasestorage.app",
+      messagingSenderId: "670872655484",
+      appId: "1:670872655484:web:a8f5a5201cd845a4075bf9",
+      measurementId: "G-9P3ZV8LLQ3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const provider = new firebase.auth.GoogleAuthProvider();
 
-function renderTodo(){
-  const t = document.getElementById("todoTable");
-  t.innerHTML = "";
-  ["할 일","완료한 일"].forEach(h=>{
-    const d=document.createElement("div");
-    d.className="todo-cell header";
-    d.textContent=h;
-    t.appendChild(d);
-  });
-  todo.forEach((row,r)=>{
-    row.forEach((v,c)=>{
-      const d=document.createElement("div");
-      d.className="todo-cell";
-      const i=document.createElement("input");
-      i.value=v; i.dataset.r=r; i.dataset.c=c;
-      i.oninput=()=>{ todo[r][c]=i.value; saveTodo(); };
-      i.onkeydown=(e)=>{
-        if(e.key==="Enter"){ e.preventDefault(); focusCell(Math.min(9,r+1),c); }
-        if(e.key==="ArrowUp"){ e.preventDefault(); focusCell(Math.max(0,r-1),c); }
-        if(e.key==="ArrowDown"){ e.preventDefault(); focusCell(Math.min(9,r+1),c); }
-        if(e.key==="ArrowLeft"){ e.preventDefault(); focusCell(r,Math.max(0,c-1)); }
-        if(e.key==="ArrowRight"){ e.preventDefault(); focusCell(r,Math.min(1,c+1)); }
-      };
-      d.appendChild(i); t.appendChild(d);
+    const TREE_STORAGE_KEY = "buttonTree_v_local";
+    const LOG_STORAGE_KEY  = "buttonLogs_v1";
+    const HELP_STORAGE_KEY = "buttonHelpText_v1";
+    const TODO_STORAGE_KEY = "todoTable_v2";
+
+    const BACKUP_WARN_THRESHOLD = 1000;
+
+    let tree = null;
+    let currentParentId = "root";
+    let logs = [];
+    let helpText = "";
+
+    // ✅ 10행 x 2열 (헤더는 고정)
+    let todoTableData = Array.from({ length: 10 }, () => ["", ""]);
+
+    let currentUser = null;
+    let unsubscribeDoc = null;
+    let isApplyingRemote = false;
+    let saveTimer = null;
+
+    function genId() {
+      return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+    }
+    function nowMs() { return Date.now(); }
+
+    function showBackupWarningIfNeeded() {
+      if (!Array.isArray(logs)) return;
+      if (logs.length < BACKUP_WARN_THRESHOLD) return;
+      alert(
+        "⚠ 클릭 기록이 1,000개 이상입니다.\n\n" +
+        "데이터 손실 위험이 있습니다.\n" +
+        "'전체 복사'로 주기적으로 백업하세요."
+      );
+    }
+
+    function setAuthUI() {
+      const status = document.getElementById("authStatus");
+      const btnLogin = document.getElementById("btnLogin");
+      const btnLogout = document.getElementById("btnLogout");
+      const badge = document.getElementById("syncBadge");
+
+      if (currentUser) {
+        const name = currentUser.displayName || currentUser.email || "사용자";
+        status.textContent = `로그인됨: ${name}`;
+        btnLogin.disabled = true;
+        btnLogout.disabled = false;
+        badge.textContent = "클라우드 동기화";
+      } else {
+        status.textContent = "로그인 안 됨";
+        btnLogin.disabled = false;
+        btnLogout.disabled = true;
+        badge.textContent = "로컬 모드";
+      }
+    }
+    function userDocRef(uid) { return db.collection("users").doc(uid); }
+
+    /* ✅ 안내문 */
+    const DEFAULT_HELP_TEXT =
+`💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
+1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
+
+    function saveHelpLocal() {
+      try { localStorage.setItem(HELP_STORAGE_KEY, helpText); }
+      catch (e) { console.warn("localStorage 안내문 저장 오류:", e); }
+    }
+    function loadHelpLocal() {
+      let saved = "";
+      try { saved = localStorage.getItem(HELP_STORAGE_KEY) || ""; } catch {}
+      helpText = (saved && saved.trim() !== "") ? saved : DEFAULT_HELP_TEXT;
+      renderHelp();
+    }
+    function renderHelp() {
+      const el = document.getElementById("helpText");
+      if (!el) return;
+      el.textContent = helpText || "";
+    }
+    function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
+
+    /* ✅ 표 로컬 저장/불러오기 */
+    function saveTodoLocal() {
+      try { localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todoTableData)); }
+      catch (e) { console.warn("localStorage 표 저장 오류:", e); }
+    }
+    function loadTodoLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(TODO_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length === 10) {
+            todoTableData = parsed.map(r => Array.isArray(r) ? [String(r[0] ?? ""), String(r[1] ?? "")] : ["",""]);
+          }
+        } catch {}
+      }
+    }
+    function saveTodo() { saveTodoLocal(); scheduleCloudSave(); }
+
+    /* ✅ 표 커서 이동 */
+    function focusCell(r, c) {
+      const el = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+      if (!el) return;
+      el.focus();
+      try { el.setSelectionRange(el.value.length, el.value.length); } catch {}
+    }
+
+    /* ✅ 표 렌더 + Enter/방향키 이동 */
+    function renderTodoTable() {
+      const container = document.getElementById("todoTable");
+      if (!container) return;
+      container.innerHTML = "";
+
+      // 헤더(1행)
+      ["할일", "완료한 일이"].forEach(text => {
+        const div = document.createElement("div");
+        div.className = "todo-cell header";
+        div.textContent = text;
+        container.appendChild(div);
+      });
+
+      // 입력칸(10행)
+      todoTableData.forEach((row, r) => {
+        row.forEach((val, c) => {
+          const cell = document.createElement("div");
+          cell.className = "todo-cell";
+
+          const input = document.createElement("input");
+          input.value = val;
+          input.dataset.r = String(r);
+          input.dataset.c = String(c);
+
+          input.addEventListener("input", () => {
+            todoTableData[r][c] = input.value;
+            saveTodo();
+          });
+
+          input.addEventListener("keydown", (e) => {
+            const key = e.key;
+            const R = r, C = c;
+
+            // Enter → 아래칸(같은 열)
+            if (key === "Enter") {
+              e.preventDefault();
+              const nextR = Math.min(9, R + 1);
+              focusCell(nextR, C);
+              return;
+            }
+
+            // 방향키 이동
+            if (key === "ArrowUp") {
+              e.preventDefault();
+              focusCell(Math.max(0, R - 1), C);
+              return;
+            }
+            if (key === "ArrowDown") {
+              e.preventDefault();
+              focusCell(Math.min(9, R + 1), C);
+              return;
+            }
+            if (key === "ArrowLeft") {
+              e.preventDefault();
+              focusCell(R, Math.max(0, C - 1));
+              return;
+            }
+            if (key === "ArrowRight") {
+              e.preventDefault();
+              focusCell(R, Math.min(1, C + 1));
+              return;
+            }
+          });
+
+          cell.appendChild(input);
+          container.appendChild(cell);
+        });
+      });
+    }
+
+    /* 로컬 저장 */
+    function saveTreeLocal() {
+      try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
+      catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
+    }
+    function saveLogsLocal() {
+      try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs)); }
+      catch (e) { console.warn("localStorage 로그 저장 오류:", e); }
+    }
+
+    function loadTreeLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(TREE_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.id && Array.isArray(parsed.children)) { tree = parsed; return; }
+        } catch {}
+      }
+      tree = { id: "root", label: "ROOT", children: [] };
+      saveTreeLocal();
+    }
+
+    function loadLogsLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(LOG_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) { logs = parsed; renderLogs(); return; }
+        } catch {}
+      }
+      logs = [];
+      renderLogs();
+    }
+
+    /* 클라우드 */
+    async function cloudLoad(uid) {
+      const snap = await userDocRef(uid).get();
+      if (!snap.exists) return null;
+      return snap.data();
+    }
+
+    function scheduleCloudSave() {
+      if (!currentUser) return;
+      if (isApplyingRemote) return;
+
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async () => {
+        try {
+          await userDocRef(currentUser.uid).set({
+            tree,
+            logs,
+            helpText,
+            todoTableData,
+            updatedAtMs: nowMs(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        } catch (e) {
+          console.warn("cloud save 실패:", e);
+        }
+      }, 300);
+    }
+
+    async function cloudFirstInit(uid) {
+      const remote = await cloudLoad(uid);
+
+      if (remote && (remote.tree || remote.logs || remote.helpText || remote.todoTableData)) {
+        applyRemote(remote);
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveTodoLocal();
+        return;
+      }
+
+      await userDocRef(uid).set({
+        tree, logs, helpText, todoTableData,
+        updatedAtMs: nowMs(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
+    function applyRemote(remote) {
+      try {
+        isApplyingRemote = true;
+        const prevParentId = currentParentId;
+
+        if (remote.tree && remote.tree.id && Array.isArray(remote.tree.children)) {
+          tree = remote.tree;
+          const stillExists = findNodeById(tree, prevParentId);
+          currentParentId = stillExists ? prevParentId : "root";
+        }
+        if (Array.isArray(remote.logs)) logs = remote.logs;
+        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
+
+        if (Array.isArray(remote.todoTableData) && remote.todoTableData.length === 10) {
+          todoTableData = remote.todoTableData.map(r => Array.isArray(r) ? [String(r[0] ?? ""), String(r[1] ?? "")] : ["",""]);
+        }
+
+        renderLogs(); render(); renderHelp(); renderTodoTable();
+        showBackupWarningIfNeeded();
+      } finally {
+        isApplyingRemote = false;
+      }
+    }
+
+    function startRealtimeListener(uid) {
+      if (unsubscribeDoc) unsubscribeDoc();
+      unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
+        if (!snap.exists) return;
+        const remote = snap.data() || {};
+        if (isApplyingRemote) return;
+        if (!remote.tree && !remote.logs && !remote.helpText && !remote.todoTableData) return;
+
+        applyRemote(remote);
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveTodoLocal();
+      }, (err) => console.warn("onSnapshot 오류:", err));
+    }
+
+    function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
+    function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
+
+    /* 트리 유틸 */
+    function findNodeById(node, id) {
+      if (!node) return null;
+      if (node.id === id) return node;
+      const children = node.children || [];
+      for (let i = 0; i < children.length; i++) {
+        const found = findNodeById(children[i], id);
+        if (found) return found;
+      }
+      return null;
+    }
+    function findParentId(root, targetId, parentId) {
+      if (root.id === targetId) return parentId;
+      const children = root.children || [];
+      for (let i = 0; i < children.length; i++) {
+        const found = findParentId(children[i], targetId, root.id);
+        if (found !== null && found !== undefined) return found;
+      }
+      return null;
+    }
+    function getDepthById(node, targetId, depth) {
+      if (depth === undefined) depth = 0;
+      if (!node) return -1;
+      if (node.id === targetId) return depth;
+      const children = node.children || [];
+      for (let i = 0; i < children.length; i++) {
+        const d = getDepthById(children[i], targetId, depth + 1);
+        if (d !== -1) return d;
+      }
+      return -1;
+    }
+    function columnIndexToLetters(n) {
+      if (!n || n <= 0) n = 1;
+      let s = "";
+      while (n > 0) {
+        const rem = (n - 1) % 26;
+        s = String.fromCharCode(65 + rem) + s;
+        n = Math.floor((n - 1) / 26);
+      }
+      return s;
+    }
+    function getCurrentParentNode() {
+      const node = findNodeById(tree, currentParentId);
+      if (!node) currentParentId = "root";
+      return node || tree;
+    }
+    function moveSibling(parentNode, index, delta) {
+      if (!parentNode || !parentNode.children) return;
+      const newIndex = index + delta;
+      if (newIndex < 0 || newIndex >= parentNode.children.length) return;
+      const arr = parentNode.children;
+      const tmp = arr[index];
+      arr[index] = arr[newIndex];
+      arr[newIndex] = tmp;
+      saveTree();
+      render();
+    }
+
+    /* 로그 */
+    function updateLogCount() {
+      const countSpan = document.getElementById("logCount");
+      if (!countSpan) return;
+      countSpan.textContent = logs.length;
+    }
+    function createLogLi(log, index) {
+      const li = document.createElement("li");
+      li.dataset.index = index;
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "log-checkbox";
+
+      const textSpan = document.createElement("span");
+      textSpan.className = "log-text";
+      textSpan.textContent = `${log.time} - [${log.coord}] ${log.label}`;
+
+      li.appendChild(checkbox);
+      li.appendChild(textSpan);
+      return li;
+    }
+    function renderLogs() {
+      const logList = document.getElementById("logList");
+      if (!logList) return;
+      logList.innerHTML = "";
+      logs.forEach((log, idx) => logList.appendChild(createLogLi(log, idx)));
+      updateLogCount();
+    }
+    function appendLog(label, coord) {
+      const timeStr = new Date().toLocaleString();
+      logs.unshift({ time: timeStr, label, coord });
+      saveLogs();
+      renderLogs();
+      showBackupWarningIfNeeded();
+    }
+
+    function getSelectedLogItems() {
+      const logList = document.getElementById("logList");
+      if (!logList) return [];
+      const items = Array.from(logList.querySelectorAll("li"));
+      return items.filter(li => li.querySelector(".log-checkbox")?.checked);
+    }
+    function deleteSelectedLogs() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("삭제할 기록을 선택하세요.");
+      if (!confirm(selected.length + "개의 기록을 삭제할까요?")) return;
+
+      const indexes = selected
+        .map(li => Number(li.dataset.index))
+        .filter(n => !Number.isNaN(n))
+        .sort((a, b) => b - a);
+
+      indexes.forEach(idx => { if (idx >= 0 && idx < logs.length) logs.splice(idx, 1); });
+      saveLogs();
+      renderLogs();
+    }
+    function editSelectedLog() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("수정할 기록을 선택하세요.");
+      if (selected.length > 1) return alert("한 번에 하나의 기록만 수정할 수 있습니다.");
+
+      const idx = Number(selected[0].dataset.index);
+      if (Number.isNaN(idx) || idx < 0 || idx >= logs.length) return alert("로그 인덱스 오류입니다.");
+
+      const old = logs[idx];
+      const newLabel = prompt("새 내용(라벨)을 입력하세요:", old.label);
+      if (!newLabel || newLabel.trim() === "") return;
+
+      logs[idx].label = newLabel.trim();
+      saveLogs();
+      renderLogs();
+    }
+    function deleteAllLogs() {
+      if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
+      if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
+      logs = [];
+      saveLogs();
+      renderLogs();
+    }
+
+    /* 클립보드 */
+    function fallbackCopyText(text, count, label) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        alert(label + " 기록이 클립보드에 복사되었습니다. (" + count + "개)");
+      } catch (e) {
+        alert("복사 중 오류가 발생했습니다. 직접 선택해서 복사해 주세요.");
+      }
+      document.body.removeChild(textarea);
+    }
+    function copyTextWithClipboard(text, count, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => alert(label + " 기록이 클립보드에 복사되었습니다. (" + count + "개)"))
+          .catch(() => fallbackCopyText(text, count, label));
+      } else {
+        fallbackCopyText(text, count, label);
+      }
+    }
+    function copyAllLogs() {
+      if (logs.length === 0) return alert("복사할 기록이 없습니다.");
+      const lines = logs.map(log => `${log.time} - [${log.coord}] ${log.label}`);
+      copyTextWithClipboard(lines.join("\n"), lines.length, "전체");
+    }
+    function copySelectedLogs() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("복사할 기록을 선택하세요.");
+      const indexes = selected.map(li => Number(li.dataset.index)).filter(n => !Number.isNaN(n)).sort((a,b)=>a-b);
+      const lines = indexes.map(idx => `${logs[idx].time} - [${logs[idx].coord}] ${logs[idx].label}`);
+      copyTextWithClipboard(lines.join("\n"), lines.length, "선택한");
+    }
+
+    /* 트리 렌더 */
+    function updateBreadcrumb() {
+      const bc = document.getElementById("breadcrumb");
+      if (!bc) return;
+      if (currentParentId === "root") return bc.textContent = "위치: ROOT";
+
+      const pathNodes = [];
+      function dfs(node, targetId, path) {
+        path.push(node);
+        if (node.id === targetId) return true;
+        const children = node.children || [];
+        for (let i = 0; i < children.length; i++) {
+          if (dfs(children[i], targetId, path)) return true;
+        }
+        path.pop();
+        return false;
+      }
+      dfs(tree, currentParentId, pathNodes);
+      bc.textContent = "위치: " + pathNodes.map(n => n.label).join(" > ");
+    }
+
+    function renderButtons() {
+      const container = document.getElementById("buttonContainer");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const parentNode = getCurrentParentNode();
+      const children = parentNode.children || [];
+
+      let parentDepth = getDepthById(tree, parentNode.id, 0);
+      if (parentDepth < 0) parentDepth = 0;
+      const colLetters = columnIndexToLetters(parentDepth + 1);
+
+      if (children.length === 0) {
+        const div = document.createElement("div");
+        div.className = "empty-text";
+        div.textContent = "이 위치에는 버튼이 없습니다. 아래에서 새 버튼을 추가하세요.";
+        container.appendChild(div);
+        return;
+      }
+
+      children.forEach((child, index) => {
+        const coord = colLetters + (index + 1);
+
+        const row = document.createElement("div");
+        row.className = "btn-row";
+
+        const mainBtn = document.createElement("button");
+        mainBtn.className = "btn-main";
+        mainBtn.textContent = "[" + coord + "] " + child.label;
+
+        mainBtn.addEventListener("click", () => {
+          if (child.children && child.children.length > 0) {
+            currentParentId = child.id;
+            render();
+          } else {
+            appendLog(child.label, coord);
+          }
+        });
+
+        const controls = document.createElement("div");
+        controls.className = "btn-controls";
+
+        const upBtn = document.createElement("button");
+        upBtn.textContent = "↑";
+        upBtn.addEventListener("click", () => moveSibling(parentNode, index, -1));
+
+        const downBtn = document.createElement("button");
+        downBtn.textContent = "↓";
+        downBtn.addEventListener("click", () => moveSibling(parentNode, index, 1));
+
+        const addChildBtn = document.createElement("button");
+        addChildBtn.textContent = "+하위";
+        addChildBtn.addEventListener("click", () => {
+          const name = prompt("하위 버튼 이름을 입력하세요:");
+          if (!name || name.trim() === "") return;
+          if (!child.children) child.children = [];
+          child.children.push({ id: genId(), label: name.trim(), children: [] });
+          saveTree();
+          render();
+        });
+
+        const renameBtn = document.createElement("button");
+        renameBtn.textContent = "이름변경";
+        renameBtn.addEventListener("click", () => {
+          const newName = prompt("새 버튼 이름을 입력하세요:", child.label);
+          if (!newName || newName.trim() === "") return;
+          child.label = newName.trim();
+          saveTree();
+          render();
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "삭제";
+        delBtn.addEventListener("click", () => {
+          if (!confirm("'" + child.label + "' 버튼을 삭제할까요? (하위 버튼도 함께 삭제됩니다)")) return;
+          parentNode.children.splice(index, 1);
+          saveTree();
+          render();
+        });
+
+        controls.appendChild(upBtn);
+        controls.appendChild(downBtn);
+        controls.appendChild(addChildBtn);
+        controls.appendChild(renameBtn);
+        controls.appendChild(delBtn);
+
+        row.appendChild(mainBtn);
+        row.appendChild(controls);
+        container.appendChild(row);
+      });
+    }
+
+    function render() {
+      if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) currentParentId = "root";
+      updateBreadcrumb();
+      renderButtons();
+      updateLogCount();
+    }
+
+    /* 안내문 모달 */
+    function openHelpModal() {
+      const backdrop = document.getElementById("helpModalBackdrop");
+      const editor = document.getElementById("helpEditor");
+      if (!backdrop || !editor) return;
+      editor.value = helpText || "";
+      backdrop.style.display = "flex";
+      setTimeout(() => editor.focus(), 0);
+    }
+    function closeHelpModal() {
+      const backdrop = document.getElementById("helpModalBackdrop");
+      if (backdrop) backdrop.style.display = "none";
+    }
+
+    /* 초기화 */
+    loadTreeLocal();
+    loadLogsLocal();
+    loadHelpLocal();
+    loadTodoLocal();
+    renderTodoTable();
+    render();
+    showBackupWarningIfNeeded();
+    setAuthUI();
+
+    /* 이벤트 */
+    document.getElementById("btnUp").addEventListener("click", () => {
+      if (currentParentId === "root") return;
+      const parentId = findParentId(tree, currentParentId, null);
+      currentParentId = parentId || "root";
+      render();
     });
-  });
-}
+    document.getElementById("btnRoot").addEventListener("click", () => {
+      currentParentId = "root";
+      render();
+    });
 
-/* ===== 안내문 ===== */
-const HELP_KEY="helpText_v1";
-let help="💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.";
-function loadHelp(){ help=localStorage.getItem(HELP_KEY)||help; }
-function saveHelp(){ localStorage.setItem(HELP_KEY,help); }
-document.getElementById("btnEditHelp").onclick=()=>{
-  const t=prompt("안내문 수정",help);
-  if(t){ help=t; saveHelp(); renderHelp(); }
-};
-function renderHelp(){ document.getElementById("helpText").textContent=help; }
+    document.getElementById("btnAddHere").addEventListener("click", () => {
+      const parentNode = getCurrentParentNode();
+      const name = prompt("새 버튼 이름을 입력하세요:");
+      if (!name || name.trim() === "") return;
+      if (!parentNode.children) parentNode.children = [];
+      parentNode.children.push({ id: genId(), label: name.trim(), children: [] });
+      saveTree();
+      render();
+    });
 
-/* ===== 초기화 ===== */
-loadTodo(); loadHelp();
-renderTodo(); renderHelp();
-</script>
+    document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
+    document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
+    document.getElementById("btnCopyAllLog").addEventListener("click", copyAllLogs);
+    document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
+    document.getElementById("btnDeleteAllLog").addEventListener("click", deleteAllLogs);
+
+    document.getElementById("btnEditHelp").addEventListener("click", openHelpModal);
+    document.getElementById("btnHelpCancel").addEventListener("click", closeHelpModal);
+    document.getElementById("btnHelpSave").addEventListener("click", () => {
+      const editor = document.getElementById("helpEditor");
+      const newText = (editor?.value || "").trim();
+      if (!newText) return alert("안내문은 비워둘 수 없어요.");
+      helpText = newText;
+      saveHelp();
+      closeHelpModal();
+    });
+    document.getElementById("helpModalBackdrop").addEventListener("click", (e) => {
+      if (e.target.id === "helpModalBackdrop") closeHelpModal();
+    });
+
+    document.getElementById("btnLogin").addEventListener("click", async () => {
+      try { await auth.signInWithPopup(provider); }
+      catch (e) {
+        console.error(e);
+        alert("로그인 실패: 팝업 차단 또는 Firebase 도메인 설정 문제일 수 있어요.\n\nF12 콘솔의 에러코드(auth/...)를 확인해 주세요.");
+      }
+    });
+    document.getElementById("btnLogout").addEventListener("click", async () => {
+      try { await auth.signOut(); } catch (e) { console.error(e); }
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      currentUser = user || null;
+      setAuthUI();
+
+      if (!currentUser) {
+        if (unsubscribeDoc) unsubscribeDoc();
+        unsubscribeDoc = null;
+        return;
+      }
+
+      try {
+        await cloudFirstInit(currentUser.uid);
+        startRealtimeListener(currentUser.uid);
+        scheduleCloudSave();
+      } catch (e) {
+        console.error(e);
+        alert("클라우드 동기화 중 오류가 발생했습니다. (F12 콘솔 확인)");
+      }
+    });
+  </script>
 </body>
 </html>
