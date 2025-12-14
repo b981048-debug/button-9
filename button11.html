@@ -232,6 +232,47 @@
     }
     .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
     .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
+
+    /* =========================
+       ✅✅ 추가: 엑셀형 표(2x11)
+       ========================= */
+    .todo-box {
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 8px;
+      background: #fafafa;
+    }
+    .todo-table {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 6px;
+    }
+    .todo-cell {
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+    .todo-cell.header {
+      background: #eef7ff;
+      font-weight: 700;
+      text-align: center;
+      padding: 6px;
+      font-size: 12px;
+    }
+    .todo-cell input {
+      width: 100%;
+      height: 32px;
+      border: none;
+      padding: 4px 6px;
+      font-size: 12px;
+      outline: none;
+      background: transparent;
+    }
+    .todo-cell input:focus {
+      background: #f0f8ff;
+    }
+    /* ========================= */
   </style>
 </head>
 <body>
@@ -278,7 +319,6 @@
 
     <div class="layout">
       <div class="left">
-        <!-- ✅ (요청) 버튼 목록 옆으로 상위/최상위 버튼 이동 -->
         <div class="panel-header-row">
           <div class="panel-title">버튼 목록</div>
           <div class="nav-mini">
@@ -295,7 +335,12 @@
           <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
         </div>
 
-        <!-- 노란 영역 이동분(로그인/동기화 + 위치 표시만 유지) -->
+        <!-- ✅✅ 여기 추가: 엑셀형 표(2x11) -->
+        <div class="todo-box">
+          <div class="panel-title">할 일 / 완료한 일</div>
+          <div class="todo-table" id="todoTable"></div>
+        </div>
+
         <div class="moved-area">
           <div class="auth-bar">
             <button id="btnLogin">Google 로그인</button>
@@ -327,7 +372,6 @@
     </div>
   </div>
 
-  <!-- 안내문 편집 모달 -->
   <div class="modal-backdrop" id="helpModalBackdrop">
     <div class="modal">
       <h2>안내문 수정</h2>
@@ -339,7 +383,6 @@
     </div>
   </div>
 
-  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -364,6 +407,9 @@
     const HELP_STORAGE_KEY = "buttonHelpText_v1";
     const STATS_STORAGE_KEY = "buttonStats_v2";
 
+    /* ✅✅ 추가: 표 저장 키 */
+    const TODO_STORAGE_KEY = "todoTable_v1";
+
     const BACKUP_WARN_THRESHOLD = 1000;
 
     let tree = null;
@@ -372,6 +418,9 @@
     let helpText = "";
 
     let stats = { phoneLock: 0, tabletLock: 0, burnout3: 0 };
+
+    /* ✅✅ 추가: 10행(입력) x 2열 데이터 (1행은 헤더) */
+    let todoTableData = Array.from({ length: 10 }, () => ["", ""]);
 
     let currentUser = null;
     let unsubscribeDoc = null;
@@ -483,6 +532,58 @@
     }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
+    /* ✅✅ 표 로컬 저장/불러오기 */
+    function saveTodoLocal() {
+      try { localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todoTableData)); }
+      catch (e) { console.warn("localStorage 표 저장 오류:", e); }
+    }
+    function loadTodoLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(TODO_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length === 10) {
+            todoTableData = parsed.map(r => Array.isArray(r) ? [String(r[0] ?? ""), String(r[1] ?? "")] : ["",""]);
+          }
+        } catch {}
+      }
+    }
+    function saveTodo() { saveTodoLocal(); scheduleCloudSave(); }
+
+    function renderTodoTable() {
+      const container = document.getElementById("todoTable");
+      if (!container) return;
+      container.innerHTML = "";
+
+      // 헤더(1행)
+      ["할일", "완료한 일이"].forEach(text => {
+        const div = document.createElement("div");
+        div.className = "todo-cell header";
+        div.textContent = text;
+        container.appendChild(div);
+      });
+
+      // 입력칸(10행)
+      todoTableData.forEach((row, r) => {
+        row.forEach((val, c) => {
+          const cell = document.createElement("div");
+          cell.className = "todo-cell";
+
+          const input = document.createElement("input");
+          input.value = val;
+
+          input.addEventListener("input", () => {
+            todoTableData[r][c] = input.value;
+            saveTodo();
+          });
+
+          cell.appendChild(input);
+          container.appendChild(cell);
+        });
+      });
+    }
+
     /* 로컬 저장 */
     function saveTreeLocal() {
       try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
@@ -538,6 +639,7 @@
             logs,
             helpText,
             stats,
+            todoTableData, /* ✅✅ 추가 */
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -550,14 +652,14 @@
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
 
-      if (remote && (remote.tree || remote.logs || remote.helpText || remote.stats)) {
+      if (remote && (remote.tree || remote.logs || remote.helpText || remote.stats || remote.todoTableData)) {
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal(); saveTodoLocal();
         return;
       }
 
       await userDocRef(uid).set({
-        tree, logs, helpText, stats,
+        tree, logs, helpText, stats, todoTableData,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -584,7 +686,13 @@
           };
         }
 
+        /* ✅✅ 표 동기화 */
+        if (Array.isArray(remote.todoTableData) && remote.todoTableData.length === 10) {
+          todoTableData = remote.todoTableData.map(r => Array.isArray(r) ? [String(r[0] ?? ""), String(r[1] ?? "")] : ["",""]);
+        }
+
         renderLogs(); render(); renderHelp(); renderStats();
+        renderTodoTable();
         showBackupWarningIfNeeded();
       } finally {
         isApplyingRemote = false;
@@ -597,10 +705,10 @@
         if (!snap.exists) return;
         const remote = snap.data() || {};
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText && !remote.stats) return;
+        if (!remote.tree && !remote.logs && !remote.helpText && !remote.stats && !remote.todoTableData) return;
 
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal(); saveTodoLocal();
       }, (err) => console.warn("onSnapshot 오류:", err));
     }
 
@@ -700,7 +808,6 @@
       saveLogs();
       renderLogs();
       showBackupWarningIfNeeded();
-
       bumpStatsIfMatch(label);
     }
 
@@ -925,6 +1032,11 @@
     loadLogsLocal();
     loadHelpLocal();
     loadStatsLocal();
+
+    /* ✅✅ 표 초기화 */
+    loadTodoLocal();
+    renderTodoTable();
+
     render();
     renderStats();
     showBackupWarningIfNeeded();
@@ -1002,70 +1114,6 @@
         alert("클라우드 동기화 중 오류가 발생했습니다. (F12 콘솔 확인)");
       }
     });
-
-    /* === 클라우드 함수들 === */
-    async function cloudLoad(uid) {
-      const snap = await userDocRef(uid).get();
-      if (!snap.exists) return null;
-      return snap.data();
-    }
-
-    async function cloudFirstInit(uid) {
-      const remote = await cloudLoad(uid);
-
-      if (remote && (remote.tree || remote.logs || remote.helpText || remote.stats)) {
-        applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal();
-        return;
-      }
-
-      await userDocRef(uid).set({
-        tree, logs, helpText, stats,
-        updatedAtMs: nowMs(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-
-    function startRealtimeListener(uid) {
-      if (unsubscribeDoc) unsubscribeDoc();
-      unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
-        if (!snap.exists) return;
-        const remote = snap.data() || {};
-        if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText && !remote.stats) return;
-
-        applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal();
-      }, (err) => console.warn("onSnapshot 오류:", err));
-    }
-
-    function applyRemote(remote) {
-      try {
-        isApplyingRemote = true;
-        const prevParentId = currentParentId;
-
-        if (remote.tree && remote.tree.id && Array.isArray(remote.tree.children)) {
-          tree = remote.tree;
-          const stillExists = findNodeById(tree, prevParentId);
-          currentParentId = stillExists ? prevParentId : "root";
-        }
-        if (Array.isArray(remote.logs)) logs = remote.logs;
-        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
-
-        if (remote.stats && typeof remote.stats === "object") {
-          stats = {
-            phoneLock: Number(remote.stats.phoneLock || 0),
-            tabletLock: Number(remote.stats.tabletLock || 0),
-            burnout3: Number(remote.stats.burnout3 || 0)
-          };
-        }
-
-        renderLogs(); render(); renderHelp(); renderStats();
-        showBackupWarningIfNeeded();
-      } finally {
-        isApplyingRemote = false;
-      }
-    }
   </script>
 </body>
 </html>
