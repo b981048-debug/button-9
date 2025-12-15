@@ -7,6 +7,14 @@
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; padding: 10px; background: #f5f5f5; }
+
+    /* ✅ 버튼 10개 높이 제어용(필요하면 숫자만 조절) */
+    :root{
+      --btn-row-height: 46px;   /* 버튼 1줄(대략) */
+      --btn-row-gap: 6px;       /* 줄 간격 */
+      --btn-visible-rows: 10;   /* 한 번에 보일 개수 */
+    }
+
     .app {
       max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 12px;
       padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -32,16 +40,16 @@
     .btn-controls { display: flex; gap: 2px; }
     .btn-controls button { padding: 4px 6px; font-size: 11px; }
 
-    /* ✅✅ 핵심: 두 패널을 한 화면에 같이 보이게 */
+    /* ✅✅ 두 패널을 한 화면에 같이 보이게 */
     .layout {
       display: flex;
       flex-direction: column;
-      gap: 6px;                  /* ✅ 간격 줄임 */
+      gap: 6px;
     }
     @media (min-width: 720px) {
       .layout {
         flex-direction: row;
-        gap: 6px;                /* ✅ 좌/우 간격 더 촘촘하게 */
+        gap: 6px;
       }
     }
     .left, .right { flex: 1; min-width: 0; }
@@ -61,7 +69,7 @@
     /* 데스크탑에서 좌/우 둘 다 한 화면에 들어오게 높이 제한 */
     @media (min-width: 720px) {
       .layout {
-        height: calc(100vh - 130px); /* 제목/여백 감안. 필요하면 숫자만 조절 */
+        height: calc(100vh - 170px); /* ✅ 안내문이 아래로 내려가므로 약간 늘림(필요하면 조절) */
       }
       .left, .right { height: 100%; }
       .panel-shell { height: 100%; }
@@ -81,15 +89,25 @@
     .panel-head .nav-inline { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .panel-head small { opacity: .8; }
 
+    /* ✅ 버튼 목록: "10개 높이"만 보이게 + 나머지는 스크롤 */
     .buttons-area {
       margin-top: 6px;
       margin-bottom: 10px;
       overflow-y: auto;
       padding-right: 4px;
-      flex: 1;
+      flex: 0 0 auto;
       min-height: 0;
-      max-height: none; /* ✅ 기존 55vh 제거 */
+
+      /* ✅ 핵심: 최대 높이를 버튼 10개 분량으로 제한 */
+      max-height: calc(
+        (var(--btn-row-height) + var(--btn-row-gap)) * var(--btn-visible-rows)
+      );
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 6px;
+      background: #fff;
     }
+
     .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
 
     .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
@@ -98,10 +116,10 @@
 
     .log-box {
       background: #fafafa; border-radius: 10px; border: 1px solid #ddd; padding: 8px;
-      overflow-y: auto;            /* ✅ 내부 스크롤 */
+      overflow-y: auto;
       flex: 1;
       min-height: 0;
-      max-height: none;            /* ✅ 기존 60vh 제거 */
+      max-height: none;
     }
     #logList { list-style: none; padding: 0; margin: 0; font-size: 12px; }
     #logList li {
@@ -116,7 +134,7 @@
     .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
     .help-box {
       border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
-      margin-top: 8px;
+      margin-top: 10px;
     }
 
     .moved-area {
@@ -174,11 +192,7 @@
           <div class="buttons-area" id="buttonContainer"></div>
           <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
-          <div class="help-box">
-            <div class="empty-text" id="helpText"></div>
-            <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
-          </div>
-
+          <!-- ✅ 로그인/안내 문구는 왼쪽 패널 하단 유지 -->
           <div class="moved-area">
             <div class="auth-bar">
               <button id="btnLogin">Google 로그인</button>
@@ -210,6 +224,12 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ✅✅ 안내문/안내문 수정: 앱 맨 밑으로 이동 -->
+    <div class="help-box">
+      <div class="empty-text" id="helpText"></div>
+      <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
     </div>
   </div>
 
