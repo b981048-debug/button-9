@@ -14,130 +14,10 @@
     h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
     .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
-    /* ✅ 상단 빈칸 영역: 여기 상황판 배치 */
-    .top-blank { margin: 6px 0 10px; }
-
-    /* =========================
-       ✅ 레트로 상황판 스타일
-       ========================= */
-    .retro-panel {
-      width: 100%;
-      max-width: 560px;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid #111;
-      background: #111;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    /* ✅ 위쪽을 비워두기 위한 빈 영역 */
+    .top-blank {
+      height: 16px; /* 원하는 만큼 늘리면 됨 */
     }
-    .retro-titlebar {
-      background: linear-gradient(#d8d8d8, #bdbdbd);
-      border-bottom: 1px solid #666;
-      padding: 4px 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #111;
-      user-select: none;
-    }
-    .retro-titlebar .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #e7e7e7;
-      border: 1px solid #8c8c8c;
-      border-radius: 6px;
-      padding: 2px 6px;
-      font-weight: 600;
-    }
-    .retro-titlebar .tog {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-weight: 700;
-    }
-    .retro-titlebar .tog .led {
-      width: 10px; height: 10px;
-      border-radius: 2px;
-      border: 1px solid #6a6a6a;
-      background: #43ff6e;
-      box-shadow: 0 0 6px rgba(67,255,110,0.45);
-    }
-    .retro-titlebar .spacer { flex: 1; }
-    .retro-titlebar .winbtns { display:flex; gap:4px; }
-    .retro-titlebar .winbtn {
-      width: 16px; height: 16px;
-      border-radius: 2px;
-      border: 1px solid #6d6d6d;
-      background: #e9e9e9;
-      display:flex; align-items:center; justify-content:center;
-      font-size: 11px;
-      line-height: 1;
-    }
-
-    .retro-screen-wrap{ padding: 8px; background: #0b0b0b; }
-    .retro-screen {
-      border-radius: 8px;
-      border: 1px solid #004b2b;
-      background:
-        radial-gradient(circle at 30% 20%, rgba(0,255,120,0.14), transparent 40%),
-        radial-gradient(circle at 70% 60%, rgba(0,255,120,0.10), transparent 45%),
-        #001a10;
-      padding: 10px 10px 8px;
-      color: #49ff95;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      box-shadow: inset 0 0 0 1px rgba(0,255,160,0.10);
-    }
-
-    .retro-label {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 8px;
-      font-size: 12px;
-      opacity: .95;
-      margin-bottom: 8px;
-    }
-    .retro-label b { letter-spacing: .4px; }
-
-    /* ✅ 3x2 그리드 */
-    .retro-table {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-    }
-    .cell {
-      border-radius: 8px;
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(0,255,160,0.18);
-      padding: 8px;
-      min-height: 48px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-    }
-    .cell.title {
-      font-size: 12px;
-      opacity: .95;
-      line-height: 1.25;
-      word-break: keep-all;
-    }
-    .cell.value {
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: 1px;
-      text-shadow: 0 0 8px rgba(73,255,149,0.22);
-    }
-
-    .retro-hint {
-      margin-top: 8px;
-      font-size: 11px;
-      opacity: .8;
-      line-height: 1.35;
-    }
-
-    /* ========================= */
 
     .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
     .auth-status { font-size:12px; opacity:.85; }
@@ -187,6 +67,7 @@
       margin-top: 8px;
     }
 
+    /* ✅ 이동된 “노란 영역”을 안내문 아래에 깔끔히 보여주기 위한 박스 */
     .moved-area {
       margin-top: 10px;
       border: 1px solid #eee;
@@ -196,6 +77,7 @@
     }
     .moved-area .note { margin-top: 6px; }
 
+    /* 간단 모달 */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.35);
       display: none; align-items: center; justify-content: center; padding: 16px;
@@ -224,45 +106,8 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <!-- ✅ 상단 빈칸: 3x2 상황판 -->
-    <div class="top-blank">
-      <div class="retro-panel" aria-label="상황판">
-        <div class="retro-titlebar">
-          <span class="pill">setup</span>
-          <span class="tog"><span class="led"></span>on</span>
-          <span class="spacer"></span>
-          <div class="winbtns" aria-hidden="true">
-            <div class="winbtn">?</div>
-            <div class="winbtn">–</div>
-            <div class="winbtn">×</div>
-          </div>
-        </div>
-        <div class="retro-screen-wrap">
-          <div class="retro-screen">
-            <div class="retro-label">
-              <b>keystrokes</b>
-              <span style="opacity:.85;font-size:11px;">(로그 삭제해도 유지)</span>
-            </div>
-
-            <!-- ✅ 3칸 x 2칸 -->
-            <div class="retro-table">
-              <div class="cell title">잠금(스마트폰)</div>
-              <div class="cell title">잠금(테블릿)</div>
-              <div class="cell title">번아웃(3단계)</div>
-
-              <div class="cell value" id="statPhoneLock">0</div>
-              <div class="cell value" id="statTabletLock">0</div>
-              <div class="cell value" id="statBurnout3">0</div>
-            </div>
-
-            <div class="retro-hint">
-              • 아래 3개 버튼을 “눌러서 기록이 찍힐 때”만 누적됩니다.<br>
-              • 클릭기록을 삭제해도 이 숫자는 줄어들지 않습니다.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- ✅ 위쪽은 빈칸으로 유지 -->
+    <div class="top-blank"></div>
 
     <div class="layout">
       <div class="left">
@@ -270,11 +115,13 @@
         <div class="buttons-area" id="buttonContainer"></div>
         <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
+        <!-- ✅ 안내문(수정 가능) -->
         <div class="help-box">
           <div class="empty-text" id="helpText"></div>
           <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
         </div>
 
+        <!-- ✅✅ 노란 형광펜 영역을 여기로 이동 -->
         <div class="moved-area">
           <div class="auth-bar">
             <button id="btnLogin">Google 로그인</button>
@@ -289,6 +136,7 @@
             <small id="breadcrumb">위치: ROOT</small>
           </div>
         </div>
+        <!-- ✅✅ 이동 끝 -->
       </div>
 
       <div class="right">
@@ -310,7 +158,7 @@
     </div>
   </div>
 
-  <!-- 안내문 편집 모달 -->
+  <!-- ✅ 안내문 편집 모달 -->
   <div class="modal-backdrop" id="helpModalBackdrop">
     <div class="modal">
       <h2>안내문 수정</h2>
@@ -328,6 +176,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
   <script>
+    /***********************
+     * Firebase 설정 (네 프로젝트 값)
+     ***********************/
     const firebaseConfig = {
       apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
       authDomain: "button-tree.firebaseapp.com",
@@ -342,31 +193,17 @@
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
+    /***********************
+     * 로컬 키
+     ***********************/
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
     const HELP_STORAGE_KEY = "buttonHelpText_v1";
-    const STATS_STORAGE_KEY = "buttonStats_v2"; // ✅ 키 변경(이전 버전과 구분)
 
+    /***********************
+     * 백업 경고(예: 1000개 이상이면 경고)
+     ***********************/
     const BACKUP_WARN_THRESHOLD = 1000;
-
-    let tree = null;
-    let currentParentId = "root";
-    let logs = [];
-    let helpText = "";
-
-    // ✅ 통계: 이름 변경(번아웃(3단계))
-    let stats = { phoneLock: 0, tabletLock: 0, burnout3: 0 };
-
-    let currentUser = null;
-    let unsubscribeDoc = null;
-    let isApplyingRemote = false;
-    let saveTimer = null;
-
-    function genId() {
-      return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
-    }
-    function nowMs() { return Date.now(); }
-
     function showBackupWarningIfNeeded() {
       if (!Array.isArray(logs)) return;
       if (logs.length < BACKUP_WARN_THRESHOLD) return;
@@ -376,6 +213,27 @@
         "'전체 복사'로 주기적으로 백업하세요."
       );
     }
+
+    /***********************
+     * 상태
+     ***********************/
+    let tree = null;
+    let currentParentId = "root";
+    let logs = [];
+    let helpText = "";
+
+    let currentUser = null;
+    let unsubscribeDoc = null;
+    let isApplyingRemote = false;
+    let saveTimer = null;
+
+    /***********************
+     * 유틸
+     ***********************/
+    function genId() {
+      return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+    }
+    function nowMs() { return Date.now(); }
 
     function setAuthUI() {
       const status = document.getElementById("authStatus");
@@ -396,56 +254,13 @@
         badge.textContent = "로컬 모드";
       }
     }
-    function userDocRef(uid) { return db.collection("users").doc(uid); }
-
-    /* ✅ 상황판 */
-    function renderStats() {
-      const a = document.getElementById("statPhoneLock");
-      const b = document.getElementById("statTabletLock");
-      const c = document.getElementById("statBurnout3");
-      if (a) a.textContent = String(stats.phoneLock ?? 0);
-      if (b) b.textContent = String(stats.tabletLock ?? 0);
-      if (c) c.textContent = String(stats.burnout3 ?? 0);
+    function userDocRef(uid) {
+      return db.collection("users").doc(uid);
     }
 
-    function saveStatsLocal() {
-      try { localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats)); }
-      catch (e) { console.warn("localStorage 통계 저장 오류:", e); }
-    }
-    function loadStatsLocal() {
-      let saved = null;
-      try { saved = localStorage.getItem(STATS_STORAGE_KEY); } catch {}
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed === "object") {
-            stats = {
-              phoneLock: Number(parsed.phoneLock || 0),
-              tabletLock: Number(parsed.tabletLock || 0),
-              burnout3: Number(parsed.burnout3 || 0)
-            };
-          }
-        } catch {}
-      }
-      renderStats();
-    }
-    function saveStats() { saveStatsLocal(); scheduleCloudSave(); }
-
-    function bumpStatsIfMatch(label) {
-      if (label === "잠금(스마트폰)") {
-        stats.phoneLock = (stats.phoneLock ?? 0) + 1;
-      } else if (label === "잠금(테블릿)") {
-        stats.tabletLock = (stats.tabletLock ?? 0) + 1;
-      } else if (label === "번아웃(3단계)") {
-        stats.burnout3 = (stats.burnout3 ?? 0) + 1;
-      } else {
-        return;
-      }
-      saveStats();
-      renderStats();
-    }
-
-    /* ✅ 안내문 */
+    /***********************
+     * ✅ 안내문 로컬 저장/불러오기 + 렌더
+     ***********************/
     const DEFAULT_HELP_TEXT =
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
 1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
@@ -465,9 +280,15 @@
       if (!el) return;
       el.textContent = helpText || "";
     }
-    function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
+    function saveHelp() {
+      saveHelpLocal();
+      scheduleCloudSave();
+      renderHelp();
+    }
 
-    /* 로컬 저장 */
+    /***********************
+     * 로컬 저장/불러오기 (트리/로그)
+     ***********************/
     function saveTreeLocal() {
       try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
       catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
@@ -486,7 +307,17 @@
           if (parsed && parsed.id && Array.isArray(parsed.children)) { tree = parsed; return; }
         } catch {}
       }
-      tree = { id: "root", label: "ROOT", children: [] };
+      tree = {
+        id: "root",
+        label: "ROOT",
+        children: [
+          { id: genId(), label: "예시 버튼 1", children: [] },
+          { id: genId(), label: "예시 버튼 2", children: [
+            { id: genId(), label: "예시 2-1", children: [] },
+            { id: genId(), label: "예시 2-2", children: [] }
+          ] }
+        ]
+      };
       saveTreeLocal();
     }
 
@@ -503,7 +334,9 @@
       renderLogs();
     }
 
-    /* 클라우드 */
+    /***********************
+     * 클라우드 (항상 클라우드 우선)
+     ***********************/
     async function cloudLoad(uid) {
       const snap = await userDocRef(uid).get();
       if (!snap.exists) return null;
@@ -521,7 +354,6 @@
             tree,
             logs,
             helpText,
-            stats,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -534,22 +366,30 @@
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
 
-      if (remote && (remote.tree || remote.logs || remote.helpText || remote.stats)) {
+      if (remote && (remote.tree || remote.logs || remote.helpText)) {
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal();
+        saveTreeLocal();
+        saveLogsLocal();
+        saveHelpLocal();
         return;
       }
 
       await userDocRef(uid).set({
-        tree, logs, helpText, stats,
+        tree,
+        logs,
+        helpText,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
     }
 
+    /***********************
+     * ✅✅ 핵심: 원격 반영 시 위치 유지
+     ***********************/
     function applyRemote(remote) {
       try {
         isApplyingRemote = true;
+
         const prevParentId = currentParentId;
 
         if (remote.tree && remote.tree.id && Array.isArray(remote.tree.children)) {
@@ -557,18 +397,17 @@
           const stillExists = findNodeById(tree, prevParentId);
           currentParentId = stillExists ? prevParentId : "root";
         }
-        if (Array.isArray(remote.logs)) logs = remote.logs;
-        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
 
-        if (remote.stats && typeof remote.stats === "object") {
-          stats = {
-            phoneLock: Number(remote.stats.phoneLock || 0),
-            tabletLock: Number(remote.stats.tabletLock || 0),
-            burnout3: Number(remote.stats.burnout3 || 0)
-          };
+        if (Array.isArray(remote.logs)) {
+          logs = remote.logs;
+        }
+        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") {
+          helpText = remote.helpText;
         }
 
-        renderLogs(); render(); renderHelp(); renderStats();
+        renderLogs();
+        render();
+        renderHelp();
         showBackupWarningIfNeeded();
       } finally {
         isApplyingRemote = false;
@@ -577,21 +416,31 @@
 
     function startRealtimeListener(uid) {
       if (unsubscribeDoc) unsubscribeDoc();
+
       unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
         if (!snap.exists) return;
         const remote = snap.data() || {};
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText && !remote.stats) return;
+        if (!remote.tree && !remote.logs && !remote.helpText) return;
 
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal();
-      }, (err) => console.warn("onSnapshot 오류:", err));
+        saveTreeLocal();
+        saveLogsLocal();
+        saveHelpLocal();
+      }, (err) => {
+        console.warn("onSnapshot 오류:", err);
+      });
     }
 
+    /***********************
+     * 저장 훅 (로컬 + 클라우드)
+     ***********************/
     function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
     function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
 
-    /* 트리 유틸 */
+    /***********************
+     * 트리 유틸
+     ***********************/
     function findNodeById(node, id) {
       if (!node) return null;
       if (node.id === id) return node;
@@ -649,7 +498,9 @@
       render();
     }
 
-    /* 로그 */
+    /***********************
+     * 로그 렌더링
+     ***********************/
     function updateLogCount() {
       const countSpan = document.getElementById("logCount");
       if (!countSpan) return;
@@ -679,20 +530,21 @@
       updateLogCount();
     }
     function appendLog(label, coord) {
-      const timeStr = new Date().toLocaleString();
+      const now = new Date();
+      const timeStr = now.toLocaleString();
       logs.unshift({ time: timeStr, label, coord });
       saveLogs();
       renderLogs();
       showBackupWarningIfNeeded();
-
-      bumpStatsIfMatch(label); // ✅ 통계 누적
     }
-
     function getSelectedLogItems() {
       const logList = document.getElementById("logList");
       if (!logList) return [];
       const items = Array.from(logList.querySelectorAll("li"));
-      return items.filter(li => li.querySelector(".log-checkbox")?.checked);
+      return items.filter(li => {
+        const cb = li.querySelector(".log-checkbox");
+        return cb && cb.checked;
+      });
     }
     function deleteSelectedLogs() {
       const selected = getSelectedLogItems();
@@ -727,12 +579,15 @@
     function deleteAllLogs() {
       if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
       if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
+
       logs = [];
       saveLogs();
       renderLogs();
     }
 
-    /* 클립보드 */
+    /***********************
+     * 클립보드
+     ***********************/
     function fallbackCopyText(text, count, label) {
       const textarea = document.createElement("textarea");
       textarea.value = text;
@@ -765,15 +620,26 @@
     function copySelectedLogs() {
       const selected = getSelectedLogItems();
       if (selected.length === 0) return alert("복사할 기록을 선택하세요.");
-      const indexes = selected.map(li => Number(li.dataset.index)).filter(n => !Number.isNaN(n)).sort((a,b)=>a-b);
-      const lines = indexes.map(idx => `${logs[idx].time} - [${logs[idx].coord}] ${logs[idx].label}`);
+
+      const indexes = selected
+        .map(li => Number(li.dataset.index))
+        .filter(n => !Number.isNaN(n))
+        .sort((a, b) => a - b);
+
+      const lines = indexes.map(idx => {
+        const log = logs[idx];
+        return `${log.time} - [${log.coord}] ${log.label}`;
+      });
       copyTextWithClipboard(lines.join("\n"), lines.length, "선택한");
     }
 
-    /* 트리 렌더 */
+    /***********************
+     * 화면 렌더링 (트리)
+     ***********************/
     function updateBreadcrumb() {
       const bc = document.getElementById("breadcrumb");
       if (!bc) return;
+
       if (currentParentId === "root") return bc.textContent = "위치: ROOT";
 
       const pathNodes = [];
@@ -788,7 +654,8 @@
         return false;
       }
       dfs(tree, currentParentId, pathNodes);
-      bc.textContent = "위치: " + pathNodes.map(n => n.label).join(" > ");
+      const names = pathNodes.map(n => n.label);
+      bc.textContent = "위치: " + names.join(" > ");
     }
 
     function renderButtons() {
@@ -801,7 +668,8 @@
 
       let parentDepth = getDepthById(tree, parentNode.id, 0);
       if (parentDepth < 0) parentDepth = 0;
-      const colLetters = columnIndexToLetters(parentDepth + 1);
+      const childDepth = parentDepth + 1;
+      const colLetters = columnIndexToLetters(childDepth);
 
       if (children.length === 0) {
         const div = document.createElement("div");
@@ -812,10 +680,11 @@
       }
 
       children.forEach((child, index) => {
-        const coord = colLetters + (index + 1);
-
         const row = document.createElement("div");
         row.className = "btn-row";
+
+        const rowNumber = index + 1;
+        const coord = colLetters + rowNumber;
 
         const mainBtn = document.createElement("button");
         mainBtn.className = "btn-main";
@@ -835,35 +704,42 @@
 
         const upBtn = document.createElement("button");
         upBtn.textContent = "↑";
+        upBtn.title = "위로";
         upBtn.addEventListener("click", () => moveSibling(parentNode, index, -1));
 
         const downBtn = document.createElement("button");
         downBtn.textContent = "↓";
+        downBtn.title = "아래로";
         downBtn.addEventListener("click", () => moveSibling(parentNode, index, 1));
 
         const addChildBtn = document.createElement("button");
         addChildBtn.textContent = "+하위";
+        addChildBtn.title = "하위 버튼 추가";
         addChildBtn.addEventListener("click", () => {
           const name = prompt("하위 버튼 이름을 입력하세요:");
-          if (!name || name.trim() === "") return;
-          if (!child.children) child.children = [];
-          child.children.push({ id: genId(), label: name.trim(), children: [] });
-          saveTree();
-          render();
+          if (name && name.trim() !== "") {
+            if (!child.children) child.children = [];
+            child.children.push({ id: genId(), label: name.trim(), children: [] });
+            saveTree();
+            render();
+          }
         });
 
         const renameBtn = document.createElement("button");
         renameBtn.textContent = "이름변경";
+        renameBtn.title = "버튼 이름 변경";
         renameBtn.addEventListener("click", () => {
           const newName = prompt("새 버튼 이름을 입력하세요:", child.label);
-          if (!newName || newName.trim() === "") return;
-          child.label = newName.trim();
-          saveTree();
-          render();
+          if (newName && newName.trim() !== "") {
+            child.label = newName.trim();
+            saveTree();
+            render();
+          }
         });
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "삭제";
+        delBtn.title = "이 버튼 삭제";
         delBtn.addEventListener("click", () => {
           if (!confirm("'" + child.label + "' 버튼을 삭제할까요? (하위 버튼도 함께 삭제됩니다)")) return;
           parentNode.children.splice(index, 1);
@@ -884,13 +760,17 @@
     }
 
     function render() {
-      if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) currentParentId = "root";
+      if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) {
+        currentParentId = "root";
+      }
       updateBreadcrumb();
       renderButtons();
       updateLogCount();
     }
 
-    /* 안내문 모달 */
+    /***********************
+     * ✅ 안내문 모달 동작
+     ***********************/
     function openHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
       const editor = document.getElementById("helpEditor");
@@ -901,20 +781,22 @@
     }
     function closeHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
-      if (backdrop) backdrop.style.display = "none";
+      if (!backdrop) return;
+      backdrop.style.display = "none";
     }
 
-    /* 초기화 */
+    /***********************
+     * 초기화
+     ***********************/
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
-    loadStatsLocal();
     render();
-    renderStats();
     showBackupWarningIfNeeded();
-    setAuthUI();
 
-    /* 이벤트 */
+    /***********************
+     * 이벤트 바인딩
+     ***********************/
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -928,11 +810,12 @@
     document.getElementById("btnAddHere").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const name = prompt("새 버튼 이름을 입력하세요:");
-      if (!name || name.trim() === "") return;
-      if (!parentNode.children) parentNode.children = [];
-      parentNode.children.push({ id: genId(), label: name.trim(), children: [] });
-      saveTree();
-      render();
+      if (name && name.trim() !== "") {
+        if (!parentNode.children) parentNode.children = [];
+        parentNode.children.push({ id: genId(), label: name.trim(), children: [] });
+        saveTree();
+        render();
+      }
     });
 
     document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
@@ -956,8 +839,9 @@
     });
 
     document.getElementById("btnLogin").addEventListener("click", async () => {
-      try { await auth.signInWithPopup(provider); }
-      catch (e) {
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (e) {
         console.error(e);
         alert("로그인 실패: 팝업 차단 또는 Firebase 도메인 설정 문제일 수 있어요.\n\nF12 콘솔의 에러코드(auth/...)를 확인해 주세요.");
       }
@@ -985,6 +869,8 @@
         alert("클라우드 동기화 중 오류가 발생했습니다. (F12 콘솔 확인)");
       }
     });
+
+    setAuthUI();
   </script>
 </body>
 </html>
