@@ -8,111 +8,148 @@
     * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; padding: 10px; background: #f5f5f5; }
     .app {
-      max-width: 980px; margin: 0 auto; background: #ffffff; border-radius: 12px;
+      max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 12px;
       padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
     .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
-    button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
-    button:active { transform: scale(0.97); }
-    button:disabled { opacity: .5; cursor: not-allowed; }
-    .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
-
-    .top-actions{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-    .edit-indicator{ font-size:12px; padding:4px 10px; border-radius:999px; border:1px solid #ddd; background:#fafafa; }
-    .edit-indicator.on{ background:#111; color:#fff; border-color:#111; }
+    /* ✅ 상단 빈칸 영역: 여기 상황판 배치 */
+    .top-blank { margin: 6px 0 10px; }
 
     /* =========================
-       ✅ 대시보드(편집모드: 드래그/리사이즈)
+       ✅ 레트로 상황판 스타일
        ========================= */
-    .dashboard {
-      position: relative;
+    .retro-panel {
       width: 100%;
-      min-height: 720px;
-      border: 1px solid #eee;
-      border-radius: 12px;
-      background: #fafafa;
-      padding: 8px;
+      max-width: 560px;
+      border-radius: 10px;
       overflow: hidden;
+      border: 1px solid #111;
+      background: #111;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+    .retro-titlebar {
+      background: linear-gradient(#d8d8d8, #bdbdbd);
+      border-bottom: 1px solid #666;
+      padding: 4px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #111;
+      user-select: none;
+    }
+    .retro-titlebar .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e7e7e7;
+      border: 1px solid #8c8c8c;
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-weight: 600;
+    }
+    .retro-titlebar .tog {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+    }
+    .retro-titlebar .tog .led {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      border: 1px solid #6a6a6a;
+      background: #43ff6e;
+      box-shadow: 0 0 6px rgba(67,255,110,0.45);
+    }
+    .retro-titlebar .spacer { flex: 1; }
+    .retro-titlebar .winbtns { display:flex; gap:4px; }
+    .retro-titlebar .winbtn {
+      width: 16px; height: 16px;
+      border-radius: 2px;
+      border: 1px solid #6d6d6d;
+      background: #e9e9e9;
+      display:flex; align-items:center; justify-content:center;
+      font-size: 11px;
+      line-height: 1;
     }
 
-    .panel {
-      position: absolute;
-      border-radius: 12px;
-      border: 1px solid #ddd;
-      background: #ffffff;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-      overflow: hidden;
-      min-width: 240px;
-      min-height: 140px;
-      touch-action: none; /* pointer 드래그용 */
+    .retro-screen-wrap{ padding: 8px; background: #0b0b0b; }
+    .retro-screen {
+      border-radius: 8px;
+      border: 1px solid #004b2b;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(0,255,120,0.14), transparent 40%),
+        radial-gradient(circle at 70% 60%, rgba(0,255,120,0.10), transparent 45%),
+        #001a10;
+      padding: 10px 10px 8px;
+      color: #49ff95;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      box-shadow: inset 0 0 0 1px rgba(0,255,160,0.10);
     }
 
-    .panel-header{
+    .retro-label {
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:8px;
-      padding: 8px 10px;
-      background: #f3f3f3;
-      border-bottom: 1px solid #e4e4e4;
-      user-select: none;
-      cursor: default;
+      gap: 8px;
+      font-size: 12px;
+      opacity: .95;
+      margin-bottom: 8px;
     }
-    .panel-title{ font-size: 14px; font-weight: 700; }
-    .panel-sub{ font-size: 12px; opacity: .7; }
+    .retro-label b { letter-spacing: .4px; }
 
-    .panel-body{
-      padding: 10px;
-      height: calc(100% - 41px);
-      overflow: auto;
+    /* ✅ 3x2 그리드 */
+    .retro-table {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
     }
-
-    /* 편집모드에서만 드래그 커서 + 리사이즈 핸들 표시 */
-    .dashboard.editing .panel-header{ cursor: grab; }
-    .dashboard.editing .panel-header:active{ cursor: grabbing; }
-    .resize-handle{
-      display:none;
-      position:absolute;
-      right: 6px;
-      bottom: 6px;
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      border: 1px solid #cfcfcf;
-      background: linear-gradient(135deg, #ffffff, #eaeaea);
-      cursor: nwse-resize;
-      user-select:none;
-      touch-action:none;
+    .cell {
+      border-radius: 8px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(0,255,160,0.18);
+      padding: 8px;
+      min-height: 48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
     }
-    .dashboard.editing .resize-handle{ display:block; }
-
-    /* =========================
-       ✅ 정신력 점수
-       ========================= */
-    .mind-row{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top: 6px; }
-    .mind-row input{
-      flex: 1 1 160px;
-      height: 34px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 6px 10px;
-      font-size: 13px;
-      outline: none;
-      background: #fff;
+    .cell.title {
+      font-size: 12px;
+      opacity: .95;
+      line-height: 1.25;
+      word-break: keep-all;
     }
-    .mind-row input:focus{
-      box-shadow: inset 0 0 0 2px rgba(179, 212, 255, .35);
-      border-color: #b3d4ff;
-    }
-    .minus-btn.on{
-      background:#111; color:#fff; border-color:#111;
+    .cell.value {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px rgba(73,255,149,0.22);
     }
 
-    /* =========================
-       ✅ 버튼 목록
-       ========================= */
+    .retro-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      opacity: .8;
+      line-height: 1.35;
+    }
+
+    /* ========================= */
+
+    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+    .auth-status { font-size:12px; opacity:.85; }
+    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
+
+    .top-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+    .top-bar small { opacity: 0.8; }
+
+    button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
     .btn-main {
       flex: 1; text-align: left; padding: 10px; border-radius: 10px;
       border: 1px solid #ccc; background: #fafafa; font-size: 14px; min-height: 40px;
@@ -124,33 +161,12 @@
     .buttons-area { margin-top: 6px; margin-bottom: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
     .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
 
-    .panel-header-row{
-      display:flex; align-items:center; justify-content:flex-start;
-      gap:8px; flex-wrap:wrap; margin-bottom: 6px;
-    }
-    .nav-mini{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .layout { display: flex; flex-direction: column; gap: 10px; }
+    @media (min-width: 720px) { .layout { flex-direction: row; } }
+    .left, .right { flex: 1; min-width: 0; }
+    .panel-title { font-size: 14px; margin-bottom: 4px; font-weight: 600; }
 
-    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
-    .auth-status { font-size:12px; opacity:.85; }
-    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
-    .moved-area {
-      margin-top: 10px;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      padding: 10px;
-      background: #fafafa;
-    }
-    .breadcrumb-line{
-      font-size: 12px;
-      opacity: .8;
-      margin-top: 6px;
-      word-break: break-word;
-    }
-
-    /* =========================
-       ✅ 클릭 기록
-       ========================= */
-    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
     .log-count { font-size: 12px; opacity: 0.7; }
     .log-actions { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
 
@@ -164,13 +180,22 @@
     .log-text { flex: 1; }
     .log-checkbox { flex-shrink: 0; }
 
-    /* =========================
-       ✅ 안내문
-       ========================= */
     .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
     .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
+    .help-box {
+      border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
+      margin-top: 8px;
+    }
 
-    /* 모달 */
+    .moved-area {
+      margin-top: 10px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafafa;
+    }
+    .moved-area .note { margin-top: 6px; }
+
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.35);
       display: none; align-items: center; justify-content: center; padding: 16px;
@@ -189,9 +214,9 @@
       outline: none;
     }
     .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
+    .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
   </style>
 </head>
-
 <body>
   <div class="app">
     <h1>
@@ -199,101 +224,89 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <div class="top-actions" style="margin-bottom:8px;">
-      <button id="btnEditMode" class="btn-primary">편집모드</button>
-      <button id="btnResetLayout">레이아웃 초기화</button>
-      <span id="editPill" class="edit-indicator">편집 OFF</span>
+    <!-- ✅ 상단 빈칸: 3x2 상황판 -->
+    <div class="top-blank">
+      <div class="retro-panel" aria-label="상황판">
+        <div class="retro-titlebar">
+          <span class="pill">setup</span>
+          <span class="tog"><span class="led"></span>on</span>
+          <span class="spacer"></span>
+          <div class="winbtns" aria-hidden="true">
+            <div class="winbtn">?</div>
+            <div class="winbtn">–</div>
+            <div class="winbtn">×</div>
+          </div>
+        </div>
+        <div class="retro-screen-wrap">
+          <div class="retro-screen">
+            <div class="retro-label">
+              <b>keystrokes</b>
+              <span style="opacity:.85;font-size:11px;">(로그 삭제해도 유지)</span>
+            </div>
+
+            <!-- ✅ 3칸 x 2칸 -->
+            <div class="retro-table">
+              <div class="cell title">잠금(스마트폰)</div>
+              <div class="cell title">잠금(테블릿)</div>
+              <div class="cell title">번아웃(3단계)</div>
+
+              <div class="cell value" id="statPhoneLock">0</div>
+              <div class="cell value" id="statTabletLock">0</div>
+              <div class="cell value" id="statBurnout3">0</div>
+            </div>
+
+            <div class="retro-hint">
+              • 아래 3개 버튼을 “눌러서 기록이 찍힐 때”만 누적됩니다.<br>
+              • 클릭기록을 삭제해도 이 숫자는 줄어들지 않습니다.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="dashboard" id="dashboard" aria-label="대시보드">
-      <!-- 1. 정신력점수 -->
-      <section class="panel" id="panelMind" data-panel="mind" aria-label="정신력점수">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">정신력 점수</div>
-            <div class="panel-sub">Enter/기록 → 클릭기록 저장 (0~100 / -100~0)</div>
-          </div>
-          <div style="font-size:12px;opacity:.7;">drag</div>
-        </div>
-        <div class="panel-body">
-          <div class="mind-row">
-            <button id="btnMinus" class="minus-btn" title="마이너스 토글">-</button>
-            <input id="mindScoreInput" inputmode="numeric" placeholder="예: 87" />
-            <button id="btnMindRecord" class="btn-primary">기록</button>
-          </div>
-          <div style="margin-top:8px;font-size:12px;opacity:.75;">
-            ※ ‘-’ 버튼을 켜면 입력값이 음수로 기록됩니다. (예: 50 → -50)
-          </div>
-        </div>
-        <div class="resize-handle" data-resize="mind" title="크기조절"></div>
-      </section>
+    <div class="layout">
+      <div class="left">
+        <div class="panel-title">버튼 목록</div>
+        <div class="buttons-area" id="buttonContainer"></div>
+        <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
-      <!-- 2. 버튼목록 -->
-      <section class="panel" id="panelButtons" data-panel="buttons" aria-label="버튼목록">
-        <div class="panel-header">
-          <div class="panel-title">버튼 목록</div>
-          <div style="font-size:12px;opacity:.7;">drag</div>
-        </div>
-        <div class="panel-body">
-          <div class="panel-header-row">
-            <div class="nav-mini">
-              <button id="btnUp">◀ 상위로</button>
-              <button id="btnRoot">⬆ 최상위로</button>
-            </div>
-          </div>
-
-          <div class="buttons-area" id="buttonContainer"></div>
-          <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
-
-          <div class="moved-area">
-            <div class="auth-bar">
-              <button id="btnLogin">Google 로그인</button>
-              <button id="btnLogout" disabled>로그아웃</button>
-              <span class="auth-status" id="authStatus">로그인 안 됨</span>
-            </div>
-            <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다.</div>
-            <div class="breadcrumb-line" id="breadcrumb">위치: ROOT</div>
-          </div>
-        </div>
-        <div class="resize-handle" data-resize="buttons" title="크기조절"></div>
-      </section>
-
-      <!-- 3. 클릭기록 -->
-      <section class="panel" id="panelLogs" data-panel="logs" aria-label="클릭기록">
-        <div class="panel-header">
-          <div class="panel-title">클릭 기록</div>
-          <div style="font-size:12px;opacity:.7;">drag</div>
-        </div>
-        <div class="panel-body">
-          <div class="log-header">
-            <div class="log-count">(총 <span id="logCount">0</span>개)</div>
-            <div class="log-actions">
-              <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
-              <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
-              <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
-              <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
-              <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
-            </div>
-          </div>
-          <div class="log-box">
-            <ul id="logList"></ul>
-          </div>
-        </div>
-        <div class="resize-handle" data-resize="logs" title="크기조절"></div>
-      </section>
-
-      <!-- 4. 안내문 -->
-      <section class="panel" id="panelHelp" data-panel="help" aria-label="안내문">
-        <div class="panel-header">
-          <div class="panel-title">안내문</div>
-          <div style="font-size:12px;opacity:.7;">drag</div>
-        </div>
-        <div class="panel-body">
+        <div class="help-box">
           <div class="empty-text" id="helpText"></div>
           <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
         </div>
-        <div class="resize-handle" data-resize="help" title="크기조절"></div>
-      </section>
+
+        <div class="moved-area">
+          <div class="auth-bar">
+            <button id="btnLogin">Google 로그인</button>
+            <button id="btnLogout" disabled>로그아웃</button>
+            <span class="auth-status" id="authStatus">로그인 안 됨</span>
+          </div>
+          <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
+
+          <div class="top-bar" style="margin-top:10px;">
+            <button id="btnUp">◀ 상위로</button>
+            <button id="btnRoot">⬆ 최상위로</button>
+            <small id="breadcrumb">위치: ROOT</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="log-header">
+          <div class="panel-title">클릭 기록</div>
+          <div class="log-count">(총 <span id="logCount">0</span>개)</div>
+          <div class="log-actions">
+            <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
+            <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
+            <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
+            <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
+            <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
+          </div>
+        </div>
+        <div class="log-box">
+          <ul id="logList"></ul>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -315,9 +328,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
   <script>
-    /* =========================
-       ✅ Firebase
-       ========================= */
     const firebaseConfig = {
       apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
       authDomain: "button-tree.firebaseapp.com",
@@ -332,10 +342,10 @@
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    const TREE_STORAGE_KEY   = "buttonTree_v_local";
-    const LOG_STORAGE_KEY    = "buttonLogs_v1";
-    const HELP_STORAGE_KEY   = "buttonHelpText_v1";
-    const LAYOUT_STORAGE_KEY = "dashboardLayout_v1";
+    const TREE_STORAGE_KEY = "buttonTree_v_local";
+    const LOG_STORAGE_KEY  = "buttonLogs_v1";
+    const HELP_STORAGE_KEY = "buttonHelpText_v1";
+    const STATS_STORAGE_KEY = "buttonStats_v2"; // ✅ 키 변경(이전 버전과 구분)
 
     const BACKUP_WARN_THRESHOLD = 1000;
 
@@ -344,237 +354,14 @@
     let logs = [];
     let helpText = "";
 
+    // ✅ 통계: 이름 변경(번아웃(3단계))
+    let stats = { phoneLock: 0, tabletLock: 0, burnout3: 0 };
+
     let currentUser = null;
     let unsubscribeDoc = null;
     let isApplyingRemote = false;
     let saveTimer = null;
 
-    let mindIsNegative = false;
-
-    /* =========================
-       ✅ 편집모드(레이아웃)
-       ========================= */
-    const dashboard = document.getElementById("dashboard");
-    const editPill = document.getElementById("editPill");
-    const btnEditMode = document.getElementById("btnEditMode");
-
-    const panelEls = {
-      mind: document.getElementById("panelMind"),
-      buttons: document.getElementById("panelButtons"),
-      logs: document.getElementById("panelLogs"),
-      help: document.getElementById("panelHelp")
-    };
-
-    // layout: { [key]: {x,y,w,h,z} }  (단위: px)
-    let layout = null;
-    let isEditing = false;
-
-    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-
-    function getDefaultLayout() {
-      // 대시보드 폭/높이에 따라 기본 배치 생성
-      const rect = dashboard.getBoundingClientRect();
-      const W = Math.max(320, rect.width);
-      const H = Math.max(720, rect.height);
-
-      const pad = 8;
-      const gap = 10;
-      const topH = 170;
-      const bottomH = 190;
-
-      const rowH = Math.max(240, H - topH - bottomH - gap*3 - pad*2);
-      const colW = Math.max(320, (W - pad*2 - gap) / 2);
-
-      return {
-        mind:   { x: pad, y: pad,               w: W - pad*2,             h: topH,    z: 1 },
-        buttons:{ x: pad, y: pad + topH + gap,  w: colW,                  h: rowH,    z: 1 },
-        logs:   { x: pad + colW + gap, y: pad + topH + gap, w: colW,      h: rowH,    z: 1 },
-        help:   { x: pad, y: pad + topH + gap + rowH + gap, w: W - pad*2, h: bottomH,z: 1 }
-      };
-    }
-
-    function saveLayoutLocal(){
-      try { localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout)); }
-      catch(e){ console.warn("localStorage 레이아웃 저장 오류:", e); }
-    }
-    function loadLayoutLocal(){
-      let saved = null;
-      try { saved = localStorage.getItem(LAYOUT_STORAGE_KEY); } catch {}
-      if (saved){
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed === "object") {
-            layout = parsed;
-            return;
-          }
-        } catch {}
-      }
-      layout = getDefaultLayout();
-      saveLayoutLocal();
-    }
-
-    function applyLayoutToDOM(){
-      const rect = dashboard.getBoundingClientRect();
-      const maxW = rect.width;
-      const maxH = rect.height;
-
-      Object.keys(panelEls).forEach(key => {
-        const el = panelEls[key];
-        const L = layout?.[key];
-        if (!el || !L) return;
-
-        // bounds
-        const minW = 240, minH = 140;
-        const w = clamp(Number(L.w||300), minW, maxW);
-        const h = clamp(Number(L.h||200), minH, maxH);
-        const x = clamp(Number(L.x||0), 0, Math.max(0, maxW - w));
-        const y = clamp(Number(L.y||0), 0, Math.max(0, maxH - h));
-
-        L.x=x; L.y=y; L.w=w; L.h=h;
-
-        el.style.left = x + "px";
-        el.style.top = y + "px";
-        el.style.width = w + "px";
-        el.style.height = h + "px";
-        el.style.zIndex = String(L.z || 1);
-      });
-    }
-
-    function bringToFront(panelKey){
-      const maxZ = Math.max(...Object.values(layout).map(v => Number(v.z||1)));
-      layout[panelKey].z = maxZ + 1;
-      applyLayoutToDOM();
-      saveLayout();
-    }
-
-    function setEditMode(on){
-      isEditing = !!on;
-      dashboard.classList.toggle("editing", isEditing);
-      editPill.textContent = isEditing ? "편집 ON" : "편집 OFF";
-      editPill.classList.toggle("on", isEditing);
-      btnEditMode.textContent = isEditing ? "편집모드 종료" : "편집모드";
-    }
-
-    function saveLayout(){ saveLayoutLocal(); scheduleCloudSave(); }
-
-    // 드래그/리사이즈 구현 (Pointer Events)
-    function installDragResize(panelKey){
-      const el = panelEls[panelKey];
-      if (!el) return;
-
-      const header = el.querySelector(".panel-header");
-      const handle = el.querySelector(".resize-handle");
-
-      // drag
-      header.addEventListener("pointerdown", (e) => {
-        if (!isEditing) return;
-        if (e.button !== undefined && e.button !== 0) return;
-        e.preventDefault();
-
-        bringToFront(panelKey);
-
-        const rectDash = dashboard.getBoundingClientRect();
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startL = { ...layout[panelKey] };
-
-        header.setPointerCapture(e.pointerId);
-
-        const onMove = (ev) => {
-          const dx = ev.clientX - startX;
-          const dy = ev.clientY - startY;
-
-          const w = startL.w;
-          const h = startL.h;
-
-          const newX = clamp(startL.x + dx, 0, Math.max(0, rectDash.width - w));
-          const newY = clamp(startL.y + dy, 0, Math.max(0, rectDash.height - h));
-
-          layout[panelKey].x = newX;
-          layout[panelKey].y = newY;
-          applyLayoutToDOM();
-        };
-
-        const onUp = () => {
-          header.removeEventListener("pointermove", onMove);
-          header.removeEventListener("pointerup", onUp);
-          header.removeEventListener("pointercancel", onUp);
-          saveLayout();
-        };
-
-        header.addEventListener("pointermove", onMove);
-        header.addEventListener("pointerup", onUp);
-        header.addEventListener("pointercancel", onUp);
-      });
-
-      // resize
-      handle.addEventListener("pointerdown", (e) => {
-        if (!isEditing) return;
-        if (e.button !== undefined && e.button !== 0) return;
-        e.preventDefault();
-
-        bringToFront(panelKey);
-
-        const rectDash = dashboard.getBoundingClientRect();
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startL = { ...layout[panelKey] };
-
-        handle.setPointerCapture(e.pointerId);
-
-        const onMove = (ev) => {
-          const dx = ev.clientX - startX;
-          const dy = ev.clientY - startY;
-
-          const minW = 240, minH = 140;
-
-          let newW = clamp(startL.w + dx, minW, rectDash.width);
-          let newH = clamp(startL.h + dy, minH, rectDash.height);
-
-          // 밖으로 튀어나가지 않도록 (x,y 기준)
-          newW = Math.min(newW, rectDash.width - startL.x);
-          newH = Math.min(newH, rectDash.height - startL.y);
-
-          layout[panelKey].w = newW;
-          layout[panelKey].h = newH;
-          applyLayoutToDOM();
-        };
-
-        const onUp = () => {
-          handle.removeEventListener("pointermove", onMove);
-          handle.removeEventListener("pointerup", onUp);
-          handle.removeEventListener("pointercancel", onUp);
-          saveLayout();
-        };
-
-        handle.addEventListener("pointermove", onMove);
-        handle.addEventListener("pointerup", onUp);
-        handle.addEventListener("pointercancel", onUp);
-      });
-
-      // 클릭하면 앞으로 (편집 중)
-      el.addEventListener("pointerdown", () => {
-        if (!isEditing) return;
-        bringToFront(panelKey);
-      }, { passive: true });
-    }
-
-    function resetLayout(){
-      layout = getDefaultLayout();
-      applyLayoutToDOM();
-      saveLayout();
-    }
-
-    // 대시보드 크기 변화 시 레이아웃 보정
-    window.addEventListener("resize", () => {
-      // 화면이 변하면 패널이 밖으로 나갈 수 있어서 clamp 다시 적용
-      applyLayoutToDOM();
-      saveLayoutLocal();
-    });
-
-    /* =========================
-       ✅ 기본 기능들
-       ========================= */
     function genId() {
       return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
     }
@@ -611,6 +398,54 @@
     }
     function userDocRef(uid) { return db.collection("users").doc(uid); }
 
+    /* ✅ 상황판 */
+    function renderStats() {
+      const a = document.getElementById("statPhoneLock");
+      const b = document.getElementById("statTabletLock");
+      const c = document.getElementById("statBurnout3");
+      if (a) a.textContent = String(stats.phoneLock ?? 0);
+      if (b) b.textContent = String(stats.tabletLock ?? 0);
+      if (c) c.textContent = String(stats.burnout3 ?? 0);
+    }
+
+    function saveStatsLocal() {
+      try { localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats)); }
+      catch (e) { console.warn("localStorage 통계 저장 오류:", e); }
+    }
+    function loadStatsLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(STATS_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") {
+            stats = {
+              phoneLock: Number(parsed.phoneLock || 0),
+              tabletLock: Number(parsed.tabletLock || 0),
+              burnout3: Number(parsed.burnout3 || 0)
+            };
+          }
+        } catch {}
+      }
+      renderStats();
+    }
+    function saveStats() { saveStatsLocal(); scheduleCloudSave(); }
+
+    function bumpStatsIfMatch(label) {
+      if (label === "잠금(스마트폰)") {
+        stats.phoneLock = (stats.phoneLock ?? 0) + 1;
+      } else if (label === "잠금(테블릿)") {
+        stats.tabletLock = (stats.tabletLock ?? 0) + 1;
+      } else if (label === "번아웃(3단계)") {
+        stats.burnout3 = (stats.burnout3 ?? 0) + 1;
+      } else {
+        return;
+      }
+      saveStats();
+      renderStats();
+    }
+
+    /* ✅ 안내문 */
     const DEFAULT_HELP_TEXT =
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
 1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
@@ -632,6 +467,7 @@
     }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
+    /* 로컬 저장 */
     function saveTreeLocal() {
       try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
       catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
@@ -667,6 +503,7 @@
       renderLogs();
     }
 
+    /* 클라우드 */
     async function cloudLoad(uid) {
       const snap = await userDocRef(uid).get();
       if (!snap.exists) return null;
@@ -684,7 +521,7 @@
             tree,
             logs,
             helpText,
-            layout,
+            stats,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -697,14 +534,14 @@
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
 
-      if (remote && (remote.tree || remote.logs || remote.helpText || remote.layout)) {
+      if (remote && (remote.tree || remote.logs || remote.helpText || remote.stats)) {
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveLayoutLocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal();
         return;
       }
 
       await userDocRef(uid).set({
-        tree, logs, helpText, layout,
+        tree, logs, helpText, stats,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -723,12 +560,15 @@
         if (Array.isArray(remote.logs)) logs = remote.logs;
         if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
 
-        if (remote.layout && typeof remote.layout === "object") {
-          layout = remote.layout;
+        if (remote.stats && typeof remote.stats === "object") {
+          stats = {
+            phoneLock: Number(remote.stats.phoneLock || 0),
+            tabletLock: Number(remote.stats.tabletLock || 0),
+            burnout3: Number(remote.stats.burnout3 || 0)
+          };
         }
 
-        renderLogs(); render(); renderHelp();
-        applyLayoutToDOM();
+        renderLogs(); render(); renderHelp(); renderStats();
         showBackupWarningIfNeeded();
       } finally {
         isApplyingRemote = false;
@@ -741,16 +581,17 @@
         if (!snap.exists) return;
         const remote = snap.data() || {};
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText && !remote.layout) return;
+        if (!remote.tree && !remote.logs && !remote.helpText && !remote.stats) return;
 
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveLayoutLocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveStatsLocal();
       }, (err) => console.warn("onSnapshot 오류:", err));
     }
 
     function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
     function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
 
+    /* 트리 유틸 */
     function findNodeById(node, id) {
       if (!node) return null;
       if (node.id === id) return node;
@@ -808,6 +649,7 @@
       render();
     }
 
+    /* 로그 */
     function updateLogCount() {
       const countSpan = document.getElementById("logCount");
       if (!countSpan) return;
@@ -842,71 +684,8 @@
       saveLogs();
       renderLogs();
       showBackupWarningIfNeeded();
-    }
 
-    /* ✅ 정신력 입력/검증 */
-    function sanitizeMindInput() {
-      const input = document.getElementById("mindScoreInput");
-      if (!input) return;
-      let v = (input.value || "").trim();
-      v = v.replace(/[^\d]/g, "");
-      input.value = v;
-    }
-    function setMindNegative(on) {
-      mindIsNegative = !!on;
-      const btn = document.getElementById("btnMinus");
-      const input = document.getElementById("mindScoreInput");
-      if (btn) btn.classList.toggle("on", mindIsNegative);
-      if (input) {
-        input.placeholder = mindIsNegative ? "예: 50  (기록: -50)" : "예: 87";
-        input.focus();
-      }
-    }
-    function parseAndValidateMindScore({ showAlert }) {
-      const input = document.getElementById("mindScoreInput");
-      if (!input) return { ok:false, score: null };
-
-      sanitizeMindInput();
-      const rawDigits = (input.value || "").trim();
-      if (!rawDigits) {
-        if (showAlert) alert("정신력 점수를 입력하세요.");
-        return { ok:false, score: null };
-      }
-
-      const absVal = Number(rawDigits);
-      if (!Number.isFinite(absVal)) {
-        if (showAlert) alert("숫자로 입력해 주세요. 예: 87");
-        return { ok:false, score: null };
-      }
-
-      if (absVal < 0 || absVal > 100) {
-        if (showAlert) alert("점수는 0~100 사이만 입력할 수 있어요.");
-        return { ok:false, score: null };
-      }
-
-      const score = mindIsNegative ? -absVal : absVal;
-
-      if (!mindIsNegative && (score < 0 || score > 100)) {
-        if (showAlert) alert("점수는 0~100 사이만 기록할 수 있어요.");
-        return { ok:false, score: null };
-      }
-      if (mindIsNegative && (score < -100 || score > 0)) {
-        if (showAlert) alert("마이너스 점수는 -100~0 사이만 기록할 수 있어요.");
-        return { ok:false, score: null };
-      }
-
-      return { ok:true, score };
-    }
-    function recordMindScore() {
-      const input = document.getElementById("mindScoreInput");
-      if (!input) return;
-
-      const { ok, score } = parseAndValidateMindScore({ showAlert: true });
-      if (!ok) return;
-
-      appendLog(`정신력: ${score}점`, "MIND");
-      input.value = "";
-      input.focus();
+      bumpStatsIfMatch(label); // ✅ 통계 누적
     }
 
     function getSelectedLogItems() {
@@ -953,6 +732,7 @@
       renderLogs();
     }
 
+    /* 클립보드 */
     function fallbackCopyText(text, count, label) {
       const textarea = document.createElement("textarea");
       textarea.value = text;
@@ -990,6 +770,7 @@
       copyTextWithClipboard(lines.join("\n"), lines.length, "선택한");
     }
 
+    /* 트리 렌더 */
     function updateBreadcrumb() {
       const bc = document.getElementById("breadcrumb");
       if (!bc) return;
@@ -1109,6 +890,7 @@
       updateLogCount();
     }
 
+    /* 안내문 모달 */
     function openHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
       const editor = document.getElementById("helpEditor");
@@ -1122,34 +904,17 @@
       if (backdrop) backdrop.style.display = "none";
     }
 
-    /* =========================
-       ✅ 초기화
-       ========================= */
+    /* 초기화 */
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
-    loadLayoutLocal();
-    applyLayoutToDOM();
-
-    Object.keys(panelEls).forEach(installDragResize);
-
-    setMindNegative(false);
-    setAuthUI();
+    loadStatsLocal();
     render();
+    renderStats();
     showBackupWarningIfNeeded();
-    setEditMode(false);
+    setAuthUI();
 
-    /* =========================
-       ✅ 이벤트 바인딩
-       ========================= */
-    // 편집모드 토글/리셋
-    document.getElementById("btnEditMode").addEventListener("click", () => setEditMode(!isEditing));
-    document.getElementById("btnResetLayout").addEventListener("click", () => {
-      if (!confirm("레이아웃을 초기화할까요?")) return;
-      resetLayout();
-    });
-
-    // 상위/최상위
+    /* 이벤트 */
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -1160,8 +925,6 @@
       currentParentId = "root";
       render();
     });
-
-    // 버튼 추가
     document.getElementById("btnAddHere").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const name = prompt("새 버튼 이름을 입력하세요:");
@@ -1172,14 +935,12 @@
       render();
     });
 
-    // 로그 버튼들
     document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
     document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
     document.getElementById("btnCopyAllLog").addEventListener("click", copyAllLogs);
     document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
     document.getElementById("btnDeleteAllLog").addEventListener("click", deleteAllLogs);
 
-    // 안내문 모달
     document.getElementById("btnEditHelp").addEventListener("click", openHelpModal);
     document.getElementById("btnHelpCancel").addEventListener("click", closeHelpModal);
     document.getElementById("btnHelpSave").addEventListener("click", () => {
@@ -1194,7 +955,6 @@
       if (e.target.id === "helpModalBackdrop") closeHelpModal();
     });
 
-    // 로그인/로그아웃
     document.getElementById("btnLogin").addEventListener("click", async () => {
       try { await auth.signInWithPopup(provider); }
       catch (e) {
@@ -1224,48 +984,6 @@
         console.error(e);
         alert("클라우드 동기화 중 오류가 발생했습니다. (F12 콘솔 확인)");
       }
-    });
-
-    // 정신력 점수
-    document.getElementById("btnMindRecord").addEventListener("click", recordMindScore);
-    document.getElementById("btnMinus").addEventListener("click", () => {
-      setMindNegative(!mindIsNegative);
-      const { ok } = parseAndValidateMindScore({ showAlert: false });
-      if (!ok) {
-        const input = document.getElementById("mindScoreInput");
-        if (input) input.value = "";
-      }
-    });
-
-    document.getElementById("mindScoreInput").addEventListener("input", () => {
-      sanitizeMindInput();
-      const input = document.getElementById("mindScoreInput");
-      if (!input) return;
-      const v = (input.value || "").trim();
-      if (!v) return;
-      const n = Number(v);
-      if (Number.isFinite(n) && n > 100) {
-        alert("점수는 0~100 사이만 입력할 수 있어요.");
-        input.value = "100";
-        input.focus();
-      }
-    });
-
-    document.getElementById("mindScoreInput").addEventListener("blur", () => {
-      const input = document.getElementById("mindScoreInput");
-      if (!input) return;
-      sanitizeMindInput();
-      const v = (input.value || "").trim();
-      if (!v) return;
-      const n = Number(v);
-      if (!Number.isFinite(n) || n < 0 || n > 100) {
-        alert("점수는 0~100 사이만 입력할 수 있어요.");
-        input.value = "";
-      }
-    });
-
-    document.getElementById("mindScoreInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); recordMindScore(); }
     });
   </script>
 </body>
