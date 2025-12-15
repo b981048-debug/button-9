@@ -11,62 +11,76 @@
       max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 12px;
       padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    h1 {
-      margin: 0 0 8px; font-size: 18px;
-      display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
-    }
+    h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
     .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
-    /* ✅ 위쪽을 비워두기 위한 빈 영역 */
     .top-blank { height: 16px; }
 
     .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
     .auth-status { font-size:12px; opacity:.85; }
     .note { font-size:12px; opacity:.75; margin:6px 0 0; }
 
-    button { cursor: pointer; border-radius: 10px; border: 1px solid #ddd; background: #fff; padding: 8px 12px; font-size: 14px; }
-    button:active { transform: scale(0.98); }
+    button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
+    button:active { transform: scale(0.97); }
     button:disabled { opacity: .5; cursor: not-allowed; }
 
     .btn-main {
-      flex: 1; text-align: left; padding: 12px; border-radius: 12px;
-      border: 1px solid #ccc; background: #fafafa; font-size: 15px; min-height: 46px;
+      flex: 1; text-align: left; padding: 10px; border-radius: 10px;
+      border: 1px solid #ccc; background: #fafafa; font-size: 14px; min-height: 40px;
     }
-    .btn-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-    .btn-controls { display: flex; gap: 4px; flex-wrap: wrap; }
-    .btn-controls button { padding: 7px 8px; font-size: 12px; border-radius: 10px; }
+    .btn-row { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+    .btn-controls { display: flex; gap: 2px; }
+    .btn-controls button { padding: 4px 6px; font-size: 11px; }
 
-    /* ✅ 레이아웃: 기본은 세로(모바일 포함) */
-    .layout { display: flex; flex-direction: column; gap: 8px; }
-
-    /* ✅ 데스크탑/태블릿(720px 이상)은 좌우로 + 한 화면에 같이 */
+    /* ✅✅ 핵심: 두 패널을 한 화면에 같이 보이게 */
+    .layout {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;                  /* ✅ 간격 줄임 */
+    }
     @media (min-width: 720px) {
-      .layout { flex-direction: row; gap: 6px; height: calc(100vh - 130px); }
-      .left, .right { height: 100%; }
+      .layout {
+        flex-direction: row;
+        gap: 6px;                /* ✅ 좌/우 간격 더 촘촘하게 */
+      }
     }
-
     .left, .right { flex: 1; min-width: 0; }
 
-    /* ✅ 패널 공통: 내부만 스크롤 되도록 */
-    .panel-shell { display:flex; flex-direction:column; min-height:0; }
-    @media (min-width: 720px) { .panel-shell { height: 100%; } }
+    /* ✅ 화면 높이 기준으로 패널 영역을 잡고, 내부만 스크롤 */
+    .panel-shell{
+      display:flex;
+      flex-direction:column;
+      min-height: 0;
+    }
+    .panel-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden; /* 바깥 스크롤 방지 */
+    }
 
-    .panel-scroll { flex: 1; min-height: 0; overflow: hidden; display:flex; flex-direction:column; }
+    /* 데스크탑에서 좌/우 둘 다 한 화면에 들어오게 높이 제한 */
+    @media (min-width: 720px) {
+      .layout {
+        height: calc(100vh - 130px); /* 제목/여백 감안. 필요하면 숫자만 조절 */
+      }
+      .left, .right { height: 100%; }
+      .panel-shell { height: 100%; }
+      .panel-scroll { height: 100%; }
+    }
 
-    .panel-title { font-size: 14px; font-weight: 700; }
+    .panel-title { font-size: 14px; margin-bottom: 4px; font-weight: 600; }
 
-    /* ✅ "버튼 목록" 제목 옆에 네비 버튼 배치 */
     .panel-head {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       flex-wrap: wrap;
     }
+    .panel-head .panel-title { margin-bottom: 0; }
     .panel-head .nav-inline { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-    .panel-head small { opacity: .8; font-size: 12px; }
+    .panel-head small { opacity: .8; }
 
-    /* ✅ 버튼 영역: 내부 스크롤 */
     .buttons-area {
       margin-top: 6px;
       margin-bottom: 10px;
@@ -74,70 +88,46 @@
       padding-right: 4px;
       flex: 1;
       min-height: 0;
-      max-height: none;
+      max-height: none; /* ✅ 기존 55vh 제거 */
     }
-    .add-current { margin: 6px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
+    .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
 
-    /* ✅ 로그 영역 */
-    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
     .log-count { font-size: 12px; opacity: 0.7; }
     .log-actions { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
 
     .log-box {
-      background: #fafafa; border-radius: 12px; border: 1px solid #ddd; padding: 10px;
-      overflow-y: auto;
+      background: #fafafa; border-radius: 10px; border: 1px solid #ddd; padding: 8px;
+      overflow-y: auto;            /* ✅ 내부 스크롤 */
       flex: 1;
       min-height: 0;
-      max-height: none;
+      max-height: none;            /* ✅ 기존 60vh 제거 */
     }
-    #logList { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+    #logList { list-style: none; padding: 0; margin: 0; font-size: 12px; }
     #logList li {
-      padding: 8px 4px; border-bottom: 1px solid #eee; word-break: break-word;
-      display: flex; align-items: flex-start; gap: 8px;
+      padding: 4px 2px; border-bottom: 1px solid #eee; word-break: break-all;
+      display: flex; align-items: center; gap: 4px;
     }
     #logList li:last-child { border-bottom: none; }
-    .log-text { flex: 1; line-height: 1.4; }
-    .log-checkbox { margin-top: 3px; transform: scale(1.1); }
+    .log-text { flex: 1; }
+    .log-checkbox { flex-shrink: 0; }
 
-    .empty-text { font-size: 13px; opacity: 0.78; line-height: 1.55; white-space: pre-wrap; }
-    .help-edit-btn { margin-top: 8px; width: 100%; font-size: 13px; padding: 10px 12px; border-radius: 12px; }
+    .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
+    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
     .help-box {
-      border: 1px dashed #ddd; border-radius: 12px; padding: 10px; background: #fbfbfb;
-      margin-top: 10px;
+      border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
+      margin-top: 8px;
     }
 
     .moved-area {
       margin-top: 10px;
       border: 1px solid #eee;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 10px;
       background: #fafafa;
     }
     .moved-area .note { margin-top: 6px; }
 
-    /* ✅✅ 핵심: 모바일에서도 버튼목록+클릭기록을 한 화면에서 동시에 보이게 */
-    @media (max-width: 719px) {
-      /* 모바일에서는 세로 2단으로 나누되, 둘 다 화면 안에 */
-      .left { max-height: 56vh; }
-      .right { max-height: 34vh; }
-
-      /* 왼쪽 패널 안에서 버튼목록이 스크롤되도록 */
-      .buttons-area { max-height: none; }
-
-      /* 오른쪽 로그박스가 내부 스크롤 되도록 */
-      .log-box { max-height: none; }
-
-      /* 상단 네비가 너무 길면 보기 좋게 줄 정리 */
-      .panel-head .nav-inline { width: 100%; margin-left: 0; }
-      .panel-head .nav-inline button { flex: 1; }
-      .panel-head small { width: 100%; }
-
-      /* 로그 액션 버튼도 너무 빽빽하면 자동 줄바꿈 */
-      .log-actions { width: 100%; margin-left: 0; }
-      .log-actions button { flex: 1; }
-    }
-
-    /* 간단 모달 */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.35);
       display: none; align-items: center; justify-content: center; padding: 16px;
@@ -169,7 +159,6 @@
     <div class="top-blank"></div>
 
     <div class="layout">
-      <!-- LEFT -->
       <div class="left panel-shell">
         <div class="panel-head">
           <div class="panel-title">버튼 목록</div>
@@ -180,17 +169,16 @@
           </div>
         </div>
 
-        <div class="panel-scroll">
+        <!-- ✅ 스크롤은 이 안에서만 -->
+        <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
           <div class="buttons-area" id="buttonContainer"></div>
           <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
 
-          <!-- ✅ 안내문(수정 가능) -->
           <div class="help-box">
             <div class="empty-text" id="helpText"></div>
             <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
           </div>
 
-          <!-- ✅ 로그인/동기화 영역 -->
           <div class="moved-area">
             <div class="auth-bar">
               <button id="btnLogin">Google 로그인</button>
@@ -202,21 +190,21 @@
         </div>
       </div>
 
-      <!-- RIGHT -->
       <div class="right panel-shell">
         <div class="log-header">
           <div class="panel-title">클릭 기록</div>
           <div class="log-count">(총 <span id="logCount">0</span>개)</div>
           <div class="log-actions">
-            <button id="btnDeleteAllLog" style="font-size:12px;padding:8px 10px;">전체 삭제</button>
-            <button id="btnCopyAllLog" style="font-size:12px;padding:8px 10px;">전체 복사</button>
-            <button id="btnCopySelectedLog" style="font-size:12px;padding:8px 10px;">선택 복사</button>
-            <button id="btnEditLog" style="font-size:12px;padding:8px 10px;">선택 수정</button>
-            <button id="btnDeleteLog" style="font-size:12px;padding:8px 10px;">선택 삭제</button>
+            <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
+            <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
+            <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
+            <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
+            <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
           </div>
         </div>
 
-        <div class="panel-scroll">
+        <!-- ✅ 스크롤은 로그 박스 안에서만 -->
+        <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
           <div class="log-box">
             <ul id="logList"></ul>
           </div>
@@ -260,30 +248,12 @@
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    /***********************
-     * 로컬 키
-     ***********************/
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
     const HELP_STORAGE_KEY = "buttonHelpText_v1";
 
-    /***********************
-     * 백업 경고(예: 1000개 이상이면 경고)
-     ***********************/
     const BACKUP_WARN_THRESHOLD = 1000;
-    function showBackupWarningIfNeeded() {
-      if (!Array.isArray(logs)) return;
-      if (logs.length < BACKUP_WARN_THRESHOLD) return;
-      alert(
-        "⚠ 클릭 기록이 1,000개 이상입니다.\n\n" +
-        "데이터 손실 위험이 있습니다.\n" +
-        "'전체 복사'로 주기적으로 백업하세요."
-      );
-    }
 
-    /***********************
-     * 상태
-     ***********************/
     let tree = null;
     let currentParentId = "root";
     let logs = [];
@@ -294,9 +264,16 @@
     let isApplyingRemote = false;
     let saveTimer = null;
 
-    /***********************
-     * 유틸
-     ***********************/
+    function showBackupWarningIfNeeded() {
+      if (!Array.isArray(logs)) return;
+      if (logs.length < BACKUP_WARN_THRESHOLD) return;
+      alert(
+        "⚠ 클릭 기록이 1,000개 이상입니다.\n\n" +
+        "데이터 손실 위험이 있습니다.\n" +
+        "'전체 복사'로 주기적으로 백업하세요."
+      );
+    }
+
     function genId() {
       return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
     }
@@ -321,13 +298,8 @@
         badge.textContent = "로컬 모드";
       }
     }
-    function userDocRef(uid) {
-      return db.collection("users").doc(uid);
-    }
+    function userDocRef(uid) { return db.collection("users").doc(uid); }
 
-    /***********************
-     * ✅ 안내문 로컬 저장/불러오기 + 렌더
-     ***********************/
     const DEFAULT_HELP_TEXT =
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
 1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
@@ -353,9 +325,6 @@
       renderHelp();
     }
 
-    /***********************
-     * 로컬 저장/불러오기 (트리/로그)
-     ***********************/
     function saveTreeLocal() {
       try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
       catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
@@ -401,9 +370,6 @@
       renderLogs();
     }
 
-    /***********************
-     * 클라우드 (항상 클라우드 우선)
-     ***********************/
     async function cloudLoad(uid) {
       const snap = await userDocRef(uid).get();
       if (!snap.exists) return null;
@@ -450,9 +416,6 @@
       }, { merge: true });
     }
 
-    /***********************
-     * ✅✅ 핵심: 원격 반영 시 위치 유지
-     ***********************/
     function applyRemote(remote) {
       try {
         isApplyingRemote = true;
@@ -490,20 +453,12 @@
         saveTreeLocal();
         saveLogsLocal();
         saveHelpLocal();
-      }, (err) => {
-        console.warn("onSnapshot 오류:", err);
-      });
+      }, (err) => console.warn("onSnapshot 오류:", err));
     }
 
-    /***********************
-     * 저장 훅 (로컬 + 클라우드)
-     ***********************/
     function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
     function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
 
-    /***********************
-     * 트리 유틸
-     ***********************/
     function findNodeById(node, id) {
       if (!node) return null;
       if (node.id === id) return node;
@@ -561,9 +516,6 @@
       render();
     }
 
-    /***********************
-     * 로그 렌더링
-     ***********************/
     function updateLogCount() {
       const countSpan = document.getElementById("logCount");
       if (!countSpan) return;
@@ -604,10 +556,7 @@
       const logList = document.getElementById("logList");
       if (!logList) return [];
       const items = Array.from(logList.querySelectorAll("li"));
-      return items.filter(li => {
-        const cb = li.querySelector(".log-checkbox");
-        return cb && cb.checked;
-      });
+      return items.filter(li => (li.querySelector(".log-checkbox") || {}).checked);
     }
     function deleteSelectedLogs() {
       const selected = getSelectedLogItems();
@@ -648,9 +597,6 @@
       renderLogs();
     }
 
-    /***********************
-     * 클립보드
-     ***********************/
     function fallbackCopyText(text, count, label) {
       const textarea = document.createElement("textarea");
       textarea.value = text;
@@ -696,9 +642,6 @@
       copyTextWithClipboard(lines.join("\n"), lines.length, "선택한");
     }
 
-    /***********************
-     * 화면 렌더링 (트리)
-     ***********************/
     function updateBreadcrumb() {
       const bc = document.getElementById("breadcrumb");
       if (!bc) return;
@@ -823,17 +766,12 @@
     }
 
     function render() {
-      if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) {
-        currentParentId = "root";
-      }
+      if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) currentParentId = "root";
       updateBreadcrumb();
       renderButtons();
       updateLogCount();
     }
 
-    /***********************
-     * ✅ 안내문 모달 동작
-     ***********************/
     function openHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
       const editor = document.getElementById("helpEditor");
@@ -848,18 +786,12 @@
       backdrop.style.display = "none";
     }
 
-    /***********************
-     * 초기화
-     ***********************/
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
     render();
     showBackupWarningIfNeeded();
 
-    /***********************
-     * 이벤트 바인딩
-     ***********************/
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -902,9 +834,8 @@
     });
 
     document.getElementById("btnLogin").addEventListener("click", async () => {
-      try {
-        await auth.signInWithPopup(provider);
-      } catch (e) {
+      try { await auth.signInWithPopup(provider); }
+      catch (e) {
         console.error(e);
         alert("로그인 실패: 팝업 차단 또는 Firebase 도메인 설정 문제일 수 있어요.\n\nF12 콘솔의 에러코드(auth/...)를 확인해 주세요.");
       }
