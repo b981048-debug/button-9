@@ -10,9 +10,9 @@
 
     /* ✅ 버튼 10개 높이 제어용(필요하면 숫자만 조절) */
     :root{
-      --btn-row-height: 46px;   /* 버튼 1줄(대략) */
-      --btn-row-gap: 6px;       /* 줄 간격 */
-      --btn-visible-rows: 10;   /* 한 번에 보일 개수 */
+      --btn-row-height: 46px;
+      --btn-row-gap: 6px;
+      --btn-visible-rows: 10;
     }
 
     .app {
@@ -40,7 +40,6 @@
     .btn-controls { display: flex; gap: 2px; }
     .btn-controls button { padding: 4px 6px; font-size: 11px; }
 
-    /* ✅✅ 두 패널을 한 화면에 같이 보이게 */
     .layout {
       display: flex;
       flex-direction: column;
@@ -54,7 +53,6 @@
     }
     .left, .right { flex: 1; min-width: 0; }
 
-    /* ✅ 화면 높이 기준으로 패널 영역을 잡고, 내부만 스크롤 */
     .panel-shell{
       display:flex;
       flex-direction:column;
@@ -63,13 +61,12 @@
     .panel-scroll {
       flex: 1;
       min-height: 0;
-      overflow: hidden; /* 바깥 스크롤 방지 */
+      overflow: hidden;
     }
 
-    /* 데스크탑에서 좌/우 둘 다 한 화면에 들어오게 높이 제한 */
     @media (min-width: 720px) {
       .layout {
-        height: calc(100vh - 170px); /* ✅ 안내문이 아래로 내려가므로 약간 늘림(필요하면 조절) */
+        height: calc(100vh - 200px); /* ✅ 하단 영역이 늘어나서 약간 더 확보 */
       }
       .left, .right { height: 100%; }
       .panel-shell { height: 100%; }
@@ -89,7 +86,7 @@
     .panel-head .nav-inline { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .panel-head small { opacity: .8; }
 
-    /* ✅ 버튼 목록: "10개 높이"만 보이게 + 나머지는 스크롤 */
+    /* ✅ 버튼 목록: 10개 높이만 보이게 + 나머지 스크롤 */
     .buttons-area {
       margin-top: 6px;
       margin-bottom: 10px;
@@ -98,10 +95,7 @@
       flex: 0 0 auto;
       min-height: 0;
 
-      /* ✅ 핵심: 최대 높이를 버튼 10개 분량으로 제한 */
-      max-height: calc(
-        (var(--btn-row-height) + var(--btn-row-gap)) * var(--btn-visible-rows)
-      );
+      max-height: calc((var(--btn-row-height) + var(--btn-row-gap)) * var(--btn-visible-rows));
       border: 1px solid #eee;
       border-radius: 10px;
       padding: 6px;
@@ -187,20 +181,9 @@
           </div>
         </div>
 
-        <!-- ✅ 스크롤은 이 안에서만 -->
         <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
           <div class="buttons-area" id="buttonContainer"></div>
           <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
-
-          <!-- ✅ 로그인/안내 문구는 왼쪽 패널 하단 유지 -->
-          <div class="moved-area">
-            <div class="auth-bar">
-              <button id="btnLogin">Google 로그인</button>
-              <button id="btnLogout" disabled>로그아웃</button>
-              <span class="auth-status" id="authStatus">로그인 안 됨</span>
-            </div>
-            <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
-          </div>
         </div>
       </div>
 
@@ -217,7 +200,6 @@
           </div>
         </div>
 
-        <!-- ✅ 스크롤은 로그 박스 안에서만 -->
         <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
           <div class="log-box">
             <ul id="logList"></ul>
@@ -226,10 +208,19 @@
       </div>
     </div>
 
-    <!-- ✅✅ 안내문/안내문 수정: 앱 맨 밑으로 이동 -->
+    <!-- ✅✅ 하단 영역(안내문 + 로그인영역) 전부 맨 밑으로 이동 -->
     <div class="help-box">
       <div class="empty-text" id="helpText"></div>
       <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
+    </div>
+
+    <div class="moved-area">
+      <div class="auth-bar">
+        <button id="btnLogin">Google 로그인</button>
+        <button id="btnLogout" disabled>로그아웃</button>
+        <span class="auth-status" id="authStatus">로그인 안 됨</span>
+      </div>
+      <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
     </div>
   </div>
 
