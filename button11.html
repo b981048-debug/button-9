@@ -4,181 +4,151 @@
   <meta charset="UTF-8" />
   <title>복한아름 기록공책</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; padding: 10px; background: #f5f5f5; }
+
     .app {
-      max-width: 980px; margin: 0 auto; background: #ffffff; border-radius: 12px;
+      max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 12px;
       padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     h1 { margin: 0 0 8px; font-size: 18px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
-    .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 8px; opacity:.85; }
+    .badge { font-size:12px; border:1px solid #ddd; border-radius:999px; padding:4px 10px; background:#fafafa; }
 
-    .topbar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin: 6px 0 10px; }
-    .topbar button { padding: 6px 10px; border:1px solid #ddd; border-radius: 10px; background:#fff; cursor:pointer; }
-    .topbar button.active { background:#eef7ff; border-color:#b3d4ff; }
-    .topbar .spacer { flex: 1; }
+    button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; padding: 6px 10px; font-size: 13px; }
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      min-height: 420px;
-    }
-    @media (max-width: 860px) {
-      .layout { grid-template-columns: 1fr; }
+    /* ====== 디자인 변수 ====== */
+    :root{
+      --btnWidthPct: 39; /* 버튼(왼쪽 메인 버튼) 가로% */
+      --manualHpx: 72;   /* 직접입력 textarea 높이(px) */
     }
 
-    .panel-shell {
-      border: 1px solid #e8e8e8;
-      border-radius: 12px;
-      padding: 10px;
-      background: #fff;
-      display:flex;
-      flex-direction:column;
-      min-height: 420px;
+    /* ✅✅ 좌/우 패널 */
+    .layout { display: flex; flex-direction: column; gap: 6px; }
+    @media (min-width: 720px) {
+      .layout { flex-direction: row; gap: 6px; height: calc(100vh - 220px); }
+      .left, .right { height: 100%; }
+      .panel-shell { height: 100%; }
+      .panel-scroll { height: 100%; }
     }
+    .left, .right { flex: 1; min-width: 0; }
 
-    .panel-head { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
-    .panel-title { font-weight: 700; font-size: 14px; }
-    .nav-inline { margin-left:auto; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-    .nav-inline button { padding: 5px 8px; font-size: 12px; border:1px solid #ddd; border-radius: 10px; background:#fff; cursor:pointer; }
+    .panel-shell{ display:flex; flex-direction:column; min-height: 0; }
+    .panel-scroll { flex: 1; min-height: 0; overflow: hidden; }
 
-    .panel-scroll { flex: 1; min-height: 0; display:flex; flex-direction:column; gap:8px; }
-
-    /* ====== 디자인(크기) ====== */
-    :root {
-      --btn-width: 220px;  /* 디자인모드에서 조절 */
-      --manual-h: 90px;    /* 디자인모드에서 조절 */
+    .panel-head {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 4px; flex-wrap: wrap;
     }
+    .panel-title { font-size: 14px; font-weight: 600; }
+    .nav-inline { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .nav-inline small { opacity: .8; }
 
-    .design-panel {
-      border: 1px dashed #ddd;
-      border-radius: 12px;
-      padding: 10px;
-      background: #fbfbfb;
+    /* ====== 상단 모드 버튼 ====== */
+    .mode-bar{
+      display:flex; gap:6px; align-items:center; flex-wrap:wrap;
+      margin: 6px 0 10px;
+    }
+    .mode-bar button{ font-size:12px; padding:6px 10px; border-radius:10px; }
+    .mode-bar button.active{ background:#eef7ff; border-color:#b3d4ff; }
+    .mode-bar .hint{ font-size:12px; opacity:.75; margin-left:auto; }
+
+    /* ====== 디자인 패널 ====== */
+    .design-panel{
       display:none;
-      margin-bottom: 8px;
-    }
-    .design-panel.show { display:block; }
-    .design-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .design-row label { font-size: 12px; opacity:.85; display:flex; align-items:center; gap:8px; }
-    .design-row input[type="range"] { width: 220px; }
-    .kv { font-size: 12px; opacity:.7; }
-
-    /* ====== 버튼목록 ====== */
-    .buttons-area {
-      background:#fafafa;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 8px;
-      overflow:auto;
-      flex: 1;
-      min-height: 0;
-    }
-    .btnrow {
-      display:flex;
-      gap:6px;
-      align-items:stretch;
-      margin-bottom:6px;
-      flex-wrap:wrap;
-    }
-    .tree-btn {
-      width: var(--btn-width);
-      max-width: 100%;
-      padding: 10px 10px;
-      border:1px solid #ddd;
-      border-radius: 14px;
-      background:#fff;
-      cursor:pointer;
-      text-align:center;
-      line-height:1.25;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .tree-btn:hover { background:#f6f6f6; }
-    .tree-mini {
-      padding: 8px 10px;
-      border:1px solid #ddd;
-      border-radius: 12px;
-      background:#fff;
-      cursor:pointer;
-      font-size:12px;
-    }
-    .add-current {
-      width: 100%;
+      border: 1px dashed #ddd;
+      border-radius: 10px;
       padding: 10px;
-      border: 1px dashed #ccc;
-      border-radius: 12px;
-      background: #fff;
-      cursor: pointer;
-      font-size: 12px;
+      background:#fbfbfb;
+      margin: 6px 0 8px;
     }
+    .design-panel.show{ display:block; }
+    .design-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .design-row label{ font-size:12px; opacity:.85; display:flex; gap:8px; align-items:center; }
+    .design-row input[type="range"]{ width:220px; }
+    .kv{ font-size:12px; opacity:.75; }
+
+    /* ✅✅ (상단 입력칸) */
+    .quick-add { display: flex; gap: 6px; align-items: flex-start; margin: 6px 0 8px; }
+    .quick-add textarea {
+      flex: 1; min-width: 0;
+      border: 1px solid #ddd; border-radius: 10px;
+      padding: 8px 10px; font-size: 13px; outline: none;
+      resize: vertical; min-height: 42px;
+      height: calc(var(--manualHpx) * 1px);
+      max-height: 300px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+    .quick-add textarea:focus { border-color: #b3d4ff; box-shadow: 0 0 0 3px rgba(179, 212, 255, 0.35); }
+    .quick-add button { white-space: nowrap; padding: 8px 10px; }
+    .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
+
+    /* ✅✅ 버튼 목록 영역 */
+    .buttons-area {
+      margin-top: 6px; margin-bottom: 10px;
+      overflow-y: auto; padding-right: 4px;
+      flex: 0 0 auto; min-height: 0;
+      max-height: 50vh;
+      border: 1px solid #eee; border-radius: 10px;
+      padding: 6px; background: #fff;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
+
+    .btn-main{
+      flex: 0 0 auto;
+      width: calc(var(--btnWidthPct) * 1%);
+      text-align: left; padding: 10px;
+      border-radius: 10px; border: 1px solid #ccc;
+      background: #fafafa; font-size: 14px; min-height: 40px;
+      transition: width .08s linear;
+    }
+    .btn-row { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+    .btn-controls { display: flex; gap: 2px; flex: 1 1 auto; justify-content:flex-end; }
+    .btn-controls button { padding: 4px 6px; font-size: 11px; }
 
     /* ====== 클릭 기록 ====== */
-    .log-header { display:flex; align-items:baseline; gap:6px; margin-bottom: 6px; flex-wrap:wrap; }
+    .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
     .log-count { font-size: 12px; opacity: 0.7; }
-    .log-actions { margin-left:auto; display:flex; gap:4px; flex-wrap:wrap; }
-    .log-actions button { font-size:11px; padding:4px 6px; border:1px solid #ddd; border-radius: 10px; background:#fff; cursor:pointer; }
-
-    .manual-box {
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 8px;
-      background: #fbfbfb;
-    }
-    .manual-box .hint {
-      font-size: 12px; opacity:.75; margin-bottom: 6px; line-height: 1.35;
-    }
-    #manualLogInput {
-      width: 100%;
-      min-height: 48px;
-      height: var(--manual-h);
-      resize: vertical;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 10px;
-      font-size: 13px;
-      outline: none;
-      background:#fff;
-      white-space: pre-wrap;
-    }
+    .log-actions { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
 
     .log-box {
-      background: #fafafa; border-radius: 12px; border: 1px solid #ddd; padding: 8px;
-      overflow-y: auto;
-      flex: 1;
-      min-height: 0;
+      background: #fafafa; border-radius: 10px; border: 1px solid #ddd; padding: 8px;
+      overflow-y: auto; flex: 1; min-height: 0; max-height: none;
     }
-    #logList { list-style:none; padding:0; margin:0; font-size: 12px; }
+    #logList { list-style: none; padding: 0; margin: 0; font-size: 12px; }
     #logList li {
-      padding: 4px 2px; border-bottom: 1px solid #eee; word-break: break-word;
-      display:flex; align-items:flex-start; gap: 6px;
+      padding: 4px 2px; border-bottom: 1px solid #eee;
+      word-break: break-all;
+      display: flex; align-items: flex-start; gap: 4px;
+      white-space: pre-wrap;
     }
-    #logList li:last-child { border-bottom:none; }
-    .log-checkbox { margin-top: 2px; flex-shrink:0; }
-    .log-text { flex:1; white-space: pre-wrap; }
+    #logList li:last-child { border-bottom: none; }
+    .log-text { flex: 1; white-space: pre-wrap; }
+    .log-checkbox { flex-shrink: 0; margin-top: 2px; }
 
-    /* ====== 하단 ====== */
+    .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
+    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
     .help-box {
-      border: 1px dashed #ddd; border-radius: 12px; padding: 10px; background: #fbfbfb;
+      border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
       margin-top: 10px;
     }
-    .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
-    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; border:1px solid #ddd; border-radius: 10px; background:#fff; cursor:pointer; }
 
     .moved-area {
       margin-top: 10px;
       border: 1px solid #eee;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 10px;
       background: #fafafa;
     }
-    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-    .auth-bar button { padding: 6px 10px; border:1px solid #ddd; border-radius: 10px; background:#fff; cursor:pointer; }
-    .auth-status { font-size: 12px; opacity: .75; }
-    .note { margin-top: 6px; font-size: 12px; opacity:.75; line-height:1.35; }
+    .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+    .auth-status { font-size:12px; opacity:.85; }
+    .note { font-size:12px; opacity:.75; margin:6px 0 0; }
 
     /* ====== 모달 ====== */
     .modal-backdrop {
@@ -186,33 +156,24 @@
       display: none; align-items: center; justify-content: center; padding: 16px;
       z-index: 9999;
     }
-    .modal-backdrop.show { display:flex; }
-    .modal {
-      width: min(720px, 100%);
-      background: #fff; border-radius: 12px; border: 1px solid #ddd;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-      padding: 12px;
-    }
+    .modal { width: min(720px, 100%); background: #fff; border-radius: 12px; border: 1px solid #ddd;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18); padding: 12px; }
     .modal h2 { font-size: 14px; margin: 0 0 8px; }
     .modal textarea {
       width: 100%; min-height: 180px; resize: vertical;
       border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 13px;
       outline: none;
     }
-    .modal-actions { display:flex; gap:6px; justify-content:flex-end; margin-top: 10px; flex-wrap:wrap; }
-    .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
-    .modal-actions button { padding: 6px 10px; border:1px solid #ddd; border-radius: 10px; background:#fff; cursor:pointer; }
+    .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
 
     /* ====== 통계 모달 ====== */
-    .stat-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .stat-card { border:1px solid #eee; border-radius: 12px; padding: 10px; background:#fafafa; }
-    .stat-k { font-size: 12px; opacity:.75; }
-    .stat-v { font-size: 18px; font-weight: 800; margin-top: 4px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    @media (max-width: 520px) { .stat-grid { grid-template-columns: 1fr; } }
+    .stat-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width:520px){ .stat-grid{ grid-template-columns:1fr; } }
+    .stat-card{ border:1px solid #eee; border-radius:12px; padding:10px; background:#fafafa; }
+    .stat-k{ font-size:12px; opacity:.75; }
+    .stat-v{ font-size:18px; font-weight:800; margin-top:4px; }
   </style>
 </head>
-
 <body>
   <div class="app">
     <h1>
@@ -220,71 +181,69 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <div class="topbar">
+    <!-- ✅ 모드바 -->
+    <div class="mode-bar">
       <button id="btnDesignMode">디자인모드</button>
       <button id="btnStatsMode">통계모드</button>
-      <span class="spacer"></span>
-      <span class="badge" id="designHint" style="display:none;">디자인모드 ON</span>
+      <div class="hint" id="modeHint"></div>
     </div>
 
     <div class="layout">
-      <!-- 좌측: 버튼 목록 -->
       <div class="left panel-shell">
         <div class="panel-head">
           <div class="panel-title">버튼 목록</div>
           <div class="nav-inline">
             <button id="btnUp">◀ 상위로</button>
             <button id="btnRoot">⬆ 최상위로</button>
-            <small id="breadcrumb" style="opacity:.7;">위치: ROOT</small>
+            <small id="breadcrumb">위치: ROOT</small>
           </div>
         </div>
 
-        <!-- 디자인모드 패널 -->
+        <!-- ✅ 디자인 패널 -->
         <div class="design-panel" id="designPanel">
           <div class="design-row">
             <label>
-              버튼 크기(가로)
-              <input id="rangeBtnWidth" type="range" min="120" max="520" step="10" />
-              <span class="kv"><span id="valBtnWidth">220</span>px</span>
+              버튼 길이(%)
+              <input id="rangeBtnWidth" type="range" min="15" max="100" value="39" />
+              <span class="kv"><span id="valBtnWidth">39</span>%</span>
             </label>
 
             <label>
-              직접 입력 칸 길이(높이)
-              <input id="rangeManualH" type="range" min="48" max="360" step="12" />
-              <span class="kv"><span id="valManualH">90</span>px</span>
+              직접입력 칸 높이(px)
+              <input id="rangeManualH" type="range" min="48" max="260" step="4" value="72" />
+              <span class="kv"><span id="valManualH">72</span>px</span>
             </label>
           </div>
-          <div class="kv" style="margin-top:6px;">※ 디자인모드에서만 조절 가능. (버튼/직접입력칸 모두 반영)</div>
+          <div class="kv" style="margin-top:6px;">※ 디자인모드에서만 조절. (왼쪽 버튼 폭 + 직접입력칸 높이)</div>
         </div>
 
-        <div class="panel-scroll">
+        <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
+          <!-- ✅ 직접 입력 -->
+          <div class="quick-add">
+            <textarea id="quickAddInput" placeholder="여기에 입력 후 Enter (오른쪽 클릭 기록에 저장)&#10;Shift+Enter = 줄바꿈"></textarea>
+            <button id="btnQuickAdd" class="btn-primary">기록</button>
+          </div>
+
           <div class="buttons-area" id="buttonContainer"></div>
           <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
         </div>
       </div>
 
-      <!-- 우측: 클릭 기록 -->
       <div class="right panel-shell">
         <div class="log-header">
           <div class="panel-title">클릭 기록</div>
           <div class="log-count">(총 <span id="logCount">0</span>개)</div>
           <div class="log-actions">
-            <button id="btnSelectAllLog">전체 선택</button>
-            <button id="btnDeleteAllLog">전체 삭제</button>
-            <button id="btnCopyAllLog">전체 복사</button>
-            <button id="btnCopySelectedLog">선택 복사</button>
-            <button id="btnEditLog">선택 수정</button>
-            <button id="btnDeleteLog">선택 삭제</button>
+            <button id="btnSelectAllLog" style="font-size:11px;padding:4px 6px;">전체 선택</button>
+            <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
+            <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
+            <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
+            <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
+            <button id="btnDeleteLog" style="font-size:11px;padding:4px 6px;">선택 삭제</button>
           </div>
         </div>
 
-        <!-- ✅ 직접 입력 -->
-        <div class="manual-box">
-          <div class="hint">여기에 입력 후 <b>Enter</b> (오른쪽 클릭 기록에 저장) / <b>Shift+Enter</b> 줄바꿈</div>
-          <textarea id="manualLogInput" placeholder="예) 오늘 민법 30분 / 정리할 것 2가지&#10;Shift+Enter로 줄바꿈 가능"></textarea>
-        </div>
-
-        <div class="panel-scroll">
+        <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
           <div class="log-box">
             <ul id="logList"></ul>
           </div>
@@ -292,28 +251,28 @@
       </div>
     </div>
 
-    <!-- 하단: 안내문 -->
+    <!-- ✅ 안내문 -->
     <div class="help-box">
       <div class="empty-text" id="helpText"></div>
       <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
     </div>
 
-    <!-- 하단: 로그인 영역 -->
+    <!-- ✅ 로그인 -->
     <div class="moved-area">
       <div class="auth-bar">
         <button id="btnLogin">Google 로그인</button>
         <button id="btnLogout" disabled>로그아웃</button>
         <span class="auth-status" id="authStatus">로그인 안 됨</span>
       </div>
-      <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다.</div>
+      <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
     </div>
   </div>
 
-  <!-- 안내문 편집 모달 -->
+  <!-- ✅ 안내문 모달 -->
   <div class="modal-backdrop" id="helpModalBackdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
-      <h2 id="helpModalTitle">안내문 수정</h2>
-      <textarea id="helpEditor"></textarea>
+    <div class="modal">
+      <h2>안내문 수정</h2>
+      <textarea id="helpEditor" placeholder="여기에 안내문을 입력하세요."></textarea>
       <div class="modal-actions">
         <button id="btnHelpCancel">취소</button>
         <button class="btn-primary" id="btnHelpSave">저장</button>
@@ -321,228 +280,313 @@
     </div>
   </div>
 
-  <!-- 통계 모달 -->
+  <!-- ✅ 통계 모달 -->
   <div class="modal-backdrop" id="statsBackdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
-      <h2 id="statsTitle">통계</h2>
+    <div class="modal">
+      <h2>통계</h2>
       <div class="stat-grid">
         <div class="stat-card">
           <div class="stat-k">클릭 기록 개수</div>
-          <div class="stat-v mono" id="statLogCount">0</div>
+          <div class="stat-v" id="statCount">0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-k">클릭 기록 글자수(라벨만)</div>
-          <div class="stat-v mono" id="statLogChars">0</div>
+          <div class="stat-k">클릭 기록 글자수(내용 합)</div>
+          <div class="stat-v" id="statChars">0</div>
         </div>
       </div>
       <div class="modal-actions" style="margin-top:12px;">
         <button id="btnStatsClose">닫기</button>
       </div>
-      <div class="note" style="margin-top:6px;">※ 글자수는 “직접 입력/버튼 기록의 내용(label)”만 합산합니다. (시간/좌표 제외)</div>
+      <div class="note">※ 글자수는 기록의 <b>label(내용)</b>만 합산합니다. (시간/좌표 제외)</div>
     </div>
   </div>
 
-  <!-- Firebase (필요 시 버전/구성은 네 프로젝트와 동일하게 유지) -->
-  <!-- ✅ 네가 쓰던 설정 그대로 붙여넣어야 함 -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
   <script>
     /***********************
-     * ✅ Firebase 설정 넣기
+     * Firebase 설정 (네 프로젝트 값)
      ***********************/
     const firebaseConfig = {
-      // apiKey: "...",
-      // authDomain: "...",
-      // projectId: "...",
-      // ...
+      apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
+      authDomain: "button-tree.firebaseapp.com",
+      projectId: "button-tree",
+      storageBucket: "button-tree.firebasestorage.app",
+      messagingSenderId: "670872655484",
+      appId: "1:670872655484:web:a8f5a5201cd845a4075bf9",
+      measurementId: "G-9P3ZV8LLQ3"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    /***********************
-     * ✅ 저장키 (기존 데이터 유지)
-     ***********************/
-    const TREE_STORAGE_KEY = "bokhanareum_tree_v1";
-    const LOG_STORAGE_KEY  = "bokhanareum_logs_v1";
-    const HELP_STORAGE_KEY = "bokhanareum_help_v1";
-    const UI_STORAGE_KEY   = "bokhanareum_ui_v1"; // ✅ 새로 추가(호환 안전)
+    // ✅✅✅ 기존 데이터 유지: 저장키 절대 변경하지 않음
+    const TREE_STORAGE_KEY = "buttonTree_v_local";
+    const LOG_STORAGE_KEY  = "buttonLogs_v1";
+    const HELP_STORAGE_KEY = "buttonHelpText_v1";
+
+    // 새로 추가(디자인/통계용 UI 상태만 저장)
+    const UI_STORAGE_KEY = "buttonUI_v1";
+
+    const BACKUP_WARN_THRESHOLD = 1000;
+
+    let tree = null;
+    let currentParentId = "root";
+    let logs = [];
+    let helpText = "";
+
+    // UI 상태
+    let ui = {
+      designMode: false,
+      btnWidthPct: 39,
+      manualHpx: 72
+    };
 
     let currentUser = null;
     let unsubscribeDoc = null;
-    let saveTimer = null;
     let isApplyingRemote = false;
+    let saveTimer = null;
 
-    let tree = { id: "root", label: "ROOT", children: [] };
-    let logs = [];
-    let helpText = "";
-    let ui = {
-      designMode: false,
-      btnWidthPx: 220,
-      manualHPx: 90
-    };
+    function showBackupWarningIfNeeded() {
+      if (!Array.isArray(logs)) return;
+      if (logs.length < BACKUP_WARN_THRESHOLD) return;
+      alert(
+        "⚠ 클릭 기록이 1,000개 이상입니다.\n\n" +
+        "데이터 손실 위험이 있습니다.\n" +
+        "'전체 복사'로 주기적으로 백업하세요."
+      );
+    }
+
+    function genId() {
+      return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+    }
+    function nowMs() { return Date.now(); }
+
+    function setAuthUI() {
+      const status = document.getElementById("authStatus");
+      const btnLogin = document.getElementById("btnLogin");
+      const btnLogout = document.getElementById("btnLogout");
+      const badge = document.getElementById("syncBadge");
+
+      if (currentUser) {
+        const name = currentUser.displayName || currentUser.email || "사용자";
+        status.textContent = `로그인됨: ${name}`;
+        btnLogin.disabled = true;
+        btnLogout.disabled = false;
+        badge.textContent = "클라우드 동기화";
+      } else {
+        status.textContent = "로그인 안 됨";
+        btnLogin.disabled = false;
+        btnLogout.disabled = true;
+        badge.textContent = "로컬 모드";
+      }
+    }
+    function userDocRef(uid) { return db.collection("users").doc(uid); }
 
     const DEFAULT_HELP_TEXT =
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
-💡 직접 입력 칸에서 Enter로 기록 저장, Shift+Enter로 줄바꿈이 가능합니다.
-💾 1000개마다 백업을 권장합니다.`;
+1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
 
-    function nowStr() { return new Date().toLocaleString(); }
-    function genId() { return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,10); }
-    function userDocRef(uid) { return db.collection("users").doc(uid); }
-
-    function safeJSONParse(s, fallback) { try { return JSON.parse(s); } catch { return fallback; } }
-
-    /***********************
-     * ✅ UI 적용
-     ***********************/
-    function applyUIToCSS() {
-      document.documentElement.style.setProperty("--btn-width", Math.max(120, ui.btnWidthPx) + "px");
-      document.documentElement.style.setProperty("--manual-h", Math.max(48, ui.manualHPx) + "px");
-
-      document.getElementById("valBtnWidth").textContent = String(ui.btnWidthPx);
-      document.getElementById("valManualH").textContent = String(ui.manualHPx);
-
-      document.getElementById("rangeBtnWidth").value = String(ui.btnWidthPx);
-      document.getElementById("rangeManualH").value = String(ui.manualHPx);
+    /* ====== UI 저장/적용 ====== */
+    function applyUI() {
+      document.documentElement.style.setProperty("--btnWidthPct", String(ui.btnWidthPct));
+      document.documentElement.style.setProperty("--manualHpx", String(ui.manualHpx));
 
       document.getElementById("btnDesignMode").classList.toggle("active", !!ui.designMode);
       document.getElementById("designPanel").classList.toggle("show", !!ui.designMode);
-      document.getElementById("designHint").style.display = ui.designMode ? "inline-block" : "none";
+
+      const hint = document.getElementById("modeHint");
+      hint.textContent = ui.designMode ? "디자인모드 ON" : "";
+
+      // 슬라이더/표시값 동기화
+      document.getElementById("rangeBtnWidth").value = String(ui.btnWidthPct);
+      document.getElementById("valBtnWidth").textContent = String(ui.btnWidthPct);
+
+      document.getElementById("rangeManualH").value = String(ui.manualHpx);
+      document.getElementById("valManualH").textContent = String(ui.manualHpx);
     }
 
-    function loadUILocal() {
-      const saved = localStorage.getItem(UI_STORAGE_KEY);
-      if (saved) {
-        const parsed = safeJSONParse(saved, null);
-        if (parsed && typeof parsed === "object") {
-          ui = { ...ui, ...parsed };
-        }
-      }
-      applyUIToCSS();
-    }
     function saveUILocal() {
-      try { localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(ui)); } catch {}
+      try { localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(ui)); } catch (e) {}
     }
-    function saveUI() { saveUILocal(); scheduleCloudSave(); }
-
-    /***********************
-     * ✅ 로그 렌더/조작
-     ***********************/
-    function updateLogCount() {
-      document.getElementById("logCount").textContent = String(logs.length);
-    }
-    function createLogLi(log, index) {
-      const li = document.createElement("li");
-      li.dataset.index = index;
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "log-checkbox";
-
-      const textSpan = document.createElement("span");
-      textSpan.className = "log-text";
-      // label은 줄바꿈 보존
-      textSpan.textContent = `${log.time} - [${log.coord}] ${log.label}`;
-
-      li.appendChild(checkbox);
-      li.appendChild(textSpan);
-      return li;
-    }
-    function renderLogs() {
-      const logList = document.getElementById("logList");
-      logList.innerHTML = "";
-      logs.forEach((log, idx) => logList.appendChild(createLogLi(log, idx)));
-      updateLogCount();
-    }
-    function appendLog(label, coord) {
-      const clean = String(label ?? "").trimEnd();
-      if (!clean.trim()) return;
-      logs.unshift({ time: nowStr(), label: clean, coord: coord || "-" });
-      saveLogs();
-      renderLogs();
-      showBackupWarningIfNeeded();
+    function loadUILocal() {
+      try {
+        const saved = localStorage.getItem(UI_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") {
+            ui = { ...ui, ...parsed };
+          }
+        }
+      } catch (e) {}
+      applyUI();
     }
 
-    function getSelectedLogItems() {
-      const items = Array.from(document.querySelectorAll("#logList li"));
-      return items.filter(li => (li.querySelector(".log-checkbox") || {}).checked);
+    function scheduleCloudSave() {
+      if (!currentUser) return;
+      if (isApplyingRemote) return;
+
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async () => {
+        try {
+          await userDocRef(currentUser.uid).set({
+            tree,
+            logs,
+            helpText,
+            ui, // ✅ UI도 같이 동기화
+            updatedAtMs: nowMs(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        } catch (e) {
+          console.warn("cloud save 실패:", e);
+        }
+      }, 300);
     }
-    function selectAllLogs() {
-      const items = Array.from(document.querySelectorAll("#logList li .log-checkbox"));
-      items.forEach(cb => cb.checked = true);
+
+    function saveHelpLocal() {
+      try { localStorage.setItem(HELP_STORAGE_KEY, helpText); }
+      catch (e) { console.warn("localStorage 안내문 저장 오류:", e); }
     }
-    function deleteSelectedLogs() {
-      const selected = getSelectedLogItems();
-      if (selected.length === 0) return alert("삭제할 기록을 선택하세요.");
-      if (!confirm(selected.length + "개의 기록을 삭제할까요?")) return;
-
-      const indexes = selected
-        .map(li => Number(li.dataset.index))
-        .filter(n => !Number.isNaN(n))
-        .sort((a,b) => b-a);
-
-      indexes.forEach(idx => { if (idx >= 0 && idx < logs.length) logs.splice(idx, 1); });
-      saveLogs();
-      renderLogs();
+    function loadHelpLocal() {
+      let saved = "";
+      try { saved = localStorage.getItem(HELP_STORAGE_KEY) || ""; } catch {}
+      helpText = (saved && saved.trim() !== "") ? saved : DEFAULT_HELP_TEXT;
+      renderHelp();
     }
-    function editSelectedLog() {
-      const selected = getSelectedLogItems();
-      if (selected.length === 0) return alert("수정할 기록을 선택하세요.");
-      if (selected.length > 1) return alert("한 번에 하나의 기록만 수정할 수 있습니다.");
-
-      const idx = Number(selected[0].dataset.index);
-      if (Number.isNaN(idx) || idx < 0 || idx >= logs.length) return alert("로그 인덱스 오류입니다.");
-
-      const old = logs[idx];
-      const newLabel = prompt("새 내용(라벨)을 입력하세요:", old.label);
-      if (!newLabel || newLabel.trim() === "") return;
-
-      logs[idx].label = newLabel.trimEnd();
-      saveLogs();
-      renderLogs();
+    function renderHelp() {
+      const el = document.getElementById("helpText");
+      if (!el) return;
+      el.textContent = helpText || "";
     }
-    function deleteAllLogs() {
-      if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
-      if (!confirm("모든 기록을 삭제할까요?")) return;
+    function saveHelp() {
+      saveHelpLocal();
+      scheduleCloudSave();
+      renderHelp();
+    }
+
+    function saveTreeLocal() {
+      try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
+      catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
+    }
+    function saveLogsLocal() {
+      try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs)); }
+      catch (e) { console.warn("localStorage 로그 저장 오류:", e); }
+    }
+
+    function loadTreeLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(TREE_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.id && Array.isArray(parsed.children)) { tree = parsed; return; }
+        } catch {}
+      }
+      // 없을 때만 기본 생성
+      tree = {
+        id: "root",
+        label: "ROOT",
+        children: [
+          { id: genId(), label: "예시 버튼 1", children: [] },
+          { id: genId(), label: "예시 버튼 2", children: [
+            { id: genId(), label: "예시 2-1", children: [] },
+            { id: genId(), label: "예시 2-2", children: [] }
+          ] }
+        ]
+      };
+      saveTreeLocal();
+    }
+
+    function loadLogsLocal() {
+      let saved = null;
+      try { saved = localStorage.getItem(LOG_STORAGE_KEY); } catch {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) { logs = parsed; renderLogs(); return; }
+        } catch {}
+      }
       logs = [];
-      saveLogs();
       renderLogs();
     }
-    function copyAllLogs() {
-      if (logs.length === 0) return alert("복사할 기록이 없습니다.");
-      const text = logs.map(l => `${l.time} - [${l.coord}] ${l.label}`).join("\n");
-      navigator.clipboard.writeText(text).then(() => alert("전체 기록을 복사했어요."));
-    }
-    function copySelectedLogs() {
-      const selected = getSelectedLogItems();
-      if (selected.length === 0) return alert("복사할 기록을 선택하세요.");
-      const indexes = selected.map(li => Number(li.dataset.index)).filter(n => !Number.isNaN(n));
-      const text = indexes.map(i => `${logs[i].time} - [${logs[i].coord}] ${logs[i].label}`).join("\n");
-      navigator.clipboard.writeText(text).then(() => alert("선택한 기록을 복사했어요."));
+
+    async function cloudLoad(uid) {
+      const snap = await userDocRef(uid).get();
+      if (!snap.exists) return null;
+      return snap.data();
     }
 
-    /***********************
-     * ✅ 통계
-     ***********************/
-    function openStats() {
-      const count = logs.length;
-      const chars = logs.reduce((acc, l) => acc + (String(l.label || "").length), 0);
-      document.getElementById("statLogCount").textContent = String(count);
-      document.getElementById("statLogChars").textContent = String(chars);
-      document.getElementById("statsBackdrop").classList.add("show");
-    }
-    function closeStats() {
-      document.getElementById("statsBackdrop").classList.remove("show");
+    async function cloudFirstInit(uid) {
+      const remote = await cloudLoad(uid);
+
+      if (remote && (remote.tree || remote.logs || remote.helpText || remote.ui)) {
+        applyRemote(remote);
+        saveTreeLocal();
+        saveLogsLocal();
+        saveHelpLocal();
+        saveUILocal();
+        return;
+      }
+
+      await userDocRef(uid).set({
+        tree,
+        logs,
+        helpText,
+        ui,
+        updatedAtMs: nowMs(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
     }
 
-    /***********************
-     * ✅ 트리/버튼 렌더
-     ***********************/
-    let currentParentId = "root";
+    function applyRemote(remote) {
+      try {
+        isApplyingRemote = true;
+
+        const prevParentId = currentParentId;
+
+        if (remote.tree && remote.tree.id && Array.isArray(remote.tree.children)) {
+          tree = remote.tree;
+          const stillExists = findNodeById(tree, prevParentId);
+          currentParentId = stillExists ? prevParentId : "root";
+        }
+
+        if (Array.isArray(remote.logs)) logs = remote.logs;
+        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
+        if (remote.ui && typeof remote.ui === "object") ui = { ...ui, ...remote.ui };
+
+        applyUI();
+        renderLogs();
+        render();
+        renderHelp();
+        showBackupWarningIfNeeded();
+      } finally {
+        isApplyingRemote = false;
+      }
+    }
+
+    function startRealtimeListener(uid) {
+      if (unsubscribeDoc) unsubscribeDoc();
+
+      unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
+        if (!snap.exists) return;
+        const remote = snap.data() || {};
+        if (isApplyingRemote) return;
+        if (!remote.tree && !remote.logs && !remote.helpText && !remote.ui) return;
+
+        applyRemote(remote);
+        saveTreeLocal();
+        saveLogsLocal();
+        saveHelpLocal();
+        saveUILocal();
+      }, (err) => console.warn("onSnapshot 오류:", err));
+    }
+
+    function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
+    function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
 
     function findNodeById(node, id) {
       if (!node) return null;
@@ -563,254 +607,363 @@
       }
       return null;
     }
+    function getDepthById(node, targetId, depth) {
+      if (depth === undefined) depth = 0;
+      if (!node) return -1;
+      if (node.id === targetId) return depth;
+      const children = node.children || [];
+      for (let i = 0; i < children.length; i++) {
+        const d = getDepthById(children[i], targetId, depth + 1);
+        if (d !== -1) return d;
+      }
+      return -1;
+    }
+    function columnIndexToLetters(n) {
+      if (!n || n <= 0) n = 1;
+      let s = "";
+      while (n > 0) {
+        const rem = (n - 1) % 26;
+        s = String.fromCharCode(65 + rem) + s;
+        n = Math.floor((n - 1) / 26);
+      }
+      return s;
+    }
     function getCurrentParentNode() {
       const node = findNodeById(tree, currentParentId);
       if (!node) currentParentId = "root";
       return node || tree;
     }
+    function moveSibling(parentNode, index, delta) {
+      if (!parentNode || !parentNode.children) return;
+      const newIndex = index + delta;
+      if (newIndex < 0 || newIndex >= parentNode.children.length) return;
+      const arr = parentNode.children;
+      const tmp = arr[index];
+      arr[index] = arr[newIndex];
+      arr[newIndex] = tmp;
+      saveTree();
+      render();
+    }
 
-    function renderBreadcrumb() {
+    function updateLogCount() {
+      const countSpan = document.getElementById("logCount");
+      if (!countSpan) return;
+      countSpan.textContent = logs.length;
+    }
+    function createLogLi(log, index) {
+      const li = document.createElement("li");
+      li.dataset.index = index;
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "log-checkbox";
+
+      const textSpan = document.createElement("span");
+      textSpan.className = "log-text";
+      textSpan.textContent = `${log.time} - [${log.coord}] ${log.label}`;
+
+      li.appendChild(checkbox);
+      li.appendChild(textSpan);
+      return li;
+    }
+    function renderLogs() {
+      const logList = document.getElementById("logList");
+      if (!logList) return;
+      logList.innerHTML = "";
+      logs.forEach((log, idx) => logList.appendChild(createLogLi(log, idx)));
+      updateLogCount();
+
+      // 전체선택 버튼 라벨을 현재 상태에 맞게 갱신
+      syncSelectAllButtonLabel();
+    }
+    function appendLog(label, coord) {
+      const now = new Date();
+      const timeStr = now.toLocaleString();
+      logs.unshift({ time: timeStr, label, coord });
+      saveLogs();
+      renderLogs();
+      showBackupWarningIfNeeded();
+    }
+
+    function getSelectedLogItems() {
+      const logList = document.getElementById("logList");
+      if (!logList) return [];
+      const items = Array.from(logList.querySelectorAll("li"));
+      return items.filter(li => (li.querySelector(".log-checkbox") || {}).checked);
+    }
+
+    function syncSelectAllButtonLabel(){
+      const btn = document.getElementById("btnSelectAllLog");
+      const cbs = Array.from(document.querySelectorAll("#logList .log-checkbox"));
+      if (!btn) return;
+      if (cbs.length === 0) { btn.textContent = "전체 선택"; return; }
+      const allChecked = cbs.every(cb => cb.checked);
+      btn.textContent = allChecked ? "전체 해제" : "전체 선택";
+    }
+
+    // ✅ 전체 선택/해제 토글
+    function toggleSelectAllLogs() {
+      const checkboxes = Array.from(document.querySelectorAll("#logList .log-checkbox"));
+      if (checkboxes.length === 0) return;
+
+      const allChecked = checkboxes.every(cb => cb.checked);
+      const next = !allChecked;
+      checkboxes.forEach(cb => cb.checked = next);
+
+      syncSelectAllButtonLabel();
+    }
+
+    function deleteSelectedLogs() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("삭제할 기록을 선택하세요.");
+      if (!confirm(selected.length + "개의 기록을 삭제할까요?")) return;
+
+      const indexes = selected
+        .map(li => Number(li.dataset.index))
+        .filter(n => !Number.isNaN(n))
+        .sort((a, b) => b - a);
+
+      indexes.forEach(idx => { if (idx >= 0 && idx < logs.length) logs.splice(idx, 1); });
+      saveLogs();
+      renderLogs();
+    }
+    function editSelectedLog() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("수정할 기록을 선택하세요.");
+      if (selected.length > 1) return alert("한 번에 하나의 기록만 수정할 수 있습니다.");
+
+      const idx = Number(selected[0].dataset.index);
+      if (Number.isNaN(idx) || idx < 0 || idx >= logs.length) return alert("로그 인덱스 오류입니다.");
+
+      const old = logs[idx];
+      const newLabel = prompt("새 내용(라벨)을 입력하세요:", old.label);
+      if (!newLabel || newLabel.trim() === "") return;
+
+      logs[idx].label = newLabel.trim();
+      saveLogs();
+      renderLogs();
+    }
+    function deleteAllLogs() {
+      if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
+      if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
+
+      logs = [];
+      saveLogs();
+      renderLogs();
+    }
+
+    function fallbackCopyText(text, count, label) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        alert(label + " 기록이 클립보드에 복사되었습니다. (" + count + "개)");
+      } catch (e) {
+        alert("복사 중 오류가 발생했습니다. 직접 선택해서 복사해 주세요.");
+      }
+      document.body.removeChild(textarea);
+    }
+    function copyTextWithClipboard(text, count, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => alert(label + " 기록이 클립보드에 복사되었습니다. (" + count + "개)"))
+          .catch(() => fallbackCopyText(text, count, label));
+      } else {
+        fallbackCopyText(text, count, label);
+      }
+    }
+    function copyAllLogs() {
+      if (logs.length === 0) return alert("복사할 기록이 없습니다.");
+      const lines = logs.map(log => `${log.time} - [${log.coord}] ${log.label}`);
+      copyTextWithClipboard(lines.join("\n"), lines.length, "전체");
+    }
+    function copySelectedLogs() {
+      const selected = getSelectedLogItems();
+      if (selected.length === 0) return alert("복사할 기록을 선택하세요.");
+
+      const indexes = selected
+        .map(li => Number(li.dataset.index))
+        .filter(n => !Number.isNaN(n))
+        .sort((a, b) => a - b);
+
+      const lines = indexes.map(idx => {
+        const log = logs[idx];
+        return `${log.time} - [${log.coord}] ${log.label}`;
+      });
+      copyTextWithClipboard(lines.join("\n"), lines.length, "선택한");
+    }
+
+    function updateBreadcrumb() {
       const bc = document.getElementById("breadcrumb");
-      bc.textContent = "위치: " + (currentParentId === "root" ? "ROOT" : currentParentId);
+      if (!bc) return;
+
+      if (currentParentId === "root") return bc.textContent = "위치: ROOT";
+
+      const pathNodes = [];
+      function dfs(node, targetId, path) {
+        path.push(node);
+        if (node.id === targetId) return true;
+        const children = node.children || [];
+        for (let i = 0; i < children.length; i++) {
+          if (dfs(children[i], targetId, path)) return true;
+        }
+        path.pop();
+        return false;
+      }
+      dfs(tree, currentParentId, pathNodes);
+      const names = pathNodes.map(n => n.label);
+      bc.textContent = "위치: " + names.join(" > ");
     }
 
     function renderButtons() {
-      const parentNode = getCurrentParentNode();
       const container = document.getElementById("buttonContainer");
+      if (!container) return;
       container.innerHTML = "";
 
+      const parentNode = getCurrentParentNode();
       const children = parentNode.children || [];
+
+      let parentDepth = getDepthById(tree, parentNode.id, 0);
+      if (parentDepth < 0) parentDepth = 0;
+      const childDepth = parentDepth + 1;
+      const colLetters = columnIndexToLetters(childDepth);
+
       if (children.length === 0) {
-        const empty = document.createElement("div");
-        empty.style.opacity = ".7";
-        empty.style.fontSize = "12px";
-        empty.textContent = "이 위치에 버튼이 없습니다. 아래에서 새 버튼을 추가하세요.";
-        container.appendChild(empty);
+        const div = document.createElement("div");
+        div.className = "empty-text";
+        div.textContent = "이 위치에는 버튼이 없습니다. 아래에서 새 버튼을 추가하세요.";
+        container.appendChild(div);
         return;
       }
 
-      children.forEach((child) => {
+      children.forEach((child, index) => {
         const row = document.createElement("div");
-        row.className = "btnrow";
+        row.className = "btn-row";
 
-        const btn = document.createElement("button");
-        btn.className = "tree-btn";
-        btn.textContent = child.label;
+        const rowNumber = index + 1;
+        const coord = colLetters + rowNumber;
 
-        btn.addEventListener("click", () => {
+        const mainBtn = document.createElement("button");
+        mainBtn.className = "btn-main";
+        mainBtn.textContent = "[" + coord + "] " + child.label;
+
+        mainBtn.addEventListener("click", () => {
           if (child.children && child.children.length > 0) {
             currentParentId = child.id;
             render();
           } else {
-            // ✅ 하위 버튼이 없으면 클릭 기록에 저장
-            appendLog(child.label, "버튼");
+            appendLog(child.label, coord);
           }
         });
 
-        const btnRename = document.createElement("button");
-        btnRename.className = "tree-mini";
-        btnRename.textContent = "이름";
-        btnRename.addEventListener("click", () => {
-          const name = prompt("새 버튼 이름을 입력하세요:", child.label);
-          if (!name || !name.trim()) return;
-          child.label = name.trim();
+        const controls = document.createElement("div");
+        controls.className = "btn-controls";
+
+        const upBtn = document.createElement("button");
+        upBtn.textContent = "↑";
+        upBtn.title = "위로";
+        upBtn.addEventListener("click", () => moveSibling(parentNode, index, -1));
+
+        const downBtn = document.createElement("button");
+        downBtn.textContent = "↓";
+        downBtn.title = "아래로";
+        downBtn.addEventListener("click", () => moveSibling(parentNode, index, 1));
+
+        const addChildBtn = document.createElement("button");
+        addChildBtn.textContent = "+하위";
+        addChildBtn.title = "하위 버튼 추가";
+        addChildBtn.addEventListener("click", () => {
+          const name = prompt("하위 버튼 이름을 입력하세요:");
+          if (name && name.trim() !== "") {
+            if (!child.children) child.children = [];
+            child.children.push({ id: genId(), label: name.trim(), children: [] });
+            saveTree();
+            render();
+          }
+        });
+
+        const renameBtn = document.createElement("button");
+        renameBtn.textContent = "이름변경";
+        renameBtn.title = "버튼 이름 변경";
+        renameBtn.addEventListener("click", () => {
+          const newName = prompt("새 버튼 이름을 입력하세요:", child.label);
+          if (newName && newName.trim() !== "") {
+            child.label = newName.trim();
+            saveTree();
+            render();
+          }
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "삭제";
+        delBtn.title = "이 버튼 삭제";
+        delBtn.addEventListener("click", () => {
+          if (!confirm("'" + child.label + "' 버튼을 삭제할까요? (하위 버튼도 함께 삭제됩니다)")) return;
+          parentNode.children.splice(index, 1);
           saveTree();
           render();
         });
 
-        const btnDelete = document.createElement("button");
-        btnDelete.className = "tree-mini";
-        btnDelete.textContent = "삭제";
-        btnDelete.addEventListener("click", () => {
-          if (!confirm("이 버튼을 삭제할까요?\n(하위 버튼이 있으면 함께 삭제됩니다)")) return;
-          parentNode.children = (parentNode.children || []).filter(c => c.id !== child.id);
-          saveTree();
-          render();
-        });
+        controls.appendChild(upBtn);
+        controls.appendChild(downBtn);
+        controls.appendChild(addChildBtn);
+        controls.appendChild(renameBtn);
+        controls.appendChild(delBtn);
 
-        row.appendChild(btn);
-        row.appendChild(btnRename);
-        row.appendChild(btnDelete);
+        row.appendChild(mainBtn);
+        row.appendChild(controls);
         container.appendChild(row);
       });
     }
 
     function render() {
-      renderBreadcrumb();
+      if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) currentParentId = "root";
+      updateBreadcrumb();
       renderButtons();
-      renderLogs();
-      renderHelp();
-      applyUIToCSS();
+      updateLogCount();
+      applyUI();
     }
 
-    /***********************
-     * ✅ 안내문
-     ***********************/
-    function renderHelp() {
-      const el = document.getElementById("helpText");
-      el.textContent = helpText || "";
+    /* ====== 통계 ====== */
+    function openStats(){
+      const count = logs.length;
+      const chars = logs.reduce((acc, l) => acc + (String(l.label || "").length), 0);
+      document.getElementById("statCount").textContent = String(count);
+      document.getElementById("statChars").textContent = String(chars);
+      document.getElementById("statsBackdrop").style.display = "flex";
     }
+    function closeStats(){
+      document.getElementById("statsBackdrop").style.display = "none";
+    }
+
+    /* ====== 안내문 모달 ====== */
     function openHelpModal() {
-      document.getElementById("helpEditor").value = helpText || "";
-      document.getElementById("helpModalBackdrop").classList.add("show");
+      const backdrop = document.getElementById("helpModalBackdrop");
+      const editor = document.getElementById("helpEditor");
+      if (!backdrop || !editor) return;
+      editor.value = helpText || "";
+      backdrop.style.display = "flex";
+      setTimeout(() => editor.focus(), 0);
     }
     function closeHelpModal() {
-      document.getElementById("helpModalBackdrop").classList.remove("show");
+      const backdrop = document.getElementById("helpModalBackdrop");
+      if (!backdrop) return;
+      backdrop.style.display = "none";
     }
 
-    /***********************
-     * ✅ 저장(로컬/클라우드)
-     ***********************/
-    function saveTreeLocal() { try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); } catch {} }
-    function saveLogsLocal() { try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs)); } catch {} }
-    function saveHelpLocal() { try { localStorage.setItem(HELP_STORAGE_KEY, helpText); } catch {} }
+    /* ====== 초기 로드 ====== */
+    loadTreeLocal();
+    loadLogsLocal();
+    loadHelpLocal();
+    loadUILocal();
+    render();
+    showBackupWarningIfNeeded();
 
-    function loadTreeLocal() {
-      const saved = localStorage.getItem(TREE_STORAGE_KEY);
-      if (saved) {
-        const parsed = safeJSONParse(saved, null);
-        if (parsed && parsed.id && Array.isArray(parsed.children)) { tree = parsed; return; }
-      }
-      tree = {
-        id: "root",
-        label: "ROOT",
-        children: [
-          { id: genId(), label: "예시 버튼 1", children: [] },
-          { id: genId(), label: "예시 버튼 2", children: [
-            { id: genId(), label: "예시 2-1", children: [] },
-            { id: genId(), label: "예시 2-2", children: [] }
-          ] }
-        ]
-      };
-      saveTreeLocal();
-    }
-
-    function loadLogsLocal() {
-      const saved = localStorage.getItem(LOG_STORAGE_KEY);
-      if (saved) {
-        const parsed = safeJSONParse(saved, null);
-        if (Array.isArray(parsed)) { logs = parsed; return; }
-      }
-      logs = [];
-      saveLogsLocal();
-    }
-
-    function loadHelpLocal() {
-      const saved = (localStorage.getItem(HELP_STORAGE_KEY) || "");
-      helpText = (saved && saved.trim() !== "") ? saved : DEFAULT_HELP_TEXT;
-      saveHelpLocal();
-    }
-
-    function scheduleCloudSave() {
-      if (!currentUser) return;
-      if (isApplyingRemote) return;
-
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(async () => {
-        try {
-          await userDocRef(currentUser.uid).set({
-            tree,
-            logs,
-            helpText,
-            ui, // ✅ 새로 추가(호환 안전)
-            updatedAtMs: Date.now(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }, { merge: true });
-        } catch (e) {
-          console.warn("cloud save 실패:", e);
-        }
-      }, 250);
-    }
-
-    function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
-    function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
-    function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
-
-    async function cloudLoad(uid) {
-      const snap = await userDocRef(uid).get();
-      if (!snap.exists) return null;
-      return snap.data();
-    }
-
-    async function cloudFirstInit(uid) {
-      const remote = await cloudLoad(uid);
-      if (remote && (remote.tree || remote.logs || remote.helpText || remote.ui)) {
-        applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveUILocal();
-        return;
-      }
-      await userDocRef(uid).set({
-        tree, logs, helpText, ui,
-        updatedAtMs: Date.now(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-
-    function applyRemote(remote) {
-      try {
-        isApplyingRemote = true;
-
-        if (remote.tree && remote.tree.id && Array.isArray(remote.tree.children)) tree = remote.tree;
-        if (Array.isArray(remote.logs)) logs = remote.logs;
-        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
-        if (remote.ui && typeof remote.ui === "object") ui = { ...ui, ...remote.ui };
-
-        // UI CSS 반영
-        applyUIToCSS();
-        render();
-      } finally {
-        isApplyingRemote = false;
-      }
-    }
-
-    function startRealtimeListener(uid) {
-      if (unsubscribeDoc) unsubscribeDoc();
-      unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
-        if (!snap.exists) return;
-        const remote = snap.data() || {};
-        if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText && !remote.ui) return;
-
-        applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveUILocal();
-      }, (err) => console.warn("onSnapshot 오류:", err));
-    }
-
-    /***********************
-     * ✅ 백업 경고(기존 느낌 유지)
-     ***********************/
-    function showBackupWarningIfNeeded() {
-      if (logs.length > 0 && logs.length % 1000 === 0) {
-        alert("클릭 기록이 " + logs.length + "개가 되었습니다.\n백업을 권장합니다!");
-      }
-    }
-
-    /***********************
-     * ✅ 로그인 UI
-     ***********************/
-    function setAuthUI() {
-      const badge = document.getElementById("syncBadge");
-      const status = document.getElementById("authStatus");
-      const btnLogin = document.getElementById("btnLogin");
-      const btnLogout = document.getElementById("btnLogout");
-
-      if (currentUser) {
-        const name = currentUser.displayName || currentUser.email || "사용자";
-        status.textContent = `로그인됨: ${name}`;
-        btnLogin.disabled = true;
-        btnLogout.disabled = false;
-        badge.textContent = "클라우드 동기화";
-      } else {
-        status.textContent = "로그인 안 됨";
-        btnLogin.disabled = false;
-        btnLogout.disabled = true;
-        badge.textContent = "로컬 모드";
-      }
-    }
-
-    /***********************
-     * ✅ 이벤트 바인딩
-     ***********************/
+    /* ====== 네비게이션 ====== */
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -824,64 +977,77 @@
     document.getElementById("btnAddHere").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const name = prompt("새 버튼 이름을 입력하세요:");
-      if (!name || !name.trim()) return;
-      if (!parentNode.children) parentNode.children = [];
-      parentNode.children.push({ id: genId(), label: name.trim(), children: [] });
-      saveTree();
-      render();
+      if (name && name.trim() !== "") {
+        if (!parentNode.children) parentNode.children = [];
+        parentNode.children.push({ id: genId(), label: name.trim(), children: [] });
+        saveTree();
+        render();
+      }
     });
 
-    // 로그 버튼들
-    document.getElementById("btnSelectAllLog").addEventListener("click", selectAllLogs);
+    /* ✅ 직접 입력: Enter=기록, Shift+Enter=줄바꿈 */
+    function writeManualLogFromInput() {
+      const input = document.getElementById("quickAddInput");
+      const text = (input?.value || "").trimEnd();
+      if (!text.trim()) return;
+
+      appendLog(text, "입력");
+
+      input.value = "";
+      input.focus();
+    }
+    document.getElementById("btnQuickAdd").addEventListener("click", writeManualLogFromInput);
+    document.getElementById("quickAddInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        if (e.shiftKey) return; // 줄바꿈
+        e.preventDefault();
+        writeManualLogFromInput();
+      }
+    });
+
+    /* ✅ 로그 액션 */
+    document.getElementById("btnSelectAllLog").addEventListener("click", toggleSelectAllLogs);
     document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
     document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
     document.getElementById("btnCopyAllLog").addEventListener("click", copyAllLogs);
     document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
     document.getElementById("btnDeleteAllLog").addEventListener("click", deleteAllLogs);
 
-    // ✅ 직접 입력: Enter 저장 / Shift+Enter 줄바꿈
-    const manual = document.getElementById("manualLogInput");
-    manual.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        const v = manual.value.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trimEnd();
-        if (!v.trim()) return;
-        appendLog(v, "직접입력");
-        manual.value = "";
-      }
-    });
-
-    // 디자인모드 토글
+    /* ✅ 디자인모드 */
     document.getElementById("btnDesignMode").addEventListener("click", () => {
       ui.designMode = !ui.designMode;
-      applyUIToCSS();
-      saveUI();
+      applyUI();
+      saveUILocal();
+      scheduleCloudSave();
     });
 
-    // 디자인 슬라이더
     document.getElementById("rangeBtnWidth").addEventListener("input", (e) => {
-      ui.btnWidthPx = Number(e.target.value || 220);
-      applyUIToCSS();
-      saveUI();
-    });
-    document.getElementById("rangeManualH").addEventListener("input", (e) => {
-      ui.manualHPx = Number(e.target.value || 90);
-      applyUIToCSS();
-      saveUI();
+      ui.btnWidthPct = Number(e.target.value || 39);
+      applyUI();
+      saveUILocal();
+      scheduleCloudSave();
     });
 
-    // 통계모드
+    document.getElementById("rangeManualH").addEventListener("input", (e) => {
+      ui.manualHpx = Number(e.target.value || 72);
+      applyUI();
+      saveUILocal();
+      scheduleCloudSave();
+    });
+
+    /* ✅ 통계모드 */
     document.getElementById("btnStatsMode").addEventListener("click", openStats);
     document.getElementById("btnStatsClose").addEventListener("click", closeStats);
     document.getElementById("statsBackdrop").addEventListener("click", (e) => {
       if (e.target.id === "statsBackdrop") closeStats();
     });
 
-    // 안내문
+    /* ✅ 안내문 */
     document.getElementById("btnEditHelp").addEventListener("click", openHelpModal);
     document.getElementById("btnHelpCancel").addEventListener("click", closeHelpModal);
     document.getElementById("btnHelpSave").addEventListener("click", () => {
-      const newText = (document.getElementById("helpEditor").value || "").trim();
+      const editor = document.getElementById("helpEditor");
+      const newText = (editor?.value || "").trim();
       if (!newText) return alert("안내문은 비워둘 수 없어요.");
       helpText = newText;
       saveHelp();
@@ -891,7 +1057,7 @@
       if (e.target.id === "helpModalBackdrop") closeHelpModal();
     });
 
-    // 로그인
+    /* ✅ 로그인 */
     document.getElementById("btnLogin").addEventListener("click", async () => {
       try { await auth.signInWithPopup(provider); }
       catch (e) {
@@ -923,14 +1089,6 @@
       }
     });
 
-    /***********************
-     * ✅ 초기 로드
-     ***********************/
-    loadTreeLocal();
-    loadLogsLocal();
-    loadHelpLocal();
-    loadUILocal();
-    render();
     setAuthUI();
   </script>
 </body>
