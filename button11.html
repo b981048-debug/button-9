@@ -144,6 +144,8 @@
       transition: width .08s linear;
       min-width: 120px;
     }
+    .btn-main:focus{ outline:none; box-shadow: 0 0 0 3px rgba(179, 212, 255, 0.35); border-color:#b3d4ff; }
+
     .btn-controls {
       flex: 0 0 auto;
       display: inline-flex;
@@ -151,6 +153,7 @@
       white-space: nowrap;
     }
     .btn-controls button { padding: 4px 6px; font-size: 11px; }
+    .btn-controls .btn-insert { background:#eef7ff; border-color:#b3d4ff; }
 
     .add-row{ display:flex; gap:6px; align-items:center; }
     .add-row button{ flex:1; }
@@ -192,12 +195,6 @@
     .modal { width: min(720px, 100%); background: #fff; border-radius: 12px; border: 1px solid #ddd;
       box-shadow: 0 10px 30px rgba(0,0,0,0.18); padding: 12px; }
     .modal h2 { font-size: 14px; margin: 0 0 8px; }
-    .modal textarea {
-      width: 100%; min-height: 180px; resize: vertical;
-      border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 13px;
-      outline: none;
-    }
-    .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
 
     .stat-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     @media (max-width:520px){ .stat-grid{ grid-template-columns:1fr; } }
@@ -287,11 +284,6 @@
       </div>
     </div>
 
-    <div class="help-box">
-      <div class="empty-text" id="helpText"></div>
-      <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
-    </div>
-
     <div class="moved-area">
       <div class="auth-bar">
         <button id="btnLogin">Google 로그인</button>
@@ -299,17 +291,6 @@
         <span class="auth-status" id="authStatus">로그인 안 됨</span>
       </div>
       <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
-    </div>
-  </div>
-
-  <div class="modal-backdrop" id="helpModalBackdrop">
-    <div class="modal">
-      <h2>안내문 수정</h2>
-      <textarea id="helpEditor" placeholder="여기에 안내문을 입력하세요."></textarea>
-      <div class="modal-actions">
-        <button id="btnHelpCancel">취소</button>
-        <button class="btn-primary" id="btnHelpSave">저장</button>
-      </div>
     </div>
   </div>
 
@@ -334,10 +315,9 @@
           <div class="stat-v" id="statHereBtns">0</div>
         </div>
       </div>
-      <div class="modal-actions" style="margin-top:12px;">
+      <div class="modal-actions" style="margin-top:12px; display:flex; justify-content:flex-end;">
         <button id="btnStatsClose">닫기</button>
       </div>
-      <div class="note">※ 글자수는 기록의 <b>내용(두 번째 줄)</b>만 합산합니다.</div>
     </div>
   </div>
 
@@ -362,7 +342,6 @@
 
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
-    const HELP_STORAGE_KEY = "buttonHelpText_v1";
     const UI_STORAGE_KEY   = "buttonUI_v1";
 
     const BACKUP_WARN_THRESHOLD = 1000;
@@ -370,8 +349,6 @@
     let tree = null;
     let currentParentId = "root";
     let logs = [];
-    let helpText = "";
-
     let ui = { designMode: false, btnWidthPct: 39, manualWidthPct: 70 };
 
     let currentUser = null;
@@ -379,7 +356,9 @@
     let isApplyingRemote = false;
     let saveTimer = null;
 
-    let selectedButtonId = null;
+    // ✅ 체크리스트: 다중 체크 허용
+    // 다만, "하위버튼 추가 대상"은 마지막으로 체크한 버튼(명확한 기준)
+    let lastCheckedButtonId = null;
 
     function showBackupWarningIfNeeded() {
       if (!Array.isArray(logs)) return;
@@ -410,10 +389,6 @@
       }
     }
     function userDocRef(uid) { return db.collection("users").doc(uid); }
-
-    const DEFAULT_HELP_TEXT =
-`💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
-1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
 
     function applyUI() {
       document.documentElement.style.setProperty("--btnWidthPct", String(ui.btnWidthPct));
@@ -454,23 +429,13 @@
       saveTimer = setTimeout(async () => {
         try {
           await userDocRef(currentUser.uid).set({
-            tree, logs, helpText, ui,
+            tree, logs, ui,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
         } catch (e) { console.warn("cloud save 실패:", e); }
       }, 300);
     }
-
-    function saveHelpLocal() { try { localStorage.setItem(HELP_STORAGE_KEY, helpText); } catch {} }
-    function loadHelpLocal() {
-      let saved = "";
-      try { saved = localStorage.getItem(HELP_STORAGE_KEY) || ""; } catch {}
-      helpText = (saved && saved.trim() !== "") ? saved : DEFAULT_HELP_TEXT;
-      renderHelp();
-    }
-    function renderHelp() { document.getElementById("helpText").textContent = helpText || ""; }
-    function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
     function saveTreeLocal() { try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); } catch {} }
     function saveLogsLocal() { try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs)); } catch {} }
@@ -509,13 +474,13 @@
 
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
-      if (remote && (remote.tree || remote.logs || remote.helpText || remote.ui)) {
+      if (remote && (remote.tree || remote.logs || remote.ui)) {
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveUILocal();
+        saveTreeLocal(); saveLogsLocal(); saveUILocal();
         return;
       }
       await userDocRef(uid).set({
-        tree, logs, helpText, ui,
+        tree, logs, ui,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -544,18 +509,17 @@
           currentParentId = stillExists ? prevParentId : "root";
         }
         if (Array.isArray(remote.logs)) logs = remote.logs;
-        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
         if (remote.ui && typeof remote.ui === "object") {
           ui = { ...ui, ...remote.ui };
           if (typeof ui.manualWidthPct !== "number") ui.manualWidthPct = 70;
         }
 
-        if (selectedButtonId && !findNodeById(tree, selectedButtonId)) selectedButtonId = null;
+        // 마지막 체크 대상이 삭제되었을 경우 초기화
+        if (lastCheckedButtonId && !findNodeById(tree, lastCheckedButtonId)) lastCheckedButtonId = null;
 
         applyUI();
         renderLogs();
         render();
-        renderHelp();
         showBackupWarningIfNeeded();
       } finally { isApplyingRemote = false; }
     }
@@ -566,10 +530,10 @@
         if (!snap.exists) return;
         const remote = snap.data() || {};
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.helpText && !remote.ui) return;
+        if (!remote.tree && !remote.logs && !remote.ui) return;
 
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveUILocal();
+        saveTreeLocal(); saveLogsLocal(); saveUILocal();
       }, (err) => console.warn("onSnapshot 오류:", err));
     }
 
@@ -684,7 +648,7 @@
       return sum;
     }
 
-    // ✅ 클릭기록 표시/복사용 포맷 (시간 + 줄바꿈 + 내용)
+    // ✅ 클릭기록 표시 포맷: 시간 + 엔터 + 내용(좌표 포함)
     function formatLogText(log) {
       const coord = log.coord ?? "";
       const label = log.label ?? "";
@@ -704,7 +668,6 @@
 
       const textSpan = document.createElement("span");
       textSpan.className = "log-text";
-      // ✅ 시간 엔터 후 내용
       textSpan.textContent = formatLogText(log);
 
       li.appendChild(checkbox);
@@ -812,7 +775,6 @@
     function copyAllLogs() {
       if (logs.length === 0) return alert("복사할 기록이 없습니다.");
       const lines = logs.map(formatLogText);
-      // 각 기록 사이 빈 줄 하나
       copyTextWithClipboard(lines.join("\n\n"), lines.length, "전체");
     }
 
@@ -846,14 +808,6 @@
       bc.textContent = "위치: " + pathNodes.map(n => n.label).join(" > ");
     }
 
-    function setSelectedButtonId(id) {
-      selectedButtonId = id;
-      const checks = Array.from(document.querySelectorAll(".btn-select"));
-      checks.forEach(chk => {
-        chk.checked = (chk.dataset.id === selectedButtonId);
-      });
-    }
-
     function renderButtons() {
       const container = document.getElementById("buttonContainer");
       container.innerHTML = "";
@@ -881,21 +835,21 @@
         const rowNumber = index + 1;
         const coord = colLetters + rowNumber;
 
+        // ✅ 커서: 다중 체크 가능(체크리스트)
         const checkWrap = document.createElement("div");
         checkWrap.className = "row-check";
         const chk = document.createElement("input");
         chk.type = "checkbox";
-        chk.className = "btn-select";
+        chk.className = "btn-checklist";
         chk.dataset.id = child.id;
-        chk.checked = (selectedButtonId === child.id);
-
         chk.addEventListener("change", () => {
-          if (chk.checked) setSelectedButtonId(child.id);
-          else selectedButtonId = null;
+          // 마지막으로 체크한 버튼 기억(하위 추가 대상 표시용으로 활용 가능)
+          if (chk.checked) lastCheckedButtonId = child.id;
+          else if (lastCheckedButtonId === child.id) lastCheckedButtonId = null;
         });
-
         checkWrap.appendChild(chk);
 
+        // ✅ 버튼 클릭: 입력X, 하위가 있으면 이동(없으면 아무 동작 안 함)
         const mainBtn = document.createElement("button");
         mainBtn.className = "btn-main";
         mainBtn.textContent = "[" + coord + "] " + child.label;
@@ -905,25 +859,24 @@
             currentParentId = child.id;
             render();
           } else {
-            appendLog(child.label, coord);
+            // 아무 것도 하지 않음(요청사항)
           }
         });
 
+        // ✅ 컨트롤: 입력/이름/삭제/↑↓
         const controls = document.createElement("div");
         controls.className = "btn-controls";
 
-        const upBtn = document.createElement("button");
-        upBtn.textContent = "↑";
-        upBtn.title = "위로";
-        upBtn.addEventListener("click", () => moveSibling(parentNode, index, -1));
-
-        const downBtn = document.createElement("button");
-        downBtn.textContent = "↓";
-        downBtn.title = "아래로";
-        downBtn.addEventListener("click", () => moveSibling(parentNode, index, 1));
+        const insertBtn = document.createElement("button");
+        insertBtn.className = "btn-insert";
+        insertBtn.textContent = "입력";
+        insertBtn.title = "클릭 기록에 입력";
+        insertBtn.addEventListener("click", () => {
+          appendLog(child.label, coord);
+        });
 
         const renameBtn = document.createElement("button");
-        renameBtn.textContent = "이름변경";
+        renameBtn.textContent = "이름";
         renameBtn.addEventListener("click", () => {
           const newName = prompt("새 버튼 이름을 입력하세요:", child.label);
           if (newName && newName.trim() !== "") {
@@ -937,16 +890,26 @@
         delBtn.textContent = "삭제";
         delBtn.addEventListener("click", () => {
           if (!confirm("'" + child.label + "' 버튼을 삭제할까요? (하위 버튼도 함께 삭제됩니다)")) return;
-          if (selectedButtonId === child.id) selectedButtonId = null;
           parentNode.children.splice(index, 1);
           saveTree();
           render();
         });
 
-        controls.appendChild(upBtn);
-        controls.appendChild(downBtn);
+        const upBtn = document.createElement("button");
+        upBtn.textContent = "↑";
+        upBtn.title = "위로";
+        upBtn.addEventListener("click", () => moveSibling(parentNode, index, -1));
+
+        const downBtn = document.createElement("button");
+        downBtn.textContent = "↓";
+        downBtn.title = "아래로";
+        downBtn.addEventListener("click", () => moveSibling(parentNode, index, 1));
+
+        controls.appendChild(insertBtn);
         controls.appendChild(renameBtn);
         controls.appendChild(delBtn);
+        controls.appendChild(upBtn);
+        controls.appendChild(downBtn);
 
         row.appendChild(checkWrap);
         row.appendChild(mainBtn);
@@ -962,7 +925,6 @@
       renderButtons();
       updateLogCount();
       applyUI();
-      setSelectedButtonId(selectedButtonId);
     }
 
     function openStats(){
@@ -980,22 +942,24 @@
     }
     function closeStats(){ document.getElementById("statsBackdrop").style.display = "none"; }
 
-    function openHelpModal() {
-      const backdrop = document.getElementById("helpModalBackdrop");
-      const editor = document.getElementById("helpEditor");
-      editor.value = helpText || "";
-      backdrop.style.display = "flex";
-      setTimeout(() => editor.focus(), 0);
+    // 직접 입력: Enter=기록, Shift+Enter=줄바꿈
+    function writeManualLogFromInput() {
+      const input = document.getElementById("quickAddInput");
+      const text = (input?.value || "").trimEnd();
+      if (!text.trim()) return;
+      appendLog(text, "입력");
+      input.value = "";
+      input.focus();
     }
-    function closeHelpModal() { document.getElementById("helpModalBackdrop").style.display = "none"; }
 
+    // ✅ 초기 로드
     loadTreeLocal();
     loadLogsLocal();
-    loadHelpLocal();
     loadUILocal();
     render();
     showBackupWarningIfNeeded();
 
+    // 네비
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -1007,6 +971,7 @@
       render();
     });
 
+    // +새버튼: 현재 위치에 추가
     document.getElementById("btnAddHere").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const name = prompt("새 버튼 이름을 입력하세요:");
@@ -1018,38 +983,22 @@
       }
     });
 
+    // ✅ +하위버튼: "현재 위치"에 속하는 하위 버튼을 추가
+    // 사용 흐름: 버튼 클릭해서 들어간 뒤(+상단 위치가 바뀜) -> +하위버튼 누르면 그 위치에 추가
     document.getElementById("btnAddChild").addEventListener("click", () => {
-      if (!selectedButtonId) {
-        alert("하위버튼을 추가할 대상 버튼을 먼저 체크(커서)하세요.");
-        return;
-      }
-      const target = findNodeById(tree, selectedButtonId);
-      if (!target) {
-        selectedButtonId = null;
-        render();
-        alert("선택된 버튼을 찾을 수 없습니다. (삭제되었을 수 있음)");
-        return;
-      }
-
-      const childName = prompt(`'${target.label}'의 하위 버튼 이름을 입력하세요:`);
+      // currentParentId가 root이면 root의 하위로 추가(=최상위 추가)
+      const parentNode = getCurrentParentNode();
+      const childName = prompt(`'${parentNode.id === "root" ? "전체(ROOT)" : parentNode.label}'의 하위 버튼 이름을 입력하세요:`);
       if (!childName || !childName.trim()) return;
 
-      if (!target.children) target.children = [];
-      target.children.push({ id: genId(), label: childName.trim(), children: [] });
+      if (!parentNode.children) parentNode.children = [];
+      parentNode.children.push({ id: genId(), label: childName.trim(), children: [] });
 
       saveTree();
       render();
     });
 
-    function writeManualLogFromInput() {
-      const input = document.getElementById("quickAddInput");
-      const text = (input?.value || "").trimEnd();
-      if (!text.trim()) return;
-
-      appendLog(text, "입력");
-      input.value = "";
-      input.focus();
-    }
+    // 직접 입력
     document.getElementById("btnQuickAdd").addEventListener("click", writeManualLogFromInput);
     document.getElementById("quickAddInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -1059,12 +1008,14 @@
       }
     });
 
+    // 로그 액션
     document.getElementById("btnSelectAllLog").addEventListener("click", toggleSelectAllLogs);
     document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
     document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
     document.getElementById("btnCopyAllLog").addEventListener("click", copyAllLogs);
     document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
 
+    // 디자인모드
     document.getElementById("btnDesignMode").addEventListener("click", () => {
       ui.designMode = !ui.designMode;
       applyUI();
@@ -1080,26 +1031,14 @@
       applyUI(); saveUILocal(); scheduleCloudSave();
     });
 
+    // 통계모드
     document.getElementById("btnStatsMode").addEventListener("click", openStats);
     document.getElementById("btnStatsClose").addEventListener("click", closeStats);
     document.getElementById("statsBackdrop").addEventListener("click", (e) => {
       if (e.target.id === "statsBackdrop") closeStats();
     });
 
-    document.getElementById("btnEditHelp").addEventListener("click", openHelpModal);
-    document.getElementById("btnHelpCancel").addEventListener("click", closeHelpModal);
-    document.getElementById("btnHelpSave").addEventListener("click", () => {
-      const editor = document.getElementById("helpEditor");
-      const newText = (editor?.value || "").trim();
-      if (!newText) return alert("안내문은 비워둘 수 없어요.");
-      helpText = newText;
-      saveHelp();
-      closeHelpModal();
-    });
-    document.getElementById("helpModalBackdrop").addEventListener("click", (e) => {
-      if (e.target.id === "helpModalBackdrop") closeHelpModal();
-    });
-
+    // 로그인
     document.getElementById("btnLogin").addEventListener("click", async () => {
       try { await auth.signInWithPopup(provider); }
       catch (e) {
