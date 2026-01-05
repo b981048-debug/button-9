@@ -81,6 +81,31 @@
     .panel-head .nav-inline { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .panel-head small { opacity: .8; }
 
+    /* ✅✅ (추가) 상단 빠른 입력칸 */
+    .quick-add {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin: 6px 0 8px;
+    }
+    .quick-add input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+    }
+    .quick-add input:focus {
+      border-color: #b3d4ff;
+      box-shadow: 0 0 0 3px rgba(179, 212, 255, 0.35);
+    }
+    .quick-add button {
+      white-space: nowrap;
+      padding: 8px 10px;
+    }
+
     /* ✅✅ 핵심 변경: 버튼 목록은 화면 절반(50vh)만 보이게 + 나머지는 스크롤(드래그/휠/터치) */
     .buttons-area {
       margin-top: 6px;
@@ -180,6 +205,12 @@
         </div>
 
         <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
+          <!-- ✅ (추가) 맨 위 직접 입력 -->
+          <div class="quick-add">
+            <input id="quickAddInput" type="text" placeholder="여기에 버튼 이름 입력 후 Enter" />
+            <button id="btnQuickAdd" class="btn-primary">추가</button>
+          </div>
+
           <div class="buttons-area" id="buttonContainer"></div>
           <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
         </div>
@@ -820,6 +851,30 @@
         parentNode.children.push({ id: genId(), label: name.trim(), children: [] });
         saveTree();
         render();
+      }
+    });
+
+    // ✅ (추가) 상단 입력칸으로 버튼 추가 (현재 위치에 추가)
+    function quickAddButtonFromInput() {
+      const input = document.getElementById("quickAddInput");
+      const name = (input?.value || "").trim();
+      if (!name) return;
+
+      const parentNode = getCurrentParentNode();
+      if (!parentNode.children) parentNode.children = [];
+      parentNode.children.push({ id: genId(), label: name, children: [] });
+
+      saveTree();
+      render();
+
+      input.value = "";
+      input.focus();
+    }
+    document.getElementById("btnQuickAdd").addEventListener("click", quickAddButtonFromInput);
+    document.getElementById("quickAddInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        quickAddButtonFromInput();
       }
     });
 
