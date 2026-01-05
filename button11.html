@@ -19,13 +19,11 @@
     button:active { transform: scale(0.97); }
     button:disabled { opacity: .5; cursor: not-allowed; }
 
-    /* ====== 디자인 변수 ====== */
     :root{
-      --btnWidthPct: 39;     /* 버튼(왼쪽 메인 버튼) 가로% */
-      --manualWidthPct: 70;  /* 직접입력 textarea 가로% */
+      --btnWidthPct: 39;
+      --manualWidthPct: 70;
     }
 
-    /* ✅✅ 좌/우 패널 */
     .layout { display: flex; flex-direction: column; gap: 6px; }
     @media (min-width: 720px) {
       .layout { flex-direction: row; gap: 6px; height: calc(100vh - 240px); }
@@ -46,7 +44,6 @@
     .nav-inline { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .nav-inline small { opacity: .8; }
 
-    /* ====== 상단 모드 버튼 ====== */
     .mode-bar{
       display:flex; gap:6px; align-items:center; flex-wrap:wrap;
       margin: 6px 0 10px;
@@ -55,7 +52,7 @@
     .mode-bar button.active{ background:#eef7ff; border-color:#b3d4ff; }
     .mode-bar .hint{ font-size:12px; opacity:.75; margin-left:auto; }
 
-    /* ====== ✅ 단계형 칩(탭) ====== */
+    /* ✅ 단계형 칩 */
     .chips-wrap{
       border: 1px solid #eee;
       border-radius: 12px;
@@ -66,42 +63,20 @@
       -webkit-overflow-scrolling: touch;
       white-space: nowrap;
     }
-    .chips{
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-    }
+    .chips{ display:inline-flex; gap:8px; align-items:center; }
     .chip{
-      display:inline-flex;
-      align-items:center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid #ddd;
-      background: #fff;
-      font-size: 13px;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
+      display:inline-flex; align-items:center; gap:6px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid #ddd; background:#fff; font-size:13px;
+      cursor:pointer; user-select:none; white-space:nowrap;
     }
     .chip:hover{ background:#f6f6f6; }
-    .chip.active{
-      background: #eef7ff;
-      border-color: #b3d4ff;
-      font-weight: 700;
-    }
-    .chip .dot{
-      width: 6px; height: 6px; border-radius: 999px; background:#bbb;
-      display:inline-block;
-    }
+    .chip.active{ background:#eef7ff; border-color:#b3d4ff; font-weight:700; }
+    .chip .dot{ width:6px; height:6px; border-radius:999px; background:#bbb; display:inline-block; }
     .chip.active .dot{ background:#4c8dff; }
-    .chip-sep{
-      opacity: .35;
-      font-size: 14px;
-      user-select:none;
-    }
+    .chip-sep{ opacity:.35; font-size:14px; user-select:none; }
 
-    /* ====== 디자인 패널 ====== */
+    /* 디자인 패널 */
     .design-panel{
       display:none;
       border: 1px dashed #ddd;
@@ -116,7 +91,7 @@
     .design-row input[type="range"]{ width:220px; }
     .kv{ font-size:12px; opacity:.75; }
 
-    /* ✅✅ (상단 입력칸) */
+    /* 직접 입력 */
     .quick-add { display: flex; gap: 6px; align-items: flex-start; margin: 6px 0 8px; }
     .quick-add textarea {
       flex: 0 0 auto;
@@ -132,7 +107,6 @@
     .quick-add button { white-space: nowrap; padding: 8px 10px; }
     .btn-primary { background: #eef7ff; border-color: #b3d4ff; }
 
-    /* ✅✅ 버튼 목록 영역 */
     .buttons-area {
       margin-top: 6px; margin-bottom: 10px;
       overflow-y: auto; padding-right: 4px;
@@ -144,7 +118,7 @@
       overscroll-behavior: contain;
     }
 
-    /* ✅ 핵심: 메인버튼 폭이 줄어들어도, 오른쪽 컨트롤이 빈칸 없이 "붙어서" 따라오게 */
+    /* ✅ 버튼 줄: 체크박스 + 메인버튼 + 컨트롤 */
     .btn-row {
       display: flex;
       align-items: center;
@@ -153,6 +127,19 @@
       flex-wrap: nowrap;
       justify-content: flex-start;
     }
+
+    .row-check{
+      width: 26px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex: 0 0 auto;
+    }
+    .row-check input{
+      width: 16px; height: 16px;
+      cursor: pointer;
+    }
+
     .btn-main{
       flex: 0 0 auto;
       width: calc(var(--btnWidthPct) * 1%);
@@ -170,14 +157,11 @@
     }
     .btn-controls button { padding: 4px 6px; font-size: 11px; }
 
-    /* ✅ 아래 추가 버튼 2개를 나란히 */
-    .add-row{
-      display:flex; gap:6px; align-items:center;
-    }
+    .add-row{ display:flex; gap:6px; align-items:center; }
     .add-row button{ flex:1; }
     .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
 
-    /* ====== 클릭 기록 ====== */
+    /* 클릭 기록 */
     .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
     .log-count { font-size: 12px; opacity: 0.7; }
     .log-actions { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
@@ -199,23 +183,14 @@
 
     .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
     .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
-    .help-box {
-      border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb;
-      margin-top: 10px;
-    }
+    .help-box { border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb; margin-top: 10px; }
 
-    .moved-area {
-      margin-top: 10px;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      padding: 10px;
-      background: #fafafa;
-    }
+    .moved-area { margin-top: 10px; border: 1px solid #eee; border-radius: 10px; padding: 10px; background: #fafafa; }
     .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
     .auth-status { font-size:12px; opacity:.85; }
     .note { font-size:12px; opacity:.75; margin:6px 0 0; }
 
-    /* ====== 모달 ====== */
+    /* 모달 */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.35);
       display: none; align-items: center; justify-content: center; padding: 16px;
@@ -231,7 +206,7 @@
     }
     .modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
 
-    /* ====== 통계 모달 ====== */
+    /* 통계 모달 */
     .stat-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     @media (max-width:520px){ .stat-grid{ grid-template-columns:1fr; } }
     .stat-card{ border:1px solid #eee; border-radius:12px; padding:10px; background:#fafafa; }
@@ -263,7 +238,6 @@
           </div>
         </div>
 
-        <!-- ✅ 단계형 구조(칩) -->
         <div class="chips-wrap">
           <div class="chips" id="pathChips"></div>
         </div>
@@ -294,8 +268,8 @@
           <div class="buttons-area" id="buttonContainer"></div>
 
           <div class="add-row">
-            <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
-            <button class="add-current" id="btnAddChildFromList">+ 하위버튼 추가</button>
+            <button class="add-current" id="btnAddHere">+새버튼</button>
+            <button class="add-current" id="btnAddChild">+하위버튼</button>
           </div>
         </div>
       </div>
@@ -306,7 +280,7 @@
           <div class="log-count">(총 <span id="logCount">0</span>개)</div>
           <div class="log-actions">
             <button id="btnSelectAllLog" style="font-size:11px;padding:4px 6px;">전체 선택</button>
-            <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
+            <!-- ✅ 전체삭제 제거 -->
             <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
             <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
             <button id="btnEditLog" style="font-size:11px;padding:4px 6px;">선택 수정</button>
@@ -360,6 +334,14 @@
           <div class="stat-k">클릭 기록 글자수(내용 합)</div>
           <div class="stat-v" id="statChars">0</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-k">버튼 개수(트리 전체)</div>
+          <div class="stat-v" id="statBtns">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-k">현재 위치 버튼 개수</div>
+          <div class="stat-v" id="statHereBtns">0</div>
+        </div>
       </div>
       <div class="modal-actions" style="margin-top:12px;">
         <button id="btnStatsClose">닫기</button>
@@ -399,25 +381,20 @@
     let logs = [];
     let helpText = "";
 
-    let ui = {
-      designMode: false,
-      btnWidthPct: 39,
-      manualWidthPct: 70
-    };
+    let ui = { designMode: false, btnWidthPct: 39, manualWidthPct: 70 };
 
     let currentUser = null;
     let unsubscribeDoc = null;
     let isApplyingRemote = false;
     let saveTimer = null;
 
+    // ✅ 현재 체크된 버튼 id (하위버튼 추가의 대상)
+    let selectedButtonId = null;
+
     function showBackupWarningIfNeeded() {
       if (!Array.isArray(logs)) return;
       if (logs.length < BACKUP_WARN_THRESHOLD) return;
-      alert(
-        "⚠ 클릭 기록이 1,000개 이상입니다.\n\n" +
-        "데이터 손실 위험이 있습니다.\n" +
-        "'전체 복사'로 주기적으로 백업하세요."
-      );
+      alert("⚠ 클릭 기록이 1,000개 이상입니다.\n\n데이터 손실 위험이 있습니다.\n'전체 복사'로 주기적으로 백업하세요.");
     }
 
     function genId() { return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8); }
@@ -455,8 +432,7 @@
       document.getElementById("btnDesignMode").classList.toggle("active", !!ui.designMode);
       document.getElementById("designPanel").classList.toggle("show", !!ui.designMode);
 
-      const hint = document.getElementById("modeHint");
-      hint.textContent = ui.designMode ? "디자인모드 ON" : "";
+      document.getElementById("modeHint").textContent = ui.designMode ? "디자인모드 ON" : "";
 
       document.getElementById("rangeBtnWidth").value = String(ui.btnWidthPct);
       document.getElementById("valBtnWidth").textContent = String(ui.btnWidthPct);
@@ -492,9 +468,7 @@
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
-        } catch (e) {
-          console.warn("cloud save 실패:", e);
-        }
+        } catch (e) { console.warn("cloud save 실패:", e); }
       }, 300);
     }
 
@@ -505,11 +479,7 @@
       helpText = (saved && saved.trim() !== "") ? saved : DEFAULT_HELP_TEXT;
       renderHelp();
     }
-    function renderHelp() {
-      const el = document.getElementById("helpText");
-      if (!el) return;
-      el.textContent = helpText || "";
-    }
+    function renderHelp() { document.getElementById("helpText").textContent = helpText || ""; }
     function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
     function saveTreeLocal() { try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); } catch {} }
@@ -572,7 +542,6 @@
           const stillExists = findNodeById(tree, prevParentId);
           currentParentId = stillExists ? prevParentId : "root";
         }
-
         if (Array.isArray(remote.logs)) logs = remote.logs;
         if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
         if (remote.ui && typeof remote.ui === "object") {
@@ -580,14 +549,15 @@
           if (typeof ui.manualWidthPct !== "number") ui.manualWidthPct = 70;
         }
 
+        // ✅ 선택중이던 버튼이 삭제되었을 수 있음
+        if (selectedButtonId && !findNodeById(tree, selectedButtonId)) selectedButtonId = null;
+
         applyUI();
         renderLogs();
         render();
         renderHelp();
         showBackupWarningIfNeeded();
-      } finally {
-        isApplyingRemote = false;
-      }
+      } finally { isApplyingRemote = false; }
     }
 
     function startRealtimeListener(uid) {
@@ -627,7 +597,7 @@
       return null;
     }
 
-    // ✅ 경로(루트→현재) 노드 배열 만들기
+    // ✅ 경로 칩
     function getPathNodesToCurrent() {
       const path = [];
       function dfs(node, targetId) {
@@ -644,14 +614,12 @@
       return path;
     }
 
-    // ✅ 칩 렌더 (전체→...→현재)
     function renderPathChips() {
       const wrap = document.getElementById("pathChips");
       if (!wrap) return;
       wrap.innerHTML = "";
 
       const path = getPathNodesToCurrent();
-      // path[0]은 root
       path.forEach((node, idx) => {
         if (idx > 0) {
           const sep = document.createElement("span");
@@ -723,11 +691,17 @@
       render();
     }
 
-    function updateLogCount() {
-      const countSpan = document.getElementById("logCount");
-      if (!countSpan) return;
-      countSpan.textContent = logs.length;
+    // ✅ 전체 트리 버튼 개수
+    function countAllButtons(node) {
+      if (!node) return 0;
+      const children = node.children || [];
+      let sum = 0;
+      for (const c of children) sum += 1 + countAllButtons(c);
+      return sum;
     }
+
+    // 로그
+    function updateLogCount() { document.getElementById("logCount").textContent = logs.length; }
 
     function createLogLi(log, index) {
       const li = document.createElement("li");
@@ -749,7 +723,6 @@
 
     function renderLogs() {
       const logList = document.getElementById("logList");
-      if (!logList) return;
       logList.innerHTML = "";
       logs.forEach((log, idx) => logList.appendChild(createLogLi(log, idx)));
       updateLogCount();
@@ -766,16 +739,13 @@
     }
 
     function getSelectedLogItems() {
-      const logList = document.getElementById("logList");
-      if (!logList) return [];
-      const items = Array.from(logList.querySelectorAll("li"));
+      const items = Array.from(document.querySelectorAll("#logList li"));
       return items.filter(li => (li.querySelector(".log-checkbox") || {}).checked);
     }
 
     function syncSelectAllButtonLabel(){
       const btn = document.getElementById("btnSelectAllLog");
       const cbs = Array.from(document.querySelectorAll("#logList .log-checkbox"));
-      if (!btn) return;
       if (cbs.length === 0) { btn.textContent = "전체 선택"; return; }
       const allChecked = cbs.every(cb => cb.checked);
       btn.textContent = allChecked ? "전체 해제" : "전체 선택";
@@ -818,14 +788,6 @@
       if (!newLabel || newLabel.trim() === "") return;
 
       logs[idx].label = newLabel.trim();
-      saveLogs();
-      renderLogs();
-    }
-
-    function deleteAllLogs() {
-      if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
-      if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
-      logs = [];
       saveLogs();
       renderLogs();
     }
@@ -880,8 +842,6 @@
 
     function updateBreadcrumb() {
       const bc = document.getElementById("breadcrumb");
-      if (!bc) return;
-
       if (currentParentId === "root") return bc.textContent = "위치: ROOT";
 
       const pathNodes = [];
@@ -889,20 +849,26 @@
         path.push(node);
         if (node.id === targetId) return true;
         const children = node.children || [];
-        for (let i = 0; i < children.length; i++) {
-          if (dfs(children[i], targetId, path)) return true;
-        }
+        for (let i = 0; i < children.length; i++) if (dfs(children[i], targetId, path)) return true;
         path.pop();
         return false;
       }
       dfs(tree, currentParentId, pathNodes);
-      const names = pathNodes.map(n => n.label);
-      bc.textContent = "위치: " + names.join(" > ");
+      bc.textContent = "위치: " + pathNodes.map(n => n.label).join(" > ");
+    }
+
+    // ✅ 버튼 체크(단일 선택) 동기화
+    function setSelectedButtonId(id) {
+      selectedButtonId = id;
+      // 화면의 모든 체크박스를 selectedButtonId 기준으로 맞춤
+      const checks = Array.from(document.querySelectorAll(".btn-select"));
+      checks.forEach(chk => {
+        chk.checked = (chk.dataset.id === selectedButtonId);
+      });
     }
 
     function renderButtons() {
       const container = document.getElementById("buttonContainer");
-      if (!container) return;
       container.innerHTML = "";
 
       const parentNode = getCurrentParentNode();
@@ -916,7 +882,7 @@
       if (children.length === 0) {
         const div = document.createElement("div");
         div.className = "empty-text";
-        div.textContent = "이 위치에는 버튼이 없습니다. 아래에서 새 버튼을 추가하세요.";
+        div.textContent = "이 위치에는 버튼이 없습니다. 아래에서 +새버튼으로 추가하세요.";
         container.appendChild(div);
         return;
       }
@@ -928,6 +894,27 @@
         const rowNumber = index + 1;
         const coord = colLetters + rowNumber;
 
+        // ✅ 체크박스(커서)
+        const checkWrap = document.createElement("div");
+        checkWrap.className = "row-check";
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.className = "btn-select";
+        chk.dataset.id = child.id;
+        chk.checked = (selectedButtonId === child.id);
+
+        chk.addEventListener("change", () => {
+          if (chk.checked) {
+            // 단일 선택: 다른 거 해제
+            setSelectedButtonId(child.id);
+          } else {
+            // 체크 해제
+            selectedButtonId = null;
+          }
+        });
+
+        checkWrap.appendChild(chk);
+
         const mainBtn = document.createElement("button");
         mainBtn.className = "btn-main";
         mainBtn.textContent = "[" + coord + "] " + child.label;
@@ -935,6 +922,7 @@
         mainBtn.addEventListener("click", () => {
           if (child.children && child.children.length > 0) {
             currentParentId = child.id;
+            // ✅ 이동하면 선택은 유지하되, 화면엔 해당 레벨에 없을 수 있으니 체크는 다시 렌더에서 반영
             render();
           } else {
             appendLog(child.label, coord);
@@ -956,7 +944,6 @@
 
         const renameBtn = document.createElement("button");
         renameBtn.textContent = "이름변경";
-        renameBtn.title = "버튼 이름 변경";
         renameBtn.addEventListener("click", () => {
           const newName = prompt("새 버튼 이름을 입력하세요:", child.label);
           if (newName && newName.trim() !== "") {
@@ -968,9 +955,10 @@
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "삭제";
-        delBtn.title = "이 버튼 삭제";
         delBtn.addEventListener("click", () => {
           if (!confirm("'" + child.label + "' 버튼을 삭제할까요? (하위 버튼도 함께 삭제됩니다)")) return;
+          // 선택 대상이 삭제되면 선택 해제
+          if (selectedButtonId === child.id) selectedButtonId = null;
           parentNode.children.splice(index, 1);
           saveTree();
           render();
@@ -981,6 +969,7 @@
         controls.appendChild(renameBtn);
         controls.appendChild(delBtn);
 
+        row.appendChild(checkWrap);
         row.appendChild(mainBtn);
         row.appendChild(controls);
         container.appendChild(row);
@@ -990,34 +979,39 @@
     function render() {
       if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) currentParentId = "root";
       updateBreadcrumb();
-      renderPathChips();     // ✅ 단계칩 갱신
+      renderPathChips();
       renderButtons();
       updateLogCount();
       applyUI();
+      // 렌더 후 체크 상태 동기화(화면에 있는 체크들만)
+      setSelectedButtonId(selectedButtonId);
     }
 
+    // 통계
     function openStats(){
       const count = logs.length;
       const chars = logs.reduce((acc, l) => acc + (String(l.label || "").length), 0);
+      const totalBtns = countAllButtons(tree);
+      const hereBtns = (getCurrentParentNode().children || []).length;
+
       document.getElementById("statCount").textContent = String(count);
       document.getElementById("statChars").textContent = String(chars);
+      document.getElementById("statBtns").textContent = String(totalBtns);
+      document.getElementById("statHereBtns").textContent = String(hereBtns);
+
       document.getElementById("statsBackdrop").style.display = "flex";
     }
     function closeStats(){ document.getElementById("statsBackdrop").style.display = "none"; }
 
+    // 안내문 모달
     function openHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
       const editor = document.getElementById("helpEditor");
-      if (!backdrop || !editor) return;
       editor.value = helpText || "";
       backdrop.style.display = "flex";
       setTimeout(() => editor.focus(), 0);
     }
-    function closeHelpModal() {
-      const backdrop = document.getElementById("helpModalBackdrop");
-      if (!backdrop) return;
-      backdrop.style.display = "none";
-    }
+    function closeHelpModal() { document.getElementById("helpModalBackdrop").style.display = "none"; }
 
     // 초기 로드
     loadTreeLocal();
@@ -1027,7 +1021,7 @@
     render();
     showBackupWarningIfNeeded();
 
-    // 네비게이션
+    // 네비
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -1039,7 +1033,7 @@
       render();
     });
 
-    // 새 버튼 추가
+    // +새버튼
     document.getElementById("btnAddHere").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const name = prompt("새 버튼 이름을 입력하세요:");
@@ -1051,30 +1045,25 @@
       }
     });
 
-    // 하위버튼 추가(리스트 선택 방식)
-    document.getElementById("btnAddChildFromList").addEventListener("click", () => {
-      const parentNode = getCurrentParentNode();
-      const list = parentNode.children || [];
-      if (list.length === 0) {
-        alert("현재 위치에 버튼이 없습니다.\n먼저 '이 위치에 새 버튼 추가'로 버튼을 만든 다음, 하위버튼을 추가하세요.");
+    // ✅ +하위버튼: 체크한 버튼의 하위로 추가
+    document.getElementById("btnAddChild").addEventListener("click", () => {
+      if (!selectedButtonId) {
+        alert("하위버튼을 추가할 대상 버튼을 먼저 체크(커서)하세요.");
+        return;
+      }
+      const target = findNodeById(tree, selectedButtonId);
+      if (!target) {
+        selectedButtonId = null;
+        render();
+        alert("선택된 버튼을 찾을 수 없습니다. (삭제되었을 수 있음)");
         return;
       }
 
-      const menu = list.map((c, i) => `${i+1}. ${c.label}`).join("\n");
-      const pick = prompt("어느 버튼의 '하위'로 추가할까요?\n\n" + menu + "\n\n번호를 입력하세요 (예: 1)");
-      if (!pick) return;
-
-      const idx = Number(pick) - 1;
-      if (!Number.isFinite(idx) || idx < 0 || idx >= list.length) {
-        alert("번호가 올바르지 않습니다.");
-        return;
-      }
-
-      const childName = prompt(`'${list[idx].label}'의 하위 버튼 이름을 입력하세요:`);
+      const childName = prompt(`'${target.label}'의 하위 버튼 이름을 입력하세요:`);
       if (!childName || !childName.trim()) return;
 
-      if (!list[idx].children) list[idx].children = [];
-      list[idx].children.push({ id: genId(), label: childName.trim(), children: [] });
+      if (!target.children) target.children = [];
+      target.children.push({ id: genId(), label: childName.trim(), children: [] });
 
       saveTree();
       render();
@@ -1085,7 +1074,6 @@
       const input = document.getElementById("quickAddInput");
       const text = (input?.value || "").trimEnd();
       if (!text.trim()) return;
-
       appendLog(text, "입력");
       input.value = "";
       input.focus();
@@ -1105,7 +1093,6 @@
     document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
     document.getElementById("btnCopyAllLog").addEventListener("click", copyAllLogs);
     document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
-    document.getElementById("btnDeleteAllLog").addEventListener("click", deleteAllLogs);
 
     // 디자인모드
     document.getElementById("btnDesignMode").addEventListener("click", () => {
@@ -1114,19 +1101,13 @@
       saveUILocal();
       scheduleCloudSave();
     });
-
     document.getElementById("rangeBtnWidth").addEventListener("input", (e) => {
       ui.btnWidthPct = Number(e.target.value || 39);
-      applyUI();
-      saveUILocal();
-      scheduleCloudSave();
+      applyUI(); saveUILocal(); scheduleCloudSave();
     });
-
     document.getElementById("rangeManualW").addEventListener("input", (e) => {
       ui.manualWidthPct = Number(e.target.value || 70);
-      applyUI();
-      saveUILocal();
-      scheduleCloudSave();
+      applyUI(); saveUILocal(); scheduleCloudSave();
     });
 
     // 통계모드
@@ -1184,6 +1165,12 @@
     });
 
     setAuthUI();
+
+    // 🔻 남아있던 함수들(원본 유지)
+    function saveTreeLocal() { try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); } catch {} }
+    function saveLogsLocal() { try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs)); } catch {} }
+    function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
+    function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
   </script>
 </body>
 </html>
