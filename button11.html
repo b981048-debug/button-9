@@ -55,6 +55,52 @@
     .mode-bar button.active{ background:#eef7ff; border-color:#b3d4ff; }
     .mode-bar .hint{ font-size:12px; opacity:.75; margin-left:auto; }
 
+    /* ====== ✅ 단계형 칩(탭) ====== */
+    .chips-wrap{
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 8px;
+      background: #fafafa;
+      margin: 6px 0 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+    }
+    .chips{
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .chip:hover{ background:#f6f6f6; }
+    .chip.active{
+      background: #eef7ff;
+      border-color: #b3d4ff;
+      font-weight: 700;
+    }
+    .chip .dot{
+      width: 6px; height: 6px; border-radius: 999px; background:#bbb;
+      display:inline-block;
+    }
+    .chip.active .dot{ background:#4c8dff; }
+    .chip-sep{
+      opacity: .35;
+      font-size: 14px;
+      user-select:none;
+    }
+
     /* ====== 디자인 패널 ====== */
     .design-panel{
       display:none;
@@ -98,16 +144,13 @@
       overscroll-behavior: contain;
     }
 
-    .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
-
     /* ✅ 핵심: 메인버튼 폭이 줄어들어도, 오른쪽 컨트롤이 빈칸 없이 "붙어서" 따라오게 */
     .btn-row {
       display: flex;
       align-items: center;
       gap: 4px;
       margin-bottom: 6px;
-
-      flex-wrap: nowrap;      /* 줄바꿈 방지(가능하면 한 줄 유지) */
+      flex-wrap: nowrap;
       justify-content: flex-start;
     }
     .btn-main{
@@ -117,15 +160,22 @@
       border-radius: 10px; border: 1px solid #ccc;
       background: #fafafa; font-size: 14px; min-height: 40px;
       transition: width .08s linear;
-      min-width: 120px; /* 너무 줄어들어 컨트롤이 떨어지는 것 방지 */
+      min-width: 120px;
     }
     .btn-controls {
-      flex: 0 0 auto;         /* ✅ 남는 공간 먹지 않음 */
+      flex: 0 0 auto;
       display: inline-flex;
       gap: 2px;
       white-space: nowrap;
     }
     .btn-controls button { padding: 4px 6px; font-size: 11px; }
+
+    /* ✅ 아래 추가 버튼 2개를 나란히 */
+    .add-row{
+      display:flex; gap:6px; align-items:center;
+    }
+    .add-row button{ flex:1; }
+    .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
 
     /* ====== 클릭 기록 ====== */
     .log-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
@@ -187,12 +237,6 @@
     .stat-card{ border:1px solid #eee; border-radius:12px; padding:10px; background:#fafafa; }
     .stat-k{ font-size:12px; opacity:.75; }
     .stat-v{ font-size:18px; font-weight:800; margin-top:4px; }
-
-    /* ✅ 아래 추가 버튼 2개를 나란히 */
-    .add-row{
-      display:flex; gap:6px; align-items:center;
-    }
-    .add-row button{ flex:1; }
   </style>
 </head>
 <body>
@@ -202,7 +246,6 @@
       <span class="badge" id="syncBadge">로컬 모드</span>
     </h1>
 
-    <!-- ✅ 모드바 -->
     <div class="mode-bar">
       <button id="btnDesignMode">디자인모드</button>
       <button id="btnStatsMode">통계모드</button>
@@ -220,7 +263,11 @@
           </div>
         </div>
 
-        <!-- ✅ 디자인 패널 -->
+        <!-- ✅ 단계형 구조(칩) -->
+        <div class="chips-wrap">
+          <div class="chips" id="pathChips"></div>
+        </div>
+
         <div class="design-panel" id="designPanel">
           <div class="design-row">
             <label>
@@ -239,7 +286,6 @@
         </div>
 
         <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
-          <!-- ✅ 직접 입력 -->
           <div class="quick-add">
             <textarea id="quickAddInput" placeholder="여기에 입력 후 Enter (오른쪽 클릭 기록에 저장)&#10;Shift+Enter = 줄바꿈"></textarea>
             <button id="btnQuickAdd" class="btn-primary">기록</button>
@@ -247,7 +293,6 @@
 
           <div class="buttons-area" id="buttonContainer"></div>
 
-          <!-- ✅ 3) 아래에 '하위버튼 추가'를 오른쪽에 배치 -->
           <div class="add-row">
             <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
             <button class="add-current" id="btnAddChildFromList">+ 하위버튼 추가</button>
@@ -277,13 +322,11 @@
       </div>
     </div>
 
-    <!-- ✅ 안내문 -->
     <div class="help-box">
       <div class="empty-text" id="helpText"></div>
       <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
     </div>
 
-    <!-- ✅ 로그인 -->
     <div class="moved-area">
       <div class="auth-bar">
         <button id="btnLogin">Google 로그인</button>
@@ -294,7 +337,6 @@
     </div>
   </div>
 
-  <!-- ✅ 안내문 모달 -->
   <div class="modal-backdrop" id="helpModalBackdrop">
     <div class="modal">
       <h2>안내문 수정</h2>
@@ -306,7 +348,6 @@
     </div>
   </div>
 
-  <!-- ✅ 통계 모달 -->
   <div class="modal-backdrop" id="statsBackdrop">
     <div class="modal">
       <h2>통계</h2>
@@ -327,15 +368,11 @@
     </div>
   </div>
 
-  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
   <script>
-    /***********************
-     * Firebase 설정
-     ***********************/
     const firebaseConfig = {
       apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
       authDomain: "button-tree.firebaseapp.com",
@@ -350,13 +387,10 @@
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    // ✅ 기존 데이터 유지용 키 (절대 변경 금지)
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
     const HELP_STORAGE_KEY = "buttonHelpText_v1";
-
-    // ✅ UI만 새로 저장
-    const UI_STORAGE_KEY = "buttonUI_v1";
+    const UI_STORAGE_KEY   = "buttonUI_v1";
 
     const BACKUP_WARN_THRESHOLD = 1000;
 
@@ -365,7 +399,6 @@
     let logs = [];
     let helpText = "";
 
-    // UI 상태
     let ui = {
       designMode: false,
       btnWidthPct: 39,
@@ -387,9 +420,7 @@
       );
     }
 
-    function genId() {
-      return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
-    }
+    function genId() { return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8); }
     function nowMs() { return Date.now(); }
 
     function setAuthUI() {
@@ -417,7 +448,6 @@
 `💡 하위 버튼이 없는 버튼을 누르면 오른쪽에 기록됩니다.
 1000개마다 백업을 합니다. 백업을 한 뒤에는 가장 밑에 버튼에 백업한 자료의 개수를 적어놓습니다.`;
 
-    /* ====== UI 저장/적용 ====== */
     function applyUI() {
       document.documentElement.style.setProperty("--btnWidthPct", String(ui.btnWidthPct));
       document.documentElement.style.setProperty("--manualWidthPct", String(ui.manualWidthPct));
@@ -428,7 +458,6 @@
       const hint = document.getElementById("modeHint");
       hint.textContent = ui.designMode ? "디자인모드 ON" : "";
 
-      // 슬라이더/표시값 동기화
       document.getElementById("rangeBtnWidth").value = String(ui.btnWidthPct);
       document.getElementById("valBtnWidth").textContent = String(ui.btnWidthPct);
 
@@ -436,21 +465,18 @@
       document.getElementById("valManualW").textContent = String(ui.manualWidthPct);
     }
 
-    function saveUILocal() {
-      try { localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(ui)); } catch (e) {}
-    }
+    function saveUILocal() { try { localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(ui)); } catch {} }
     function loadUILocal() {
       try {
         const saved = localStorage.getItem(UI_STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed === "object") {
-            // 이전 버전 호환: manualHpx 같은 구키가 있어도 무시하고 병합
             ui = { ...ui, ...parsed };
             if (typeof ui.manualWidthPct !== "number") ui.manualWidthPct = 70;
           }
         }
-      } catch (e) {}
+      } catch {}
       applyUI();
     }
 
@@ -462,10 +488,7 @@
       saveTimer = setTimeout(async () => {
         try {
           await userDocRef(currentUser.uid).set({
-            tree,
-            logs,
-            helpText,
-            ui,
+            tree, logs, helpText, ui,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -475,10 +498,7 @@
       }, 300);
     }
 
-    function saveHelpLocal() {
-      try { localStorage.setItem(HELP_STORAGE_KEY, helpText); }
-      catch (e) { console.warn("localStorage 안내문 저장 오류:", e); }
-    }
+    function saveHelpLocal() { try { localStorage.setItem(HELP_STORAGE_KEY, helpText); } catch {} }
     function loadHelpLocal() {
       let saved = "";
       try { saved = localStorage.getItem(HELP_STORAGE_KEY) || ""; } catch {}
@@ -490,20 +510,10 @@
       if (!el) return;
       el.textContent = helpText || "";
     }
-    function saveHelp() {
-      saveHelpLocal();
-      scheduleCloudSave();
-      renderHelp();
-    }
+    function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
-    function saveTreeLocal() {
-      try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); }
-      catch (e) { console.warn("localStorage 트리 저장 오류:", e); }
-    }
-    function saveLogsLocal() {
-      try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs)); }
-      catch (e) { console.warn("localStorage 로그 저장 오류:", e); }
-    }
+    function saveTreeLocal() { try { localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree)); } catch {} }
+    function saveLogsLocal() { try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs)); } catch {} }
 
     function loadTreeLocal() {
       let saved = null;
@@ -539,21 +549,13 @@
 
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
-
       if (remote && (remote.tree || remote.logs || remote.helpText || remote.ui)) {
         applyRemote(remote);
-        saveTreeLocal();
-        saveLogsLocal();
-        saveHelpLocal();
-        saveUILocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveUILocal();
         return;
       }
-
       await userDocRef(uid).set({
-        tree,
-        logs,
-        helpText,
-        ui,
+        tree, logs, helpText, ui,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -590,7 +592,6 @@
 
     function startRealtimeListener(uid) {
       if (unsubscribeDoc) unsubscribeDoc();
-
       unsubscribeDoc = userDocRef(uid).onSnapshot((snap) => {
         if (!snap.exists) return;
         const remote = snap.data() || {};
@@ -598,10 +599,7 @@
         if (!remote.tree && !remote.logs && !remote.helpText && !remote.ui) return;
 
         applyRemote(remote);
-        saveTreeLocal();
-        saveLogsLocal();
-        saveHelpLocal();
-        saveUILocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveUILocal();
       }, (err) => console.warn("onSnapshot 오류:", err));
     }
 
@@ -618,6 +616,7 @@
       }
       return null;
     }
+
     function findParentId(root, targetId, parentId) {
       if (root.id === targetId) return parentId;
       const children = root.children || [];
@@ -627,6 +626,62 @@
       }
       return null;
     }
+
+    // ✅ 경로(루트→현재) 노드 배열 만들기
+    function getPathNodesToCurrent() {
+      const path = [];
+      function dfs(node, targetId) {
+        path.push(node);
+        if (node.id === targetId) return true;
+        const children = node.children || [];
+        for (let i = 0; i < children.length; i++) {
+          if (dfs(children[i], targetId)) return true;
+        }
+        path.pop();
+        return false;
+      }
+      dfs(tree, currentParentId === "root" ? "root" : currentParentId);
+      return path;
+    }
+
+    // ✅ 칩 렌더 (전체→...→현재)
+    function renderPathChips() {
+      const wrap = document.getElementById("pathChips");
+      if (!wrap) return;
+      wrap.innerHTML = "";
+
+      const path = getPathNodesToCurrent();
+      // path[0]은 root
+      path.forEach((node, idx) => {
+        if (idx > 0) {
+          const sep = document.createElement("span");
+          sep.className = "chip-sep";
+          sep.textContent = "›";
+          wrap.appendChild(sep);
+        }
+
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        if (idx === path.length - 1) chip.classList.add("active");
+
+        const dot = document.createElement("span");
+        dot.className = "dot";
+
+        const label = document.createElement("span");
+        label.textContent = (node.id === "root") ? "전체" : (node.label || "이름없음");
+
+        chip.appendChild(dot);
+        chip.appendChild(label);
+
+        chip.addEventListener("click", () => {
+          currentParentId = (node.id === "root") ? "root" : node.id;
+          render();
+        });
+
+        wrap.appendChild(chip);
+      });
+    }
+
     function getDepthById(node, targetId, depth) {
       if (depth === undefined) depth = 0;
       if (!node) return -1;
@@ -638,6 +693,7 @@
       }
       return -1;
     }
+
     function columnIndexToLetters(n) {
       if (!n || n <= 0) n = 1;
       let s = "";
@@ -648,11 +704,13 @@
       }
       return s;
     }
+
     function getCurrentParentNode() {
       const node = findNodeById(tree, currentParentId);
       if (!node) currentParentId = "root";
       return node || tree;
     }
+
     function moveSibling(parentNode, index, delta) {
       if (!parentNode || !parentNode.children) return;
       const newIndex = index + delta;
@@ -670,6 +728,7 @@
       if (!countSpan) return;
       countSpan.textContent = logs.length;
     }
+
     function createLogLi(log, index) {
       const li = document.createElement("li");
       li.dataset.index = index;
@@ -687,6 +746,7 @@
       li.appendChild(textSpan);
       return li;
     }
+
     function renderLogs() {
       const logList = document.getElementById("logList");
       if (!logList) return;
@@ -695,6 +755,7 @@
       updateLogCount();
       syncSelectAllButtonLabel();
     }
+
     function appendLog(label, coord) {
       const now = new Date();
       const timeStr = now.toLocaleString();
@@ -743,6 +804,7 @@
       saveLogs();
       renderLogs();
     }
+
     function editSelectedLog() {
       const selected = getSelectedLogItems();
       if (selected.length === 0) return alert("수정할 기록을 선택하세요.");
@@ -759,6 +821,7 @@
       saveLogs();
       renderLogs();
     }
+
     function deleteAllLogs() {
       if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
       if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
@@ -782,6 +845,7 @@
       }
       document.body.removeChild(textarea);
     }
+
     function copyTextWithClipboard(text, count, label) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text)
@@ -791,11 +855,13 @@
         fallbackCopyText(text, count, label);
       }
     }
+
     function copyAllLogs() {
       if (logs.length === 0) return alert("복사할 기록이 없습니다.");
       const lines = logs.map(log => `${log.time} - [${log.coord}] ${log.label}`);
       copyTextWithClipboard(lines.join("\n"), lines.length, "전체");
     }
+
     function copySelectedLogs() {
       const selected = getSelectedLogItems();
       if (selected.length === 0) return alert("복사할 기록을 선택하세요.");
@@ -910,7 +976,6 @@
           render();
         });
 
-        // ✅ +하위 제거 (요청사항)
         controls.appendChild(upBtn);
         controls.appendChild(downBtn);
         controls.appendChild(renameBtn);
@@ -925,12 +990,12 @@
     function render() {
       if (currentParentId !== "root" && !findNodeById(tree, currentParentId)) currentParentId = "root";
       updateBreadcrumb();
+      renderPathChips();     // ✅ 단계칩 갱신
       renderButtons();
       updateLogCount();
       applyUI();
     }
 
-    /* ====== 통계 ====== */
     function openStats(){
       const count = logs.length;
       const chars = logs.reduce((acc, l) => acc + (String(l.label || "").length), 0);
@@ -938,11 +1003,8 @@
       document.getElementById("statChars").textContent = String(chars);
       document.getElementById("statsBackdrop").style.display = "flex";
     }
-    function closeStats(){
-      document.getElementById("statsBackdrop").style.display = "none";
-    }
+    function closeStats(){ document.getElementById("statsBackdrop").style.display = "none"; }
 
-    /* ====== 안내문 모달 ====== */
     function openHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
       const editor = document.getElementById("helpEditor");
@@ -957,7 +1019,7 @@
       backdrop.style.display = "none";
     }
 
-    /* ====== 초기 로드 ====== */
+    // 초기 로드
     loadTreeLocal();
     loadLogsLocal();
     loadHelpLocal();
@@ -965,7 +1027,7 @@
     render();
     showBackupWarningIfNeeded();
 
-    /* ====== 네비게이션 ====== */
+    // 네비게이션
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -977,7 +1039,7 @@
       render();
     });
 
-    /* ✅ 새 버튼 추가 */
+    // 새 버튼 추가
     document.getElementById("btnAddHere").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const name = prompt("새 버튼 이름을 입력하세요:");
@@ -989,7 +1051,7 @@
       }
     });
 
-    /* ✅ 3) 하위버튼 추가(리스트 선택 방식) */
+    // 하위버튼 추가(리스트 선택 방식)
     document.getElementById("btnAddChildFromList").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const list = parentNode.children || [];
@@ -998,13 +1060,8 @@
         return;
       }
 
-      // 번호로 선택(가장 단순하고 확실)
       const menu = list.map((c, i) => `${i+1}. ${c.label}`).join("\n");
-      const pick = prompt(
-        "어느 버튼의 '하위'로 추가할까요?\n\n" +
-        menu +
-        "\n\n번호를 입력하세요 (예: 1)"
-      );
+      const pick = prompt("어느 버튼의 '하위'로 추가할까요?\n\n" + menu + "\n\n번호를 입력하세요 (예: 1)");
       if (!pick) return;
 
       const idx = Number(pick) - 1;
@@ -1023,7 +1080,7 @@
       render();
     });
 
-    /* ✅ 직접 입력: Enter=기록, Shift+Enter=줄바꿈 */
+    // 직접 입력: Enter=기록, Shift+Enter=줄바꿈
     function writeManualLogFromInput() {
       const input = document.getElementById("quickAddInput");
       const text = (input?.value || "").trimEnd();
@@ -1036,13 +1093,13 @@
     document.getElementById("btnQuickAdd").addEventListener("click", writeManualLogFromInput);
     document.getElementById("quickAddInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
-        if (e.shiftKey) return; // 줄바꿈
+        if (e.shiftKey) return;
         e.preventDefault();
         writeManualLogFromInput();
       }
     });
 
-    /* ✅ 로그 액션 */
+    // 로그 액션
     document.getElementById("btnSelectAllLog").addEventListener("click", toggleSelectAllLogs);
     document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
     document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
@@ -1050,7 +1107,7 @@
     document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
     document.getElementById("btnDeleteAllLog").addEventListener("click", deleteAllLogs);
 
-    /* ✅ 디자인모드 */
+    // 디자인모드
     document.getElementById("btnDesignMode").addEventListener("click", () => {
       ui.designMode = !ui.designMode;
       applyUI();
@@ -1072,14 +1129,14 @@
       scheduleCloudSave();
     });
 
-    /* ✅ 통계모드 */
+    // 통계모드
     document.getElementById("btnStatsMode").addEventListener("click", openStats);
     document.getElementById("btnStatsClose").addEventListener("click", closeStats);
     document.getElementById("statsBackdrop").addEventListener("click", (e) => {
       if (e.target.id === "statsBackdrop") closeStats();
     });
 
-    /* ✅ 안내문 */
+    // 안내문
     document.getElementById("btnEditHelp").addEventListener("click", openHelpModal);
     document.getElementById("btnHelpCancel").addEventListener("click", closeHelpModal);
     document.getElementById("btnHelpSave").addEventListener("click", () => {
@@ -1094,7 +1151,7 @@
       if (e.target.id === "helpModalBackdrop") closeHelpModal();
     });
 
-    /* ✅ 로그인 */
+    // 로그인
     document.getElementById("btnLogin").addEventListener("click", async () => {
       try { await auth.signInWithPopup(provider); }
       catch (e) {
