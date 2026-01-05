@@ -21,14 +21,14 @@
 
     /* ====== 디자인 변수 ====== */
     :root{
-      --btnWidthPct: 39; /* 버튼(왼쪽 메인 버튼) 가로% */
-      --manualHpx: 72;   /* 직접입력 textarea 높이(px) */
+      --btnWidthPct: 39;     /* 버튼(왼쪽 메인 버튼) 가로% */
+      --manualWidthPct: 70;  /* 직접입력 textarea 가로% */
     }
 
     /* ✅✅ 좌/우 패널 */
     .layout { display: flex; flex-direction: column; gap: 6px; }
     @media (min-width: 720px) {
-      .layout { flex-direction: row; gap: 6px; height: calc(100vh - 220px); }
+      .layout { flex-direction: row; gap: 6px; height: calc(100vh - 240px); }
       .left, .right { height: 100%; }
       .panel-shell { height: 100%; }
       .panel-scroll { height: 100%; }
@@ -73,12 +73,12 @@
     /* ✅✅ (상단 입력칸) */
     .quick-add { display: flex; gap: 6px; align-items: flex-start; margin: 6px 0 8px; }
     .quick-add textarea {
-      flex: 1; min-width: 0;
+      flex: 0 0 auto;
+      width: calc(var(--manualWidthPct) * 1%);
+      min-width: 120px;
       border: 1px solid #ddd; border-radius: 10px;
       padding: 8px 10px; font-size: 13px; outline: none;
-      resize: vertical; min-height: 42px;
-      height: calc(var(--manualHpx) * 1px);
-      max-height: 300px;
+      resize: vertical; min-height: 42px; max-height: 240px;
       line-height: 1.35;
       white-space: pre-wrap;
     }
@@ -100,6 +100,16 @@
 
     .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
 
+    /* ✅ 핵심: 메인버튼 폭이 줄어들어도, 오른쪽 컨트롤이 빈칸 없이 "붙어서" 따라오게 */
+    .btn-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 6px;
+
+      flex-wrap: nowrap;      /* 줄바꿈 방지(가능하면 한 줄 유지) */
+      justify-content: flex-start;
+    }
     .btn-main{
       flex: 0 0 auto;
       width: calc(var(--btnWidthPct) * 1%);
@@ -107,9 +117,14 @@
       border-radius: 10px; border: 1px solid #ccc;
       background: #fafafa; font-size: 14px; min-height: 40px;
       transition: width .08s linear;
+      min-width: 120px; /* 너무 줄어들어 컨트롤이 떨어지는 것 방지 */
     }
-    .btn-row { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
-    .btn-controls { display: flex; gap: 2px; flex: 1 1 auto; justify-content:flex-end; }
+    .btn-controls {
+      flex: 0 0 auto;         /* ✅ 남는 공간 먹지 않음 */
+      display: inline-flex;
+      gap: 2px;
+      white-space: nowrap;
+    }
     .btn-controls button { padding: 4px 6px; font-size: 11px; }
 
     /* ====== 클릭 기록 ====== */
@@ -172,6 +187,12 @@
     .stat-card{ border:1px solid #eee; border-radius:12px; padding:10px; background:#fafafa; }
     .stat-k{ font-size:12px; opacity:.75; }
     .stat-v{ font-size:18px; font-weight:800; margin-top:4px; }
+
+    /* ✅ 아래 추가 버튼 2개를 나란히 */
+    .add-row{
+      display:flex; gap:6px; align-items:center;
+    }
+    .add-row button{ flex:1; }
   </style>
 </head>
 <body>
@@ -209,12 +230,12 @@
             </label>
 
             <label>
-              직접입력 칸 높이(px)
-              <input id="rangeManualH" type="range" min="48" max="260" step="4" value="72" />
-              <span class="kv"><span id="valManualH">72</span>px</span>
+              직접입력 길이(%)
+              <input id="rangeManualW" type="range" min="20" max="100" value="70" />
+              <span class="kv"><span id="valManualW">70</span>%</span>
             </label>
           </div>
-          <div class="kv" style="margin-top:6px;">※ 디자인모드에서만 조절. (왼쪽 버튼 폭 + 직접입력칸 높이)</div>
+          <div class="kv" style="margin-top:6px;">※ 디자인모드에서만 조절. (왼쪽 버튼 폭 + 직접입력칸 폭)</div>
         </div>
 
         <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
@@ -225,7 +246,12 @@
           </div>
 
           <div class="buttons-area" id="buttonContainer"></div>
-          <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
+
+          <!-- ✅ 3) 아래에 '하위버튼 추가'를 오른쪽에 배치 -->
+          <div class="add-row">
+            <button class="add-current" id="btnAddHere">+ 이 위치에 새 버튼 추가</button>
+            <button class="add-current" id="btnAddChildFromList">+ 하위버튼 추가</button>
+          </div>
         </div>
       </div>
 
@@ -308,7 +334,7 @@
 
   <script>
     /***********************
-     * Firebase 설정 (네 프로젝트 값)
+     * Firebase 설정
      ***********************/
     const firebaseConfig = {
       apiKey: "AIzaSyC8kLsUhGLu4eGhTYlKlh-tKCQkKjF0EvU",
@@ -324,12 +350,12 @@
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    // ✅✅✅ 기존 데이터 유지: 저장키 절대 변경하지 않음
+    // ✅ 기존 데이터 유지용 키 (절대 변경 금지)
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
     const HELP_STORAGE_KEY = "buttonHelpText_v1";
 
-    // 새로 추가(디자인/통계용 UI 상태만 저장)
+    // ✅ UI만 새로 저장
     const UI_STORAGE_KEY = "buttonUI_v1";
 
     const BACKUP_WARN_THRESHOLD = 1000;
@@ -343,7 +369,7 @@
     let ui = {
       designMode: false,
       btnWidthPct: 39,
-      manualHpx: 72
+      manualWidthPct: 70
     };
 
     let currentUser = null;
@@ -394,7 +420,7 @@
     /* ====== UI 저장/적용 ====== */
     function applyUI() {
       document.documentElement.style.setProperty("--btnWidthPct", String(ui.btnWidthPct));
-      document.documentElement.style.setProperty("--manualHpx", String(ui.manualHpx));
+      document.documentElement.style.setProperty("--manualWidthPct", String(ui.manualWidthPct));
 
       document.getElementById("btnDesignMode").classList.toggle("active", !!ui.designMode);
       document.getElementById("designPanel").classList.toggle("show", !!ui.designMode);
@@ -406,8 +432,8 @@
       document.getElementById("rangeBtnWidth").value = String(ui.btnWidthPct);
       document.getElementById("valBtnWidth").textContent = String(ui.btnWidthPct);
 
-      document.getElementById("rangeManualH").value = String(ui.manualHpx);
-      document.getElementById("valManualH").textContent = String(ui.manualHpx);
+      document.getElementById("rangeManualW").value = String(ui.manualWidthPct);
+      document.getElementById("valManualW").textContent = String(ui.manualWidthPct);
     }
 
     function saveUILocal() {
@@ -419,7 +445,9 @@
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed === "object") {
+            // 이전 버전 호환: manualHpx 같은 구키가 있어도 무시하고 병합
             ui = { ...ui, ...parsed };
+            if (typeof ui.manualWidthPct !== "number") ui.manualWidthPct = 70;
           }
         }
       } catch (e) {}
@@ -437,7 +465,7 @@
             tree,
             logs,
             helpText,
-            ui, // ✅ UI도 같이 동기화
+            ui,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -486,18 +514,7 @@
           if (parsed && parsed.id && Array.isArray(parsed.children)) { tree = parsed; return; }
         } catch {}
       }
-      // 없을 때만 기본 생성
-      tree = {
-        id: "root",
-        label: "ROOT",
-        children: [
-          { id: genId(), label: "예시 버튼 1", children: [] },
-          { id: genId(), label: "예시 버튼 2", children: [
-            { id: genId(), label: "예시 2-1", children: [] },
-            { id: genId(), label: "예시 2-2", children: [] }
-          ] }
-        ]
-      };
+      tree = { id: "root", label: "ROOT", children: [] };
       saveTreeLocal();
     }
 
@@ -556,7 +573,10 @@
 
         if (Array.isArray(remote.logs)) logs = remote.logs;
         if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
-        if (remote.ui && typeof remote.ui === "object") ui = { ...ui, ...remote.ui };
+        if (remote.ui && typeof remote.ui === "object") {
+          ui = { ...ui, ...remote.ui };
+          if (typeof ui.manualWidthPct !== "number") ui.manualWidthPct = 70;
+        }
 
         applyUI();
         renderLogs();
@@ -657,6 +677,7 @@
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "log-checkbox";
+      checkbox.addEventListener("change", syncSelectAllButtonLabel);
 
       const textSpan = document.createElement("span");
       textSpan.className = "log-text";
@@ -672,8 +693,6 @@
       logList.innerHTML = "";
       logs.forEach((log, idx) => logList.appendChild(createLogLi(log, idx)));
       updateLogCount();
-
-      // 전체선택 버튼 라벨을 현재 상태에 맞게 갱신
       syncSelectAllButtonLabel();
     }
     function appendLog(label, coord) {
@@ -701,15 +720,12 @@
       btn.textContent = allChecked ? "전체 해제" : "전체 선택";
     }
 
-    // ✅ 전체 선택/해제 토글
     function toggleSelectAllLogs() {
       const checkboxes = Array.from(document.querySelectorAll("#logList .log-checkbox"));
       if (checkboxes.length === 0) return;
-
       const allChecked = checkboxes.every(cb => cb.checked);
       const next = !allChecked;
       checkboxes.forEach(cb => cb.checked = next);
-
       syncSelectAllButtonLabel();
     }
 
@@ -746,7 +762,6 @@
     function deleteAllLogs() {
       if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
       if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
-
       logs = [];
       saveLogs();
       renderLogs();
@@ -873,19 +888,6 @@
         downBtn.title = "아래로";
         downBtn.addEventListener("click", () => moveSibling(parentNode, index, 1));
 
-        const addChildBtn = document.createElement("button");
-        addChildBtn.textContent = "+하위";
-        addChildBtn.title = "하위 버튼 추가";
-        addChildBtn.addEventListener("click", () => {
-          const name = prompt("하위 버튼 이름을 입력하세요:");
-          if (name && name.trim() !== "") {
-            if (!child.children) child.children = [];
-            child.children.push({ id: genId(), label: name.trim(), children: [] });
-            saveTree();
-            render();
-          }
-        });
-
         const renameBtn = document.createElement("button");
         renameBtn.textContent = "이름변경";
         renameBtn.title = "버튼 이름 변경";
@@ -908,9 +910,9 @@
           render();
         });
 
+        // ✅ +하위 제거 (요청사항)
         controls.appendChild(upBtn);
         controls.appendChild(downBtn);
-        controls.appendChild(addChildBtn);
         controls.appendChild(renameBtn);
         controls.appendChild(delBtn);
 
@@ -974,6 +976,8 @@
       currentParentId = "root";
       render();
     });
+
+    /* ✅ 새 버튼 추가 */
     document.getElementById("btnAddHere").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const name = prompt("새 버튼 이름을 입력하세요:");
@@ -985,6 +989,40 @@
       }
     });
 
+    /* ✅ 3) 하위버튼 추가(리스트 선택 방식) */
+    document.getElementById("btnAddChildFromList").addEventListener("click", () => {
+      const parentNode = getCurrentParentNode();
+      const list = parentNode.children || [];
+      if (list.length === 0) {
+        alert("현재 위치에 버튼이 없습니다.\n먼저 '이 위치에 새 버튼 추가'로 버튼을 만든 다음, 하위버튼을 추가하세요.");
+        return;
+      }
+
+      // 번호로 선택(가장 단순하고 확실)
+      const menu = list.map((c, i) => `${i+1}. ${c.label}`).join("\n");
+      const pick = prompt(
+        "어느 버튼의 '하위'로 추가할까요?\n\n" +
+        menu +
+        "\n\n번호를 입력하세요 (예: 1)"
+      );
+      if (!pick) return;
+
+      const idx = Number(pick) - 1;
+      if (!Number.isFinite(idx) || idx < 0 || idx >= list.length) {
+        alert("번호가 올바르지 않습니다.");
+        return;
+      }
+
+      const childName = prompt(`'${list[idx].label}'의 하위 버튼 이름을 입력하세요:`);
+      if (!childName || !childName.trim()) return;
+
+      if (!list[idx].children) list[idx].children = [];
+      list[idx].children.push({ id: genId(), label: childName.trim(), children: [] });
+
+      saveTree();
+      render();
+    });
+
     /* ✅ 직접 입력: Enter=기록, Shift+Enter=줄바꿈 */
     function writeManualLogFromInput() {
       const input = document.getElementById("quickAddInput");
@@ -992,7 +1030,6 @@
       if (!text.trim()) return;
 
       appendLog(text, "입력");
-
       input.value = "";
       input.focus();
     }
@@ -1028,8 +1065,8 @@
       scheduleCloudSave();
     });
 
-    document.getElementById("rangeManualH").addEventListener("input", (e) => {
-      ui.manualHpx = Number(e.target.value || 72);
+    document.getElementById("rangeManualW").addEventListener("input", (e) => {
+      ui.manualWidthPct = Number(e.target.value || 70);
       applyUI();
       saveUILocal();
       scheduleCloudSave();
