@@ -26,7 +26,7 @@
 
     .layout { display: flex; flex-direction: column; gap: 6px; }
     @media (min-width: 720px) {
-      .layout { flex-direction: row; gap: 6px; height: calc(100vh - 240px); }
+      .layout { flex-direction: row; gap: 6px; height: calc(100vh - 300px); }
       .left, .right { height: 100%; }
       .panel-shell { height: 100%; }
       .panel-scroll { height: 100%; }
@@ -144,7 +144,6 @@
       transition: width .08s linear;
       min-width: 120px;
     }
-    .btn-main:focus{ outline:none; box-shadow: 0 0 0 3px rgba(179, 212, 255, 0.35); border-color:#b3d4ff; }
 
     .btn-controls {
       flex: 0 0 auto;
@@ -179,8 +178,10 @@
     .log-checkbox { flex-shrink: 0; margin-top: 2px; }
 
     .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
-    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
+
+    /* ✅ 안내문 */
     .help-box { border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb; margin-top: 10px; }
+    .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
 
     .moved-area { margin-top: 10px; border: 1px solid #eee; border-radius: 10px; padding: 10px; background: #fafafa; }
     .auth-bar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
@@ -195,6 +196,12 @@
     .modal { width: min(720px, 100%); background: #fff; border-radius: 12px; border: 1px solid #ddd;
       box-shadow: 0 10px 30px rgba(0,0,0,0.18); padding: 12px; }
     .modal h2 { font-size: 14px; margin: 0 0 8px; }
+    .modal textarea{
+      width: 100%; min-height: 180px; resize: vertical;
+      border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 13px;
+      outline: none;
+    }
+    .modal-actions { display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap; margin-top:10px; }
 
     .stat-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     @media (max-width:520px){ .stat-grid{ grid-template-columns:1fr; } }
@@ -284,6 +291,12 @@
       </div>
     </div>
 
+    <!-- ✅ 안내문(복원) -->
+    <div class="help-box">
+      <div class="empty-text" id="helpText"></div>
+      <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
+    </div>
+
     <div class="moved-area">
       <div class="auth-bar">
         <button id="btnLogin">Google 로그인</button>
@@ -291,6 +304,18 @@
         <span class="auth-status" id="authStatus">로그인 안 됨</span>
       </div>
       <div class="note">※ 로그인하면 <b>항상 클라우드 데이터가 우선</b> 적용됩니다. (로컬은 자동으로 클라우드로 맞춰짐)</div>
+    </div>
+  </div>
+
+  <!-- ✅ 안내문 수정 모달 -->
+  <div class="modal-backdrop" id="helpModalBackdrop">
+    <div class="modal">
+      <h2>안내문 수정</h2>
+      <textarea id="helpEditor" placeholder="여기에 안내문을 입력하세요."></textarea>
+      <div class="modal-actions">
+        <button id="btnHelpCancel">취소</button>
+        <button class="btn-primary" id="btnHelpSave">저장</button>
+      </div>
     </div>
   </div>
 
@@ -315,9 +340,10 @@
           <div class="stat-v" id="statHereBtns">0</div>
         </div>
       </div>
-      <div class="modal-actions" style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <div class="modal-actions" style="margin-top:12px;">
         <button id="btnStatsClose">닫기</button>
       </div>
+      <div class="note">※ 글자수는 기록의 <b>내용(두 번째 줄)</b>만 합산합니다.</div>
     </div>
   </div>
 
@@ -342,6 +368,7 @@
 
     const TREE_STORAGE_KEY = "buttonTree_v_local";
     const LOG_STORAGE_KEY  = "buttonLogs_v1";
+    const HELP_STORAGE_KEY = "buttonHelpText_v1";
     const UI_STORAGE_KEY   = "buttonUI_v1";
 
     const BACKUP_WARN_THRESHOLD = 1000;
@@ -349,6 +376,7 @@
     let tree = null;
     let currentParentId = "root";
     let logs = [];
+    let helpText = "";
     let ui = { designMode: false, btnWidthPct: 39, manualWidthPct: 70 };
 
     let currentUser = null;
@@ -356,9 +384,15 @@
     let isApplyingRemote = false;
     let saveTimer = null;
 
-    // ✅ 체크리스트: 다중 체크 허용
-    // 다만, "하위버튼 추가 대상"은 마지막으로 체크한 버튼(명확한 기준)
+    // ✅ 체크리스트: 다중 체크 가능
     let lastCheckedButtonId = null;
+
+    const DEFAULT_HELP_TEXT =
+`💡 사용법
+- 버튼 클릭: 하위가 있으면 그쪽으로 이동(기록 입력 안 됨)
+- 버튼 옆 [입력] 버튼: 클릭 기록에 입력
+- +하위버튼: 현재 위치(상단 경로)에 하위 버튼 추가
+- 직접 입력칸: Enter=기록 / Shift+Enter=줄바꿈`;
 
     function showBackupWarningIfNeeded() {
       if (!Array.isArray(logs)) return;
@@ -421,6 +455,15 @@
       applyUI();
     }
 
+    function saveHelpLocal() { try { localStorage.setItem(HELP_STORAGE_KEY, helpText); } catch {} }
+    function loadHelpLocal() {
+      let saved = "";
+      try { saved = localStorage.getItem(HELP_STORAGE_KEY) || ""; } catch {}
+      helpText = (saved && saved.trim() !== "") ? saved : DEFAULT_HELP_TEXT;
+      renderHelp();
+    }
+    function renderHelp() { document.getElementById("helpText").textContent = helpText || ""; }
+
     function scheduleCloudSave() {
       if (!currentUser) return;
       if (isApplyingRemote) return;
@@ -429,7 +472,7 @@
       saveTimer = setTimeout(async () => {
         try {
           await userDocRef(currentUser.uid).set({
-            tree, logs, ui,
+            tree, logs, helpText, ui,
             updatedAtMs: nowMs(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -474,13 +517,13 @@
 
     async function cloudFirstInit(uid) {
       const remote = await cloudLoad(uid);
-      if (remote && (remote.tree || remote.logs || remote.ui)) {
+      if (remote && (remote.tree || remote.logs || remote.helpText || remote.ui)) {
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveUILocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveUILocal();
         return;
       }
       await userDocRef(uid).set({
-        tree, logs, ui,
+        tree, logs, helpText, ui,
         updatedAtMs: nowMs(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -509,15 +552,16 @@
           currentParentId = stillExists ? prevParentId : "root";
         }
         if (Array.isArray(remote.logs)) logs = remote.logs;
+        if (typeof remote.helpText === "string" && remote.helpText.trim() !== "") helpText = remote.helpText;
         if (remote.ui && typeof remote.ui === "object") {
           ui = { ...ui, ...remote.ui };
           if (typeof ui.manualWidthPct !== "number") ui.manualWidthPct = 70;
         }
 
-        // 마지막 체크 대상이 삭제되었을 경우 초기화
         if (lastCheckedButtonId && !findNodeById(tree, lastCheckedButtonId)) lastCheckedButtonId = null;
 
         applyUI();
+        renderHelp();
         renderLogs();
         render();
         showBackupWarningIfNeeded();
@@ -530,15 +574,16 @@
         if (!snap.exists) return;
         const remote = snap.data() || {};
         if (isApplyingRemote) return;
-        if (!remote.tree && !remote.logs && !remote.ui) return;
+        if (!remote.tree && !remote.logs && !remote.helpText && !remote.ui) return;
 
         applyRemote(remote);
-        saveTreeLocal(); saveLogsLocal(); saveUILocal();
+        saveTreeLocal(); saveLogsLocal(); saveHelpLocal(); saveUILocal();
       }, (err) => console.warn("onSnapshot 오류:", err));
     }
 
     function saveTree() { saveTreeLocal(); scheduleCloudSave(); }
     function saveLogs() { saveLogsLocal(); scheduleCloudSave(); }
+    function saveHelp() { saveHelpLocal(); scheduleCloudSave(); renderHelp(); }
 
     function findParentId(root, targetId, parentId) {
       if (root.id === targetId) return parentId;
@@ -648,7 +693,7 @@
       return sum;
     }
 
-    // ✅ 클릭기록 표시 포맷: 시간 + 엔터 + 내용(좌표 포함)
+    // ✅ 클릭기록 표시 포맷: 시간 + 엔터 + 내용
     function formatLogText(log) {
       const coord = log.coord ?? "";
       const label = log.label ?? "";
@@ -835,7 +880,6 @@
         const rowNumber = index + 1;
         const coord = colLetters + rowNumber;
 
-        // ✅ 커서: 다중 체크 가능(체크리스트)
         const checkWrap = document.createElement("div");
         checkWrap.className = "row-check";
         const chk = document.createElement("input");
@@ -843,37 +887,30 @@
         chk.className = "btn-checklist";
         chk.dataset.id = child.id;
         chk.addEventListener("change", () => {
-          // 마지막으로 체크한 버튼 기억(하위 추가 대상 표시용으로 활용 가능)
           if (chk.checked) lastCheckedButtonId = child.id;
           else if (lastCheckedButtonId === child.id) lastCheckedButtonId = null;
         });
         checkWrap.appendChild(chk);
 
-        // ✅ 버튼 클릭: 입력X, 하위가 있으면 이동(없으면 아무 동작 안 함)
+        // ✅ 버튼 클릭: 하위가 있으면 이동, 기록 입력 없음
         const mainBtn = document.createElement("button");
         mainBtn.className = "btn-main";
         mainBtn.textContent = "[" + coord + "] " + child.label;
-
         mainBtn.addEventListener("click", () => {
           if (child.children && child.children.length > 0) {
             currentParentId = child.id;
             render();
-          } else {
-            // 아무 것도 하지 않음(요청사항)
           }
         });
 
-        // ✅ 컨트롤: 입력/이름/삭제/↑↓
+        // ✅ 컨트롤: 입력 / 이름 / 삭제 / ↑↓
         const controls = document.createElement("div");
         controls.className = "btn-controls";
 
         const insertBtn = document.createElement("button");
         insertBtn.className = "btn-insert";
         insertBtn.textContent = "입력";
-        insertBtn.title = "클릭 기록에 입력";
-        insertBtn.addEventListener("click", () => {
-          appendLog(child.label, coord);
-        });
+        insertBtn.addEventListener("click", () => appendLog(child.label, coord));
 
         const renameBtn = document.createElement("button");
         renameBtn.textContent = "이름";
@@ -897,12 +934,10 @@
 
         const upBtn = document.createElement("button");
         upBtn.textContent = "↑";
-        upBtn.title = "위로";
         upBtn.addEventListener("click", () => moveSibling(parentNode, index, -1));
 
         const downBtn = document.createElement("button");
         downBtn.textContent = "↓";
-        downBtn.title = "아래로";
         downBtn.addEventListener("click", () => moveSibling(parentNode, index, 1));
 
         controls.appendChild(insertBtn);
@@ -952,9 +987,20 @@
       input.focus();
     }
 
-    // ✅ 초기 로드
+    // ✅ 안내문 모달
+    function openHelpModal() {
+      const backdrop = document.getElementById("helpModalBackdrop");
+      const editor = document.getElementById("helpEditor");
+      editor.value = helpText || "";
+      backdrop.style.display = "flex";
+      setTimeout(() => editor.focus(), 0);
+    }
+    function closeHelpModal() { document.getElementById("helpModalBackdrop").style.display = "none"; }
+
+    // ===== 초기 로드 =====
     loadTreeLocal();
     loadLogsLocal();
+    loadHelpLocal();
     loadUILocal();
     render();
     showBackupWarningIfNeeded();
@@ -983,10 +1029,8 @@
       }
     });
 
-    // ✅ +하위버튼: "현재 위치"에 속하는 하위 버튼을 추가
-    // 사용 흐름: 버튼 클릭해서 들어간 뒤(+상단 위치가 바뀜) -> +하위버튼 누르면 그 위치에 추가
+    // +하위버튼: 현재 위치(상단 경로)에 하위 버튼 추가
     document.getElementById("btnAddChild").addEventListener("click", () => {
-      // currentParentId가 root이면 root의 하위로 추가(=최상위 추가)
       const parentNode = getCurrentParentNode();
       const childName = prompt(`'${parentNode.id === "root" ? "전체(ROOT)" : parentNode.label}'의 하위 버튼 이름을 입력하세요:`);
       if (!childName || !childName.trim()) return;
@@ -1036,6 +1080,21 @@
     document.getElementById("btnStatsClose").addEventListener("click", closeStats);
     document.getElementById("statsBackdrop").addEventListener("click", (e) => {
       if (e.target.id === "statsBackdrop") closeStats();
+    });
+
+    // 안내문
+    document.getElementById("btnEditHelp").addEventListener("click", openHelpModal);
+    document.getElementById("btnHelpCancel").addEventListener("click", closeHelpModal);
+    document.getElementById("btnHelpSave").addEventListener("click", () => {
+      const editor = document.getElementById("helpEditor");
+      const newText = (editor?.value || "").trim();
+      if (!newText) return alert("안내문은 비워둘 수 없어요.");
+      helpText = newText;
+      saveHelp();
+      closeHelpModal();
+    });
+    document.getElementById("helpModalBackdrop").addEventListener("click", (e) => {
+      if (e.target.id === "helpModalBackdrop") closeHelpModal();
     });
 
     // 로그인
