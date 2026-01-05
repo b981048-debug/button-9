@@ -144,6 +144,12 @@
       transition: width .08s linear;
       min-width: 120px;
     }
+    /* ✅ 버튼 클릭 "선택 상태" 하이라이트 */
+    .btn-main.active {
+      border-color: #4c8dff;
+      box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.20);
+      background: #eef7ff;
+    }
 
     .btn-controls {
       flex: 0 0 auto;
@@ -179,7 +185,6 @@
 
     .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
 
-    /* ✅ 안내문 */
     .help-box { border: 1px dashed #ddd; border-radius: 10px; padding: 10px; background: #fbfbfb; margin-top: 10px; }
     .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
 
@@ -291,7 +296,6 @@
       </div>
     </div>
 
-    <!-- ✅ 안내문(복원) -->
     <div class="help-box">
       <div class="empty-text" id="helpText"></div>
       <button class="help-edit-btn" id="btnEditHelp">✏️ 안내문 수정</button>
@@ -307,7 +311,6 @@
     </div>
   </div>
 
-  <!-- ✅ 안내문 수정 모달 -->
   <div class="modal-backdrop" id="helpModalBackdrop">
     <div class="modal">
       <h2>안내문 수정</h2>
@@ -384,14 +387,17 @@
     let isApplyingRemote = false;
     let saveTimer = null;
 
-    // ✅ 체크리스트: 다중 체크 가능
+    // ✅ 체크리스트: 다중 체크 가능 (하위추가 대상은 "마지막으로 체크한 버튼")
     let lastCheckedButtonId = null;
+
+    // ✅ "버튼 클릭한 상태" 저장(하위추가 대상 2순위)
+    let activeButtonId = null;
 
     const DEFAULT_HELP_TEXT =
 `💡 사용법
-- 버튼 클릭: 하위가 있으면 그쪽으로 이동(기록 입력 안 됨)
-- 버튼 옆 [입력] 버튼: 클릭 기록에 입력
-- +하위버튼: 현재 위치(상단 경로)에 하위 버튼 추가
+- 버튼 클릭: (선택 상태) + 하위가 있으면 이동 (기록 입력 안 됨)
+- 버튼 옆 [입력]: 클릭 기록에 입력
+- +하위버튼: 체크된 버튼(우선) 또는 클릭으로 선택된 버튼의 '하위'에 추가
 - 직접 입력칸: Enter=기록 / Shift+Enter=줄바꿈`;
 
     function showBackupWarningIfNeeded() {
@@ -559,6 +565,7 @@
         }
 
         if (lastCheckedButtonId && !findNodeById(tree, lastCheckedButtonId)) lastCheckedButtonId = null;
+        if (activeButtonId && !findNodeById(tree, activeButtonId)) activeButtonId = null;
 
         applyUI();
         renderHelp();
@@ -693,7 +700,6 @@
       return sum;
     }
 
-    // ✅ 클릭기록 표시 포맷: 시간 + 엔터 + 내용
     function formatLogText(log) {
       const coord = log.coord ?? "";
       const label = log.label ?? "";
@@ -886,24 +892,31 @@
         chk.type = "checkbox";
         chk.className = "btn-checklist";
         chk.dataset.id = child.id;
+
         chk.addEventListener("change", () => {
           if (chk.checked) lastCheckedButtonId = child.id;
           else if (lastCheckedButtonId === child.id) lastCheckedButtonId = null;
         });
+
         checkWrap.appendChild(chk);
 
-        // ✅ 버튼 클릭: 하위가 있으면 이동, 기록 입력 없음
+        // ✅ 버튼 클릭: "선택 상태"가 되고, 하위가 있으면 이동(기록 입력 없음)
         const mainBtn = document.createElement("button");
         mainBtn.className = "btn-main";
         mainBtn.textContent = "[" + coord + "] " + child.label;
+
+        // 선택 하이라이트
+        if (activeButtonId === child.id) mainBtn.classList.add("active");
+
         mainBtn.addEventListener("click", () => {
+          activeButtonId = child.id; // ✅ 클릭 상태 저장
+          // 하위가 있으면 이동(기존 규칙 유지)
           if (child.children && child.children.length > 0) {
             currentParentId = child.id;
-            render();
           }
+          render();
         });
 
-        // ✅ 컨트롤: 입력 / 이름 / 삭제 / ↑↓
         const controls = document.createElement("div");
         controls.className = "btn-controls";
 
@@ -927,6 +940,11 @@
         delBtn.textContent = "삭제";
         delBtn.addEventListener("click", () => {
           if (!confirm("'" + child.label + "' 버튼을 삭제할까요? (하위 버튼도 함께 삭제됩니다)")) return;
+
+          // active/checked 타겟이 삭제되면 정리
+          if (activeButtonId === child.id) activeButtonId = null;
+          if (lastCheckedButtonId === child.id) lastCheckedButtonId = null;
+
           parentNode.children.splice(index, 1);
           saveTree();
           render();
@@ -977,7 +995,6 @@
     }
     function closeStats(){ document.getElementById("statsBackdrop").style.display = "none"; }
 
-    // 직접 입력: Enter=기록, Shift+Enter=줄바꿈
     function writeManualLogFromInput() {
       const input = document.getElementById("quickAddInput");
       const text = (input?.value || "").trimEnd();
@@ -987,7 +1004,6 @@
       input.focus();
     }
 
-    // ✅ 안내문 모달
     function openHelpModal() {
       const backdrop = document.getElementById("helpModalBackdrop");
       const editor = document.getElementById("helpEditor");
@@ -997,6 +1013,15 @@
     }
     function closeHelpModal() { document.getElementById("helpModalBackdrop").style.display = "none"; }
 
+    // ✅ 핵심: 하위버튼 추가 대상 결정
+    function getChildTargetId() {
+      // 1순위: 마지막으로 체크한 버튼
+      if (lastCheckedButtonId) return lastCheckedButtonId;
+      // 2순위: 클릭으로 선택된 버튼
+      if (activeButtonId) return activeButtonId;
+      return null;
+    }
+
     // ===== 초기 로드 =====
     loadTreeLocal();
     loadLogsLocal();
@@ -1005,7 +1030,6 @@
     render();
     showBackupWarningIfNeeded();
 
-    // 네비
     document.getElementById("btnUp").addEventListener("click", () => {
       if (currentParentId === "root") return;
       const parentId = findParentId(tree, currentParentId, null);
@@ -1017,7 +1041,6 @@
       render();
     });
 
-    // +새버튼: 현재 위치에 추가
     document.getElementById("btnAddHere").addEventListener("click", () => {
       const parentNode = getCurrentParentNode();
       const name = prompt("새 버튼 이름을 입력하세요:");
@@ -1029,20 +1052,34 @@
       }
     });
 
-    // +하위버튼: 현재 위치(상단 경로)에 하위 버튼 추가
+    // ✅ 수정된 +하위버튼: "대상 버튼의 하위"에 추가
     document.getElementById("btnAddChild").addEventListener("click", () => {
-      const parentNode = getCurrentParentNode();
-      const childName = prompt(`'${parentNode.id === "root" ? "전체(ROOT)" : parentNode.label}'의 하위 버튼 이름을 입력하세요:`);
+      const targetId = getChildTargetId();
+      if (!targetId) {
+        alert("하위버튼을 추가할 대상이 없습니다.\n\n1) 커서를 체크하거나\n2) 버튼을 한 번 클릭해서 선택한 뒤\n+하위버튼을 눌러주세요.");
+        return;
+      }
+
+      const targetNode = findNodeById(tree, targetId);
+      if (!targetNode) {
+        alert("대상 버튼을 찾을 수 없습니다. (데이터가 변경되었을 수 있어요)");
+        lastCheckedButtonId = null;
+        activeButtonId = null;
+        render();
+        return;
+      }
+
+      const childName = prompt(`'${targetNode.label}'의 하위 버튼 이름을 입력하세요:`);
       if (!childName || !childName.trim()) return;
 
-      if (!parentNode.children) parentNode.children = [];
-      parentNode.children.push({ id: genId(), label: childName.trim(), children: [] });
+      if (!targetNode.children) targetNode.children = [];
+      targetNode.children.push({ id: genId(), label: childName.trim(), children: [] });
 
+      // 선택 상태를 유지한 채로 저장/렌더
       saveTree();
       render();
     });
 
-    // 직접 입력
     document.getElementById("btnQuickAdd").addEventListener("click", writeManualLogFromInput);
     document.getElementById("quickAddInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -1052,14 +1089,12 @@
       }
     });
 
-    // 로그 액션
     document.getElementById("btnSelectAllLog").addEventListener("click", toggleSelectAllLogs);
     document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
     document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
     document.getElementById("btnCopyAllLog").addEventListener("click", copyAllLogs);
     document.getElementById("btnCopySelectedLog").addEventListener("click", copySelectedLogs);
 
-    // 디자인모드
     document.getElementById("btnDesignMode").addEventListener("click", () => {
       ui.designMode = !ui.designMode;
       applyUI();
@@ -1075,14 +1110,12 @@
       applyUI(); saveUILocal(); scheduleCloudSave();
     });
 
-    // 통계모드
     document.getElementById("btnStatsMode").addEventListener("click", openStats);
     document.getElementById("btnStatsClose").addEventListener("click", closeStats);
     document.getElementById("statsBackdrop").addEventListener("click", (e) => {
       if (e.target.id === "statsBackdrop") closeStats();
     });
 
-    // 안내문
     document.getElementById("btnEditHelp").addEventListener("click", openHelpModal);
     document.getElementById("btnHelpCancel").addEventListener("click", closeHelpModal);
     document.getElementById("btnHelpSave").addEventListener("click", () => {
@@ -1097,7 +1130,6 @@
       if (e.target.id === "helpModalBackdrop") closeHelpModal();
     });
 
-    // 로그인
     document.getElementById("btnLogin").addEventListener("click", async () => {
       try { await auth.signInWithPopup(provider); }
       catch (e) {
