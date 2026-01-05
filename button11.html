@@ -81,7 +81,7 @@
     .panel-head .nav-inline { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .panel-head small { opacity: .8; }
 
-    /* ✅✅ (추가) 상단 빠른 입력칸 */
+    /* ✅✅ (상단 입력칸) */
     .quick-add {
       display: flex;
       gap: 6px;
@@ -106,7 +106,7 @@
       padding: 8px 10px;
     }
 
-    /* ✅✅ 핵심 변경: 버튼 목록은 화면 절반(50vh)만 보이게 + 나머지는 스크롤(드래그/휠/터치) */
+    /* ✅✅ 버튼 목록은 화면 절반(50vh)만 보이게 + 스크롤 */
     .buttons-area {
       margin-top: 6px;
       margin-bottom: 10px;
@@ -121,8 +121,8 @@
       padding: 6px;
       background: #fff;
 
-      -webkit-overflow-scrolling: touch; /* 모바일 스크롤 부드럽게 */
-      overscroll-behavior: contain;      /* 스크롤 튕김 방지 */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     .add-current { margin: 4px 0 10px; width: 100%; background: #eef7ff; border-color: #b3d4ff; }
@@ -205,10 +205,10 @@
         </div>
 
         <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
-          <!-- ✅ (추가) 맨 위 직접 입력 -->
+          <!-- ✅ 상단 직접 입력: 버튼 생성 X / 로그 기록 O -->
           <div class="quick-add">
-            <input id="quickAddInput" type="text" placeholder="여기에 버튼 이름 입력 후 Enter" />
-            <button id="btnQuickAdd" class="btn-primary">추가</button>
+            <input id="quickAddInput" type="text" placeholder="여기에 입력 후 Enter (오른쪽 클릭 기록에 저장)" />
+            <button id="btnQuickAdd" class="btn-primary">기록</button>
           </div>
 
           <div class="buttons-area" id="buttonContainer"></div>
@@ -593,6 +593,7 @@
       renderLogs();
       showBackupWarningIfNeeded();
     }
+
     function getSelectedLogItems() {
       const logList = document.getElementById("logList");
       if (!logList) return [];
@@ -854,27 +855,23 @@
       }
     });
 
-    // ✅ (추가) 상단 입력칸으로 버튼 추가 (현재 위치에 추가)
-    function quickAddButtonFromInput() {
+    // ✅ 핵심 변경: 상단 입력칸은 "버튼 생성"이 아니라 "클릭 기록에 기록"
+    function writeManualLogFromInput() {
       const input = document.getElementById("quickAddInput");
-      const name = (input?.value || "").trim();
-      if (!name) return;
+      const text = (input?.value || "").trim();
+      if (!text) return;
 
-      const parentNode = getCurrentParentNode();
-      if (!parentNode.children) parentNode.children = [];
-      parentNode.children.push({ id: genId(), label: name, children: [] });
-
-      saveTree();
-      render();
+      // 다른 버튼 클릭과 동일하게 오른쪽 로그에 기록
+      appendLog(text, "입력"); // coord 표시는 [입력] 으로 뜸
 
       input.value = "";
       input.focus();
     }
-    document.getElementById("btnQuickAdd").addEventListener("click", quickAddButtonFromInput);
+    document.getElementById("btnQuickAdd").addEventListener("click", writeManualLogFromInput);
     document.getElementById("quickAddInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        quickAddButtonFromInput();
+        writeManualLogFromInput();
       }
     });
 
