@@ -81,14 +81,14 @@
     .panel-head .nav-inline { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .panel-head small { opacity: .8; }
 
-    /* ✅✅ (상단 입력칸) */
+    /* ✅✅ 상단 입력칸 (Shift+Enter 줄바꿈, Enter 저장) */
     .quick-add {
       display: flex;
       gap: 6px;
-      align-items: center;
+      align-items: flex-start;
       margin: 6px 0 8px;
     }
-    .quick-add input {
+    .quick-add textarea {
       flex: 1;
       min-width: 0;
       border: 1px solid #ddd;
@@ -96,8 +96,13 @@
       padding: 8px 10px;
       font-size: 13px;
       outline: none;
+      resize: vertical;
+      min-height: 42px;
+      max-height: 160px;
+      line-height: 1.35;
+      white-space: pre-wrap;
     }
-    .quick-add input:focus {
+    .quick-add textarea:focus {
       border-color: #b3d4ff;
       box-shadow: 0 0 0 3px rgba(179, 212, 255, 0.35);
     }
@@ -115,7 +120,7 @@
       flex: 0 0 auto;
       min-height: 0;
 
-      max-height: 50vh;           /* ✅ 화면의 절반 */
+      max-height: 50vh;
       border: 1px solid #eee;
       border-radius: 10px;
       padding: 6px;
@@ -141,11 +146,12 @@
     #logList { list-style: none; padding: 0; margin: 0; font-size: 12px; }
     #logList li {
       padding: 4px 2px; border-bottom: 1px solid #eee; word-break: break-all;
-      display: flex; align-items: center; gap: 4px;
+      display: flex; align-items: flex-start; gap: 4px;
+      white-space: pre-wrap;
     }
     #logList li:last-child { border-bottom: none; }
-    .log-text { flex: 1; }
-    .log-checkbox { flex-shrink: 0; }
+    .log-text { flex: 1; white-space: pre-wrap; }
+    .log-checkbox { flex-shrink: 0; margin-top: 2px; }
 
     .empty-text { font-size: 12px; opacity: 0.75; line-height: 1.45; white-space: pre-wrap; }
     .help-edit-btn { margin-top: 6px; width: 100%; font-size: 12px; padding: 6px 10px; }
@@ -205,9 +211,9 @@
         </div>
 
         <div class="panel-scroll" style="display:flex; flex-direction:column; min-height:0;">
-          <!-- ✅ 상단 직접 입력: 버튼 생성 X / 로그 기록 O -->
+          <!-- ✅ 상단 직접 입력: Enter=기록, Shift+Enter=줄바꿈 -->
           <div class="quick-add">
-            <input id="quickAddInput" type="text" placeholder="여기에 입력 후 Enter (오른쪽 클릭 기록에 저장)" />
+            <textarea id="quickAddInput" placeholder="여기에 입력 후 Enter (오른쪽 클릭 기록에 저장)&#10;Shift+Enter = 줄바꿈"></textarea>
             <button id="btnQuickAdd" class="btn-primary">기록</button>
           </div>
 
@@ -221,6 +227,9 @@
           <div class="panel-title">클릭 기록</div>
           <div class="log-count">(총 <span id="logCount">0</span>개)</div>
           <div class="log-actions">
+            <!-- ✅ (추가) 전체 선택 -->
+            <button id="btnSelectAllLog" style="font-size:11px;padding:4px 6px;">전체 선택</button>
+
             <button id="btnDeleteAllLog" style="font-size:11px;padding:4px 6px;">전체 삭제</button>
             <button id="btnCopyAllLog" style="font-size:11px;padding:4px 6px;">전체 복사</button>
             <button id="btnCopySelectedLog" style="font-size:11px;padding:4px 6px;">선택 복사</button>
@@ -600,6 +609,24 @@
       const items = Array.from(logList.querySelectorAll("li"));
       return items.filter(li => (li.querySelector(".log-checkbox") || {}).checked);
     }
+
+    // ✅ (추가) 전체 선택 / 전체 해제 토글
+    function toggleSelectAllLogs() {
+      const logList = document.getElementById("logList");
+      if (!logList) return;
+
+      const checkboxes = Array.from(logList.querySelectorAll(".log-checkbox"));
+      if (checkboxes.length === 0) return;
+
+      const allChecked = checkboxes.every(cb => cb.checked);
+      const next = !allChecked; // 전부 체크면 해제, 아니면 전부 체크
+
+      checkboxes.forEach(cb => cb.checked = next);
+
+      const btn = document.getElementById("btnSelectAllLog");
+      if (btn) btn.textContent = next ? "전체 해제" : "전체 선택";
+    }
+
     function deleteSelectedLogs() {
       const selected = getSelectedLogItems();
       if (selected.length === 0) return alert("삭제할 기록을 선택하세요.");
@@ -613,7 +640,12 @@
       indexes.forEach(idx => { if (idx >= 0 && idx < logs.length) logs.splice(idx, 1); });
       saveLogs();
       renderLogs();
+
+      // 버튼 라벨 정리
+      const btn = document.getElementById("btnSelectAllLog");
+      if (btn) btn.textContent = "전체 선택";
     }
+
     function editSelectedLog() {
       const selected = getSelectedLogItems();
       if (selected.length === 0) return alert("수정할 기록을 선택하세요.");
@@ -630,6 +662,7 @@
       saveLogs();
       renderLogs();
     }
+
     function deleteAllLogs() {
       if (logs.length === 0) return alert("삭제할 기록이 없습니다.");
       if (!confirm("모든 기록을 삭제할까요? (되돌릴 수 없습니다)")) return;
@@ -637,6 +670,9 @@
       logs = [];
       saveLogs();
       renderLogs();
+
+      const btn = document.getElementById("btnSelectAllLog");
+      if (btn) btn.textContent = "전체 선택";
     }
 
     function fallbackCopyText(text, count, label) {
@@ -855,25 +891,33 @@
       }
     });
 
-    // ✅ 핵심 변경: 상단 입력칸은 "버튼 생성"이 아니라 "클릭 기록에 기록"
+    // ✅ 핵심: Enter=저장, Shift+Enter=줄바꿈
     function writeManualLogFromInput() {
       const input = document.getElementById("quickAddInput");
       const text = (input?.value || "").trim();
       if (!text) return;
 
-      // 다른 버튼 클릭과 동일하게 오른쪽 로그에 기록
-      appendLog(text, "입력"); // coord 표시는 [입력] 으로 뜸
+      appendLog(text, "입력");
 
       input.value = "";
       input.focus();
     }
+
     document.getElementById("btnQuickAdd").addEventListener("click", writeManualLogFromInput);
+
     document.getElementById("quickAddInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
+        if (e.shiftKey) {
+          // ✅ Shift+Enter: 줄바꿈 허용 (기본 동작)
+          return;
+        }
+        // ✅ Enter: 저장
         e.preventDefault();
         writeManualLogFromInput();
       }
     });
+
+    document.getElementById("btnSelectAllLog").addEventListener("click", toggleSelectAllLogs);
 
     document.getElementById("btnDeleteLog").addEventListener("click", deleteSelectedLogs);
     document.getElementById("btnEditLog").addEventListener("click", editSelectedLog);
