@@ -17,11 +17,12 @@
       border-radius: 14px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
       min-height: calc(100vh - 24px);
       display:flex; flex-direction:column; gap:10px;
-      position: relative; /* ✅ logdock absolute 기준 */
+      position: relative;
     }
 
     .header { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
     .title { margin:0; font-size:18px; display:flex; align-items:center; gap:10px; }
+
     .header-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
     .pill {
       font-size:12px; padding:4px 10px; border-radius:999px;
@@ -69,7 +70,6 @@
     }
     .res-item:last-child{ margin-bottom:0; }
     .res-item:hover{ border-color:#ddd; }
-    .res-item.disabled{ opacity:.45; cursor:not-allowed; background:#f4f4f4; }
     .res-title{ font-size:13px; font-weight:800; }
     .res-path{ font-size:11px; opacity:.65; margin-left:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 360px; }
     .res-tag{
@@ -83,6 +83,7 @@
     .nav-right{ margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
     .mode-btn{ font-weight:800; background:#fafafa; border-color:#ddd; }
     .mode-btn.active{ background:#eef7ff; border-color:#b3d4ff; }
+    .mode-btn.memo{ font-weight:950; }
 
     .editpanel{
       display:none;
@@ -96,7 +97,6 @@
     }
     .editpanel.show{ display:flex; }
 
-    /* ====== ✅ 백업패널 추가 ====== */
     .backuppanel{
       display:none;
       border:1px solid #eee;
@@ -246,8 +246,6 @@
       width: max-content;
       min-width: 100%;
     }
-
-    /* ✅ 줄바꿈 버튼 이름 표시 */
     .btn-main{
       flex: 0 0 auto;
       flex-shrink: 0;
@@ -359,8 +357,6 @@
       background:#fff; outline:none; overflow:auto;
       line-height:1.55; font-size:13px; white-space: normal;
     }
-
-    /* ====== note-editor: table like '한글' (간이 버전) ====== */
     .note-editor table{
       border-collapse: collapse;
       table-layout: fixed;
@@ -437,70 +433,133 @@
     .stat-v{ font-size:16px; font-weight:950; }
     .mono{ font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
-    /* =====================================================================
-       ✅ 상단 "클릭 기록" 도킹 패널 (드래그로 보이는 높이만 조절 / 내부 크기 고정)
-       - 아래 UI는 자리 그대로, 패널이 커지면 덮어서 '가림'
-       ===================================================================== */
-    .logdock{
-      position: absolute;
-      left: 12px; right: 12px;
-      top: 118px;               /* 헤더/모드줄/패널들 아래쪽. 필요하면 조정 */
-      height: 260px;            /* JS에서 state.ui.logDockH 로 제어 */
-      overflow: hidden;         /* ✅ 보이는 부분만 잘림 */
-      z-index: 50;
-      border: 1px solid #eee;
-      border-radius: 14px;
+    /* =========================================================
+       ✅ 메모모드: 떠있는 창 (드래그 이동 + resize)
+       - 창 켜진 상태로 작업 가능 (모달 아님)
+       ========================================================= */
+    .memo-window{
+      position: fixed;
+      top: 120px; left: 60px;
+      width: 760px; height: 420px;
+      max-width: calc(100vw - 24px);
+      max-height: calc(100vh - 24px);
       background:#fff;
-      box-shadow:0 8px 24px rgba(0,0,0,0.12);
-      user-select:none;
+      border:1px solid #e6e6e6;
+      border-radius:14px;
+      box-shadow:0 12px 36px rgba(0,0,0,0.18);
+      z-index: 99999;
+      display:none;
+      overflow:hidden;
+      resize: both;     /* ✅ 크기 자유롭게 */
     }
-    .logdock-inner{
-      padding: 10px;
+    .memo-window.show{ display:block; }
+
+    .memo-header{
+      height: 42px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      background:#fafafa;
+      border-bottom:1px solid #eee;
+      cursor: grab;     /* ✅ 이동 핸들 */
+      user-select:none;
+      touch-action:none;
+    }
+    .memo-header:active{ cursor: grabbing; }
+    .memo-title{
+      font-weight:950;
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      min-width: 0;
+    }
+    .memo-badge{
+      font-size:11px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid #ddd;
+      background:#fff;
+      font-weight:950;
+      white-space:nowrap;
+    }
+    .memo-loc{
+      font-size:11px;
+      opacity:.65;
+      font-weight:900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 360px;
+    }
+    .memo-spacer{ margin-left:auto; display:flex; gap:6px; align-items:center; }
+    .memo-close{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:12px;
+      font-weight:950;
+      background:#fff;
+    }
+
+    .memo-body{
+      height: calc(100% - 42px);
       display:flex;
       gap:10px;
-      align-items: stretch;
-      user-select:text;
+      padding:10px;
+      overflow:hidden;
     }
-    .logdock-left{
-      width: 420px;
-      min-width: 280px;
+    .memo-left{
+      width: 360px;
+      min-width: 260px;
       flex: 0 0 auto;
       display:flex;
-      flex-direction: column;
+      flex-direction:column;
       gap:8px;
     }
-    .logdock-topline{
-      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
-    }
-    .logdock-input{
+    .memo-input{
       width:100%;
       border:1px solid #ddd;
       border-radius:12px;
       padding:10px;
-      min-height: 76px;
+      min-height: 86px;
       resize: none;
       font-size:13px;
       outline:none;
     }
-    .logdock-actions{
-      display:flex; gap:6px; flex-wrap:wrap;
+    .memo-actions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
     }
-    .logdock-actions button{
-      font-size:12px; font-weight:900;
+    .memo-actions button{
+      font-size:12px;
+      font-weight:950;
       padding:7px 10px;
       border-radius:12px;
       background:#fafafa;
     }
-    .logdock-right{
+    .memo-hint{
+      font-size:12px;
+      opacity:.65;
+      line-height:1.25;
+      border:1px solid #eee;
+      background:#fafafa;
+      border-radius:12px;
+      padding:8px 10px;
+      white-space:pre-wrap;
+    }
+    .memo-right{
       flex: 1 1 auto;
-      min-width: 280px;
+      min-width: 260px;
       border:1px solid #eee;
       border-radius:12px;
       background:#fafafa;
-      overflow:auto;            /* ✅ 기록 목록 자체 스크롤 */
-      padding: 8px;
-      min-height: 180px;
+      overflow:auto;
+      padding:8px;
     }
+
     .log-item{
       display:flex;
       gap:8px;
@@ -539,25 +598,6 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .logdock-handle{
-      position:absolute;
-      left: 0; right: 0;
-      bottom: -6px;
-      height: 12px;
-      cursor: row-resize;
-      touch-action:none;
-      user-select:none;
-    }
-    .logdock-handle::after{
-      content:"";
-      position:absolute;
-      left: 50%; top: 50%;
-      width: 68px; height: 4px;
-      transform: translate(-50%,-50%);
-      border-radius:999px;
-      background:#d7d7d7;
-      opacity:.9;
-    }
   </style>
 </head>
 
@@ -592,6 +632,7 @@
     </div>
     <div class="nav-right">
       <button class="mode-btn" id="btnBackupMode" type="button">백업모드</button>
+      <button class="mode-btn memo" id="btnMemoMode" type="button">메모모드(0개)</button>
       <button class="mode-btn" id="btnEditMode" type="button">편집모드</button>
       <button class="mode-btn" id="btnMoveMode" type="button">이동모드</button>
       <button class="mode-btn" id="btnSearchMode" type="button">검색모드</button>
@@ -608,7 +649,6 @@
     <span style="font-size:12px; opacity:.65;">※ 편집모드에서만 조절 가능, 모든 버튼에 동일 적용</span>
   </div>
 
-  <!-- ✅ 백업패널 -->
   <div class="backuppanel" id="backupPanel">
     <button id="btnBackupDownload" type="button">백업(파일 저장)</button>
     <button id="btnBackupUpload" type="button">복원(파일 불러오기)</button>
@@ -617,34 +657,6 @@
   </div>
 
   <div class="crumbbar" id="breadcrumbBar"></div>
-
-  <!-- ✅ (추가) 클릭 기록 도킹 패널: 드래그로 보이는 높이만 조절 -->
-  <div class="logdock" id="logDock" aria-label="클릭 기록 패널">
-    <div class="logdock-inner">
-      <div class="logdock-left">
-        <div class="logdock-topline">
-          <span class="smallpill" id="logInfoPill">클릭 기록 (0개)</span>
-          <span class="pill" id="logScopePill">대상: 전체</span>
-        </div>
-        <textarea class="logdock-input" id="logInput" placeholder="여기에 입력 후 Enter = 저장 / Shift+Enter = 줄바꿈"></textarea>
-
-        <div class="logdock-actions">
-          <button id="logAllSelect" type="button">전체 선택</button>
-          <button id="logAllCopy" type="button">전체 복사</button>
-          <button id="logSelCopy" type="button">선택 복사</button>
-          <button id="logSelEdit" type="button">선택 수정</button>
-          <button id="logSelDel" type="button">선택 삭제</button>
-        </div>
-        <div class="hint" style="margin-top:0;">
-          ※ 이 패널은 드래그로 “보이는 높이”만 바뀌며, 아래 화면은 밀리지 않고 가려집니다.
-        </div>
-      </div>
-
-      <div class="logdock-right" id="logList"></div>
-    </div>
-
-    <div class="logdock-handle" id="logDockHandle" title="드래그로 높이 조절"></div>
-  </div>
 
   <div class="split" id="split">
     <div class="pane" id="leftPane">
@@ -761,6 +773,42 @@
   </div>
 </div>
 
+<!-- ✅ 메모모드 떠있는 창 -->
+<div class="memo-window" id="memoWindow" aria-label="메모모드 창">
+  <div class="memo-header" id="memoHeader">
+    <div class="memo-title">
+      메모모드
+      <span class="memo-badge" id="memoHeaderCount">0개</span>
+      <span class="memo-loc" id="memoHeaderLoc">위치: ROOT</span>
+    </div>
+    <div class="memo-spacer">
+      <button class="memo-close" id="memoClose" type="button">닫기</button>
+    </div>
+  </div>
+
+  <div class="memo-body">
+    <div class="memo-left">
+      <textarea class="memo-input" id="memoInput" placeholder="여기에 입력 후 Enter = 저장 / Shift+Enter = 줄바꿈"></textarea>
+
+      <div class="memo-actions">
+        <button id="memoAllSelect" type="button">전체 선택</button>
+        <button id="memoAllCopy" type="button">전체 복사</button>
+        <button id="memoSelCopy" type="button">선택 복사</button>
+        <button id="memoSelEdit" type="button">선택 수정</button>
+        <button id="memoSelDel" type="button">선택 삭제</button>
+      </div>
+
+      <div class="memo-hint" id="memoHint">
+여기에 입력 후 Enter (오른쪽 목록에 저장)
+Shift+Enter = 줄바꿈
+※ 이 창은 드래그로 이동 / 우하단으로 크기 조절 가능
+      </div>
+    </div>
+
+    <div class="memo-right" id="memoList"></div>
+  </div>
+</div>
+
 <!-- ✅ 버튼 이름 입력 모달: Enter=확인, Shift+Enter=줄바꿈 -->
 <div class="modal-backdrop" id="nameModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
@@ -779,19 +827,19 @@
   </div>
 </div>
 
-<!-- ✅ (추가) 로그 수정 모달 -->
-<div class="modal-backdrop" id="logEditModal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logEditModalTitle">
-    <h3 id="logEditModalTitle">기록 수정</h3>
+<!-- ✅ 메모 수정 모달 -->
+<div class="modal-backdrop" id="memoEditModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="memoEditModalTitle">
+    <h3 id="memoEditModalTitle">메모 수정</h3>
     <div class="row">
       <label>
         내용 (Enter=확인 / Shift+Enter=줄바꿈)
-        <textarea id="logEditTextarea" placeholder="기록 내용을 수정하세요"></textarea>
+        <textarea id="memoEditTextarea" placeholder="메모 내용을 수정하세요"></textarea>
       </label>
     </div>
     <div class="actions">
-      <button id="logEditCancel" type="button">취소</button>
-      <button id="logEditOk" type="button">확인</button>
+      <button id="memoEditCancel" type="button">취소</button>
+      <button id="memoEditOk" type="button">확인</button>
     </div>
     <div class="hint">※ 한 개만 선택했을 때 수정할 수 있습니다.</div>
   </div>
@@ -820,8 +868,8 @@
         <div class="stat-v mono" id="statTotalChars">0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-k">전체 클릭 기록 개수</div>
-        <div class="stat-v mono" id="statTotalLogs">0</div>
+        <div class="stat-k">전체 메모 개수</div>
+        <div class="stat-v mono" id="statTotalMemos">0</div>
       </div>
     </div>
     <div class="actions" style="margin-top:12px;">
@@ -856,9 +904,8 @@ const PERSIST = {
   IDB_DOC_KEY: "state",
 };
 
-/* ✅ 최초 기본값 15% */
 let state = {
-  version: 14,
+  version: 15,
   updatedAt: 0,
   ui: {
     splitLeftPx: null,
@@ -869,12 +916,16 @@ let state = {
     searchMode: false,
     moveMode: false,
 
-    /* ✅ 클릭 기록 도킹 패널 보이는 높이(드래그로 조절) */
-    logDockH: 260,
+    /* ✅ 메모 창 상태/좌표/크기 */
+    memoOpen: false,
+    memoX: 60,
+    memoY: 120,
+    memoW: 760,
+    memoH: 420,
   },
   tree: { id:"root", label:"전체", note:"", noteHtml:null, children:[] },
 
-  /* ✅ 클릭 기록(2번 앱 기능 이식) */
+  /* ✅ 메모 데이터 (기존 clickLog 유지) */
   clickLog: [], // {id, at, text, nodeId}
 };
 
@@ -885,14 +936,13 @@ let noteEditMode = false;
 /* ✅ 이동모드 상태 */
 let moveState = { sourceId: null, targetId: null };
 
-/* ✅ 클릭 기록 선택 상태 */
-let logSelected = new Set(); // logId
+/* ✅ 메모 선택 상태 */
+let memoSelected = new Set(); // logId
 
 /* ===========================
    ✅ 이름 모달 (Enter=확인 / Shift+Enter=줄바꿈)
    =========================== */
 let nameModalResolve = null;
-
 function openNameModal({ title="버튼 이름 입력", initialValue="" } = {}) {
   $("nameModalTitle").textContent = title;
   const ta = $("nameModalTextarea");
@@ -903,9 +953,7 @@ function openNameModal({ title="버튼 이름 입력", initialValue="" } = {}) {
     ta.selectionStart = ta.selectionEnd = ta.value.length;
   }, 0);
 
-  return new Promise((resolve) => {
-    nameModalResolve = resolve;
-  });
+  return new Promise((resolve) => { nameModalResolve = resolve; });
 }
 function closeNameModal(value){
   $("nameModal").classList.remove("show");
@@ -923,14 +971,11 @@ function normalizeLabel(raw){
 }
 function bindNameModalEvents(){
   const ta = $("nameModalTextarea");
-
   onClick("nameModalCancel", () => closeNameModal(null));
   onClick("nameModalOk", () => closeNameModal(normalizeLabel(ta.value)));
-
   $("nameModal").addEventListener("click", (e) => {
     if (e.target.id === "nameModal") closeNameModal(null);
   });
-
   ta.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -940,38 +985,38 @@ function bindNameModalEvents(){
 }
 
 /* ===========================
-   ✅ 로그 수정 모달
+   ✅ 메모 수정 모달
    =========================== */
-let logEditResolve = null;
-function openLogEditModal({ initialValue="" } = {}){
-  const ta = $("logEditTextarea");
+let memoEditResolve = null;
+function openMemoEditModal({ initialValue="" } = {}){
+  const ta = $("memoEditTextarea");
   ta.value = String(initialValue ?? "");
-  $("logEditModal").classList.add("show");
+  $("memoEditModal").classList.add("show");
   setTimeout(() => {
     ta.focus();
     ta.selectionStart = ta.selectionEnd = ta.value.length;
   }, 0);
-  return new Promise((resolve) => { logEditResolve = resolve; });
+  return new Promise((resolve) => { memoEditResolve = resolve; });
 }
-function closeLogEditModal(val){
-  $("logEditModal").classList.remove("show");
-  const r = logEditResolve;
-  logEditResolve = null;
+function closeMemoEditModal(val){
+  $("memoEditModal").classList.remove("show");
+  const r = memoEditResolve;
+  memoEditResolve = null;
   if (r) r(val);
 }
-function bindLogEditModalEvents(){
-  const ta = $("logEditTextarea");
-  onClick("logEditCancel", () => closeLogEditModal(null));
-  onClick("logEditOk", () => closeLogEditModal(normalizeLabel(ta.value)));
+function bindMemoEditModalEvents(){
+  const ta = $("memoEditTextarea");
+  onClick("memoEditCancel", () => closeMemoEditModal(null));
+  onClick("memoEditOk", () => closeMemoEditModal(normalizeLabel(ta.value)));
 
-  $("logEditModal").addEventListener("click", (e) => {
-    if (e.target.id === "logEditModal") closeLogEditModal(null);
+  $("memoEditModal").addEventListener("click", (e) => {
+    if (e.target.id === "memoEditModal") closeMemoEditModal(null);
   });
 
   ta.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      closeLogEditModal(normalizeLabel(ta.value));
+      closeMemoEditModal(normalizeLabel(ta.value));
     }
   });
 }
@@ -1022,8 +1067,8 @@ function ensureNodeFields(node){
 }
 function migrateRootLabel(tree){ if (tree && tree.id === "root") tree.label = "전체"; }
 
-/* ✅ 클릭 기록 보정 */
-function ensureLogFields(){
+/* ✅ 메모 보정 */
+function ensureMemoFields(){
   if (!Array.isArray(state.clickLog)) state.clickLog = [];
   state.clickLog = state.clickLog
     .filter(x => x && typeof x === "object")
@@ -1054,7 +1099,7 @@ async function loadState(){
   }
   ensureNodeFields(state.tree);
   migrateRootLabel(state.tree);
-  ensureLogFields();
+  ensureMemoFields();
   await persistState();
 }
 
@@ -1077,8 +1122,6 @@ function buildBackupObject(){
     payload: state
   };
 }
-
-/* ✅ (추가) 최근 백업/복원 표시용 */
 let lastBackupRestoreInfo = null; // { type:"backup"|"restore", at:number }
 
 async function doBackupDownload(){
@@ -1110,15 +1153,16 @@ async function applyRestoredState(restored){
   state = { ...state, ...restored, ui: { ...state.ui, ...(restored.ui||{}) } };
   ensureNodeFields(state.tree);
   migrateRootLabel(state.tree);
-  ensureLogFields();
+  ensureMemoFields();
 
   currentParentId = "root";
   selectedNodeId = "root";
   noteEditMode = false;
+  memoSelected.clear();
 
   ensureMainButtonPx();
   applySplitFromState();
-  applyLogDockFromState();
+  applyMemoWindowFromState();
 
   await persistState();
   syncModeButtons();
@@ -1132,7 +1176,6 @@ async function doBackupRestoreFromFile(file){
   try{
     const text = await file.text();
     const obj = JSON.parse(text);
-
     const payload = (obj && obj.payload && obj.payload.tree) ? obj.payload : obj;
 
     const ok = confirm(
@@ -1205,14 +1248,12 @@ function countButtonsAndContent(){
   dfs(state.tree);
   return { totalButtons, hasContent, totalChars };
 }
-
-/* ✅ (수정) openStatsModal에 컨텍스트(backup/restore) 전달 가능 */
 function openStatsModal(context = null){
   const { totalButtons, hasContent, totalChars } = countButtonsAndContent();
   $("statTotalButtons").textContent = String(totalButtons);
   $("statHasContent").textContent = String(hasContent);
   $("statTotalChars").textContent = String(totalChars);
-  $("statTotalLogs").textContent = String((state.clickLog||[]).length);
+  $("statTotalMemos").textContent = String((state.clickLog||[]).length);
 
   const card = $("statLastActionCard");
   const keyEl = $("statLastActionKey");
@@ -1253,11 +1294,9 @@ function applySplitFromState(){
   const split = $("split");
   if (!left || !split) return;
   const total = split.clientWidth;
-  const minLeft = 0;
-  const maxLeft = total;
   let px = state.ui.splitLeftPx;
   if (typeof px !== "number" || isNaN(px)) px = Math.floor(total * 0.5);
-  px = Math.max(minLeft, Math.min(maxLeft, px));
+  px = Math.max(0, Math.min(total, px));
   left.style.width = px + "px";
 }
 function bindSplitDrag(){
@@ -1267,60 +1306,19 @@ function bindSplitDrag(){
   if (!divider || !split || !left) return;
 
   let dragging = false;
-
-  const onDown = (e) => {
+  divider.addEventListener("pointerdown", (e) => {
     dragging = true;
     divider.setPointerCapture?.(e.pointerId);
     e.preventDefault();
-  };
-  const onMove = async (e) => {
+  });
+  window.addEventListener("pointermove", async (e) => {
     if (!dragging) return;
     const rect = split.getBoundingClientRect();
     const x = e.clientX - rect.left;
     state.ui.splitLeftPx = Math.max(0, Math.min(split.clientWidth, Math.floor(x)));
     left.style.width = state.ui.splitLeftPx + "px";
     await persistState();
-  };
-  const onUp = () => { dragging = false; };
-
-  divider.addEventListener("pointerdown", onDown);
-  window.addEventListener("pointermove", onMove);
-  window.addEventListener("pointerup", onUp);
-}
-
-/* ===== ✅ Click Log Dock (드래그로 보이는 높이만 조절) ===== */
-function applyLogDockFromState(){
-  const dock = $("logDock");
-  if (!dock) return;
-  const h = Math.max(0, Math.min(520, Number(state.ui.logDockH ?? 260)));
-  dock.style.height = h + "px";
-}
-function bindLogDockDrag(){
-  const handle = $("logDockHandle");
-  const dock = $("logDock");
-  if (!handle || !dock) return;
-
-  let dragging = false;
-  let startY = 0;
-  let startH = 0;
-
-  handle.addEventListener("pointerdown", (e) => {
-    dragging = true;
-    startY = e.clientY;
-    startH = parseInt(getComputedStyle(dock).height, 10) || 0;
-    handle.setPointerCapture?.(e.pointerId);
-    e.preventDefault();
   });
-
-  window.addEventListener("pointermove", async (e) => {
-    if (!dragging) return;
-    const dy = e.clientY - startY; // 아래로 끌면 커짐
-    const nh = Math.max(0, Math.min(520, startH + dy));
-    state.ui.logDockH = Math.floor(nh);
-    dock.style.height = state.ui.logDockH + "px";
-    await persistState();
-  });
-
   window.addEventListener("pointerup", () => { dragging = false; });
 }
 
@@ -1403,11 +1401,15 @@ function syncModeButtons(){
 
   $("editPanel").classList.toggle("show", !!state.ui.editMode);
   $("backupPanel")?.classList.toggle("show", !!state.ui.backupMode);
+
   $("btnWidthRange").value = String(state.ui.buttonWidthPct);
   $("btnWidthVal").textContent = String(state.ui.buttonWidthPct);
 
   $("moveBox").classList.toggle("show", !!state.ui.moveMode);
   $("searchBox").classList.toggle("show", !!state.ui.searchMode);
+
+  // 메모 버튼 라벨 갱신
+  renderMemoButtonCount();
 }
 
 /* ===== Breadcrumb ===== */
@@ -1425,7 +1427,7 @@ function renderBreadcrumb(){
       currentParentId = node.id;
       selectedNodeId = node.id;
       noteEditMode = false;
-      logSelected.clear();
+      memoSelected.clear();
       await persistState();
       render();
     };
@@ -1477,10 +1479,8 @@ function runMoveTargetSearch(q){
   q = String(q||"").trim().toLowerCase();
   const dd = $("moveDropdown");
   dd.innerHTML = "";
-  if (!q){
-    hideMoveDropdown();
-    return;
-  }
+  if (!q){ hideMoveDropdown(); return; }
+
   const all = listAllNodes().filter(x => x.id !== "root" && x.id !== moveState.sourceId);
   const hits = all.filter(x => x.label.toLowerCase().includes(q) || x.path.toLowerCase().includes(q)).slice(0, 80);
   if (hits.length === 0){
@@ -1523,7 +1523,6 @@ async function executeMove(){
   const sourceParent = findParentNode(state.tree, moveState.sourceId);
   const targetNode = findNodeById(state.tree, moveState.targetId);
   const sourceNode = findNodeById(state.tree, moveState.sourceId);
-
   if (!sourceParent || !targetNode || !sourceNode) return;
 
   const targetPath = getPathToId(moveState.targetId).map(x=>x.id);
@@ -1533,7 +1532,6 @@ async function executeMove(){
   }
 
   sourceParent.children = (sourceParent.children||[]).filter(x => x.id !== moveState.sourceId);
-
   if (!Array.isArray(targetNode.children)) targetNode.children = [];
   targetNode.children.push(sourceNode);
 
@@ -1578,9 +1576,7 @@ function runSearch(q){
   for (const item of all){
     const node = findNodeById(state.tree, item.id);
     if (!node) continue;
-    if (getText(node).includes(q)){
-      hits.push(item);
-    }
+    if (getText(node).includes(q)) hits.push(item);
   }
   searchResults = hits.slice(0, 120);
   $("searchCountPill").textContent="검색: " + String(hits.length);
@@ -1616,7 +1612,7 @@ function runSearch(q){
       currentParentId = item.id;
       selectedNodeId = item.id;
       noteEditMode = false;
-      logSelected.clear();
+      memoSelected.clear();
       hideSearchDropdown();
       await persistState();
       render();
@@ -1724,12 +1720,9 @@ function insertTable(rows, cols){
   range.deleteContents();
   range.insertNode(table);
 }
-
 function mergeCells(){
   const cell = getSelectedCell();
   if (!cell) return alert("셀을 선택해주세요.");
-  const pos = getCellPos(cell);
-  if (!pos) return;
   const next = cell.nextElementSibling;
   if (!next) return alert("오른쪽 셀이 없습니다.");
   const cs1 = safeInt(cell.getAttribute("colspan"), 1);
@@ -1738,7 +1731,6 @@ function mergeCells(){
   cell.innerHTML = (cell.innerHTML || "&nbsp;") + " " + (next.innerHTML || "");
   next.remove();
 }
-
 function splitCell(){
   const cell = getSelectedCell();
   if (!cell) return alert("셀을 선택해주세요.");
@@ -1752,7 +1744,6 @@ function splitCell(){
     row.insertBefore(td, cell.nextElementSibling);
   }
 }
-
 function addRow(delta){
   const cell = getSelectedCell();
   if (!cell) return alert("셀을 선택해주세요.");
@@ -1831,7 +1822,6 @@ function deleteTable(){
   if (!confirm("표를 삭제할까요?")) return;
   table.remove();
 }
-
 function applyBorder(){
   const cell = getSelectedCell();
   if (!cell) return alert("셀을 선택해주세요.");
@@ -1845,8 +1835,6 @@ function applyBorder(){
     td.style.borderStyle = "solid";
   });
 }
-
-/* ===== Editor toolbar binding ===== */
 function bindEditorTools(){
   onClick("toolBold", () => exec("bold"));
   onClick("toolItalic", () => exec("italic"));
@@ -1894,15 +1882,16 @@ function bindEditorTools(){
   onClick("toolDelTable", () => deleteTable());
 
   onClick("toolApplyBorder", () => applyBorder());
-
   onClick("toolClear", () => exec("removeFormat"));
 }
 
-/* =====================================================================
-   ✅ 클릭 기록(2번 앱 기능) 구현
-   - 기본: 선택된 버튼(selectedNodeId)에 귀속
-   - selectedNodeId === root면 "전체 기록"을 보여줌
-   ===================================================================== */
+/* =========================================================
+   ✅ 메모모드 기능 (2번 캡처의 기능)
+   - Enter 저장 / Shift+Enter 줄바꿈
+   - 전체선택/전체복사/선택복사/선택수정/선택삭제
+   - 창 드래그 이동 + resize + 켜놓고 작업 가능
+   - 버튼 라벨: 메모모드(XX개)
+   ========================================================= */
 function formatKoreanDateTime(ts){
   try{
     const d = new Date(ts);
@@ -1914,17 +1903,20 @@ function formatKoreanDateTime(ts){
     return String(ts);
   }
 }
-function getLogScope(){
-  // 선택된 버튼이 root면 전체
+function getSelectedLabelForMemo(){
   const node = findNodeById(state.tree, selectedNodeId) || state.tree;
-  const label = (node.label || (node.id==="root"?"전체":"(이름없음)")).replace(/\n/g," / ");
+  const label = (node.label || (node.id==="root"?"ROOT":"(이름없음)")).replace(/\n/g," / ");
   return { nodeId: node.id, label };
 }
-function getLogsForScope(){
-  const { nodeId } = getLogScope();
+function getMemosForCurrentLocation(){
+  const { nodeId } = getSelectedLabelForMemo();
   const all = Array.isArray(state.clickLog) ? state.clickLog : [];
-  if (nodeId === "root") return all.slice().sort((a,b)=>b.at-a.at);
+  // 캡처 느낌: "위치: ROOT"처럼 현재 위치 기준으로 목록
   return all.filter(x => x.nodeId === nodeId).sort((a,b)=>b.at-a.at);
+}
+function getAllMemos(){
+  const all = Array.isArray(state.clickLog) ? state.clickLog : [];
+  return all.slice().sort((a,b)=>b.at-a.at);
 }
 async function safeCopyText(text){
   text = String(text ?? "");
@@ -1948,66 +1940,88 @@ async function safeCopyText(text){
     }
   }
 }
-function buildCopyTextFromLogs(logs){
-  return logs.map(x => {
+function buildCopyTextFromMemos(memos){
+  return memos.map(x => {
     const dt = formatKoreanDateTime(x.at);
     return `${dt}\n[입력] ${x.text}`.trim();
   }).join("\n\n");
 }
-async function addLogFromInput(){
-  const ta = $("logInput");
-  const raw = ta.value ?? "";
-  const text = normalizeLabel(raw);
-  if (!text) return;
-
-  const { nodeId } = getLogScope();
-  const item = {
-    id: genId(),
-    at: Date.now(),
-    text,
-    nodeId,
-  };
-  state.clickLog.unshift(item);
-  ta.value = "";
-  logSelected.clear();
-  await persistState();
-  renderLogPanel();
+function renderMemoButtonCount(){
+  const cnt = (state.clickLog||[]).length;
+  $("btnMemoMode").textContent = `메모모드(${cnt}개)`;
+  $("memoHeaderCount").textContent = `${cnt}개`;
 }
-function renderLogPanel(){
-  ensureLogFields();
+function applyMemoWindowFromState(){
+  const w = $("memoWindow");
+  if (!w) return;
 
-  const { nodeId, label } = getLogScope();
-  $("logScopePill").textContent = "대상: " + label;
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const vw = Math.max(320, window.innerWidth - 24);
+  const vh = Math.max(240, window.innerHeight - 24);
 
-  const logs = getLogsForScope();
-  $("logInfoPill").textContent = `클릭 기록 (${logs.length}개)`;
+  const x = clamp(Number(state.ui.memoX ?? 60), 0, vw - 80);
+  const y = clamp(Number(state.ui.memoY ?? 120), 0, vh - 80);
+  const mw = clamp(Number(state.ui.memoW ?? 760), 320, vw);
+  const mh = clamp(Number(state.ui.memoH ?? 420), 240, vh);
 
-  const list = $("logList");
+  w.style.left = x + "px";
+  w.style.top = y + "px";
+  w.style.width = mw + "px";
+  w.style.height = mh + "px";
+
+  w.classList.toggle("show", !!state.ui.memoOpen);
+}
+function openMemoWindow(){
+  state.ui.memoOpen = true;
+  applyMemoWindowFromState();
+  renderMemoWindow();
+  persistState();
+}
+function closeMemoWindow(){
+  state.ui.memoOpen = false;
+  $("memoWindow").classList.remove("show");
+  persistState();
+}
+function toggleMemoWindow(){
+  state.ui.memoOpen = !state.ui.memoOpen;
+  applyMemoWindowFromState();
+  if (state.ui.memoOpen) renderMemoWindow();
+  persistState();
+}
+function renderMemoWindow(){
+  ensureMemoFields();
+  renderMemoButtonCount();
+
+  const { label, nodeId } = getSelectedLabelForMemo();
+  $("memoHeaderLoc").textContent = `위치: ${nodeId === "root" ? "ROOT" : label}`;
+
+  // ✅ 캡처 느낌대로: "현재 위치" 메모만 보여줌
+  const memos = getMemosForCurrentLocation();
+
+  const list = $("memoList");
   list.innerHTML = "";
 
-  if (logs.length === 0){
+  if (memos.length === 0){
     const div = document.createElement("div");
     div.className = "empty-text";
-    div.textContent = (nodeId === "root")
-      ? "전체 클릭 기록이 없습니다.\n좌측 입력칸에 입력 후 Enter로 저장하세요."
-      : "이 버튼의 클릭 기록이 없습니다.\n좌측 입력칸에 입력 후 Enter로 저장하세요.";
+    div.textContent = "이 위치의 메모가 없습니다.\n왼쪽 입력칸에 입력 후 Enter로 저장하세요.";
     list.appendChild(div);
-    updateLogActionButtons();
+    updateMemoActionButtons(memos);
     return;
   }
 
-  logs.forEach(item => {
+  memos.forEach(item => {
     const row = document.createElement("div");
     row.className = "log-item";
 
     const chk = document.createElement("input");
     chk.type = "checkbox";
     chk.className = "log-check";
-    chk.checked = logSelected.has(item.id);
+    chk.checked = memoSelected.has(item.id);
     chk.onchange = () => {
-      if (chk.checked) logSelected.add(item.id);
-      else logSelected.delete(item.id);
-      updateLogActionButtons();
+      if (chk.checked) memoSelected.add(item.id);
+      else memoSelected.delete(item.id);
+      updateMemoActionButtons(memos);
     };
 
     const body = document.createElement("div");
@@ -2027,13 +2041,12 @@ function renderLogPanel(){
     const tag = document.createElement("div");
     tag.className = "log-tag";
     const n = findNodeById(state.tree, item.nodeId);
-    tag.textContent = (n?.label || (item.nodeId==="root"?"전체":"(이름없음)")).replace(/\n/g," / ");
+    tag.textContent = (n?.label || (item.nodeId==="root"?"ROOT":"(이름없음)")).replace(/\n/g," / ");
 
     row.appendChild(chk);
     row.appendChild(body);
     row.appendChild(tag);
 
-    // 행 클릭 시 체크 토글 (텍스트 선택 방해 최소화)
     row.addEventListener("click", (e) => {
       if (e.target === chk) return;
       if (window.getSelection()?.toString()) return;
@@ -2044,81 +2057,168 @@ function renderLogPanel(){
     list.appendChild(row);
   });
 
-  updateLogActionButtons();
+  updateMemoActionButtons(memos);
 }
-function updateLogActionButtons(){
-  const logs = getLogsForScope();
-  const selCount = logSelected.size;
+function updateMemoActionButtons(currentList){
+  const memos = currentList || getMemosForCurrentLocation();
+  const selCount = memoSelected.size;
+  const allSelected = memos.length > 0 && memos.every(x => memoSelected.has(x.id));
+  $("memoAllSelect").textContent = allSelected ? "전체 해제" : "전체 선택";
 
-  // "전체 선택"은 토글처럼 동작(전체가 선택되어 있으면 '전체 해제')
-  const allSelected = logs.length > 0 && logs.every(x => logSelected.has(x.id));
-  $("logAllSelect").textContent = allSelected ? "전체 해제" : "전체 선택";
-
-  $("logAllCopy").disabled = logs.length === 0;
-  $("logSelCopy").disabled = selCount === 0;
-  $("logSelDel").disabled = selCount === 0;
-  $("logSelEdit").disabled = selCount !== 1;
+  $("memoAllCopy").disabled = memos.length === 0;
+  $("memoSelCopy").disabled = selCount === 0;
+  $("memoSelDel").disabled = selCount === 0;
+  $("memoSelEdit").disabled = selCount !== 1;
 }
-async function logAllSelectToggle(){
-  const logs = getLogsForScope();
-  if (logs.length === 0) return;
-  const allSelected = logs.every(x => logSelected.has(x.id));
-  if (allSelected){
-    logSelected.clear();
-  } else {
-    logSelected = new Set(logs.map(x => x.id));
-  }
-  renderLogPanel();
+async function memoAllSelectToggle(){
+  const memos = getMemosForCurrentLocation();
+  if (memos.length === 0) return;
+  const allSelected = memos.every(x => memoSelected.has(x.id));
+  if (allSelected) memoSelected.clear();
+  else memoSelected = new Set(memos.map(x => x.id));
+  renderMemoWindow();
 }
-async function logAllCopy(){
-  const logs = getLogsForScope();
-  if (logs.length === 0) return;
-  const text = buildCopyTextFromLogs(logs);
+async function memoAllCopy(){
+  const memos = getMemosForCurrentLocation();
+  if (memos.length === 0) return;
+  const text = buildCopyTextFromMemos(memos);
   const ok = await safeCopyText(text);
-  alert(ok ? "전체 기록을 복사했습니다." : "복사에 실패했습니다.");
+  alert(ok ? "전체 메모를 복사했습니다." : "복사에 실패했습니다.");
 }
-async function logSelCopy(){
-  const logs = getLogsForScope();
-  const pick = logs.filter(x => logSelected.has(x.id));
+async function memoSelCopy(){
+  const memos = getMemosForCurrentLocation();
+  const pick = memos.filter(x => memoSelected.has(x.id));
   if (pick.length === 0) return;
-  const text = buildCopyTextFromLogs(pick);
+  const text = buildCopyTextFromMemos(pick);
   const ok = await safeCopyText(text);
-  alert(ok ? "선택 기록을 복사했습니다." : "복사에 실패했습니다.");
+  alert(ok ? "선택 메모를 복사했습니다." : "복사에 실패했습니다.");
 }
-async function logSelEdit(){
-  const logs = getLogsForScope();
-  const pick = logs.filter(x => logSelected.has(x.id));
+async function memoSelEdit(){
+  const memos = getMemosForCurrentLocation();
+  const pick = memos.filter(x => memoSelected.has(x.id));
   if (pick.length !== 1) return;
   const target = pick[0];
 
-  const newText = await openLogEditModal({ initialValue: target.text });
+  const newText = await openMemoEditModal({ initialValue: target.text });
   if (newText === null) return;
   if (!newText) { alert("내용이 비어있습니다."); return; }
 
-  // 실제 state.clickLog에서 찾아 수정
   const idx = state.clickLog.findIndex(x => x.id === target.id);
   if (idx >= 0){
     state.clickLog[idx].text = newText;
     await persistState();
   }
-  renderLogPanel();
+  renderMemoWindow();
 }
-async function logSelDel(){
-  const logs = getLogsForScope();
-  const pick = logs.filter(x => logSelected.has(x.id));
+async function memoSelDel(){
+  const memos = getMemosForCurrentLocation();
+  const pick = memos.filter(x => memoSelected.has(x.id));
   if (pick.length === 0) return;
 
-  const ok = confirm(`선택한 기록 ${pick.length}개를 삭제할까요?`);
+  const ok = confirm(`선택한 메모 ${pick.length}개를 삭제할까요?`);
   if (!ok) return;
 
   const delSet = new Set(pick.map(x => x.id));
   state.clickLog = state.clickLog.filter(x => !delSet.has(x.id));
-  logSelected.clear();
+  memoSelected.clear();
   await persistState();
-  renderLogPanel();
+  renderMemoButtonCount();
+  renderMemoWindow();
+}
+async function addMemoFromInput(){
+  const ta = $("memoInput");
+  const text = normalizeLabel(ta.value ?? "");
+  if (!text) return;
+
+  const { nodeId } = getSelectedLabelForMemo();
+  state.clickLog.unshift({
+    id: genId(),
+    at: Date.now(),
+    text,
+    nodeId,
+  });
+
+  ta.value = "";
+  memoSelected.clear();
+  await persistState();
+  renderMemoButtonCount();
+  renderMemoWindow();
 }
 
-/* ===== Render ===== */
+/* ===== Memo window drag + resize persist ===== */
+let memoDragging = false;
+let memoDragStartX = 0, memoDragStartY = 0;
+let memoStartLeft = 0, memoStartTop = 0;
+let memoResizeObs = null;
+
+function bindMemoWindowDragResize(){
+  const win = $("memoWindow");
+  const header = $("memoHeader");
+  if (!win || !header) return;
+
+  header.addEventListener("pointerdown", (e) => {
+    // 버튼/입력 클릭은 제외
+    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if (tag === "button" || tag === "input" || tag === "textarea") return;
+
+    memoDragging = true;
+    header.setPointerCapture?.(e.pointerId);
+
+    const rect = win.getBoundingClientRect();
+    memoDragStartX = e.clientX;
+    memoDragStartY = e.clientY;
+    memoStartLeft = rect.left;
+    memoStartTop = rect.top;
+    e.preventDefault();
+  });
+
+  window.addEventListener("pointermove", (e) => {
+    if (!memoDragging) return;
+    const dx = e.clientX - memoDragStartX;
+    const dy = e.clientY - memoDragStartY;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const rect = win.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+
+    let nx = memoStartLeft + dx;
+    let ny = memoStartTop + dy;
+
+    nx = Math.max(0, Math.min(vw - 40, nx));
+    ny = Math.max(0, Math.min(vh - 40, ny));
+
+    win.style.left = nx + "px";
+    win.style.top = ny + "px";
+  });
+
+  window.addEventListener("pointerup", async () => {
+    if (!memoDragging) return;
+    memoDragging = false;
+
+    const rect = win.getBoundingClientRect();
+    state.ui.memoX = Math.round(rect.left);
+    state.ui.memoY = Math.round(rect.top);
+    await persistState();
+  });
+
+  // ResizeObserver로 크기 저장
+  if (memoResizeObs) memoResizeObs.disconnect();
+  memoResizeObs = new ResizeObserver(async () => {
+    if (!state.ui.memoOpen) return;
+    const rect = win.getBoundingClientRect();
+    state.ui.memoW = Math.round(rect.width);
+    state.ui.memoH = Math.round(rect.height);
+    await persistState();
+  });
+  memoResizeObs.observe(win);
+
+  window.addEventListener("resize", () => applyMemoWindowFromState());
+}
+
+/* ===== Render Buttons ===== */
 function renderButtons(){
   ensureMainButtonPx();
   const container = $("buttonContainer");
@@ -2137,7 +2237,7 @@ function renderButtons(){
 
   const mainPx = state.ui.mainButtonPx;
 
-  children.forEach((child, index) => {
+  children.forEach((child) => {
     const row = document.createElement("div");
     row.className="btn-row";
 
@@ -2158,7 +2258,13 @@ function renderButtons(){
         hideMoveDropdown();
         updateMovePills();
       }
-      logSelected.clear();
+
+      // 메모창이 켜져 있으면 헤더/리스트만 새 위치로 갱신
+      if (state.ui.memoOpen) {
+        memoSelected.clear();
+        renderMemoWindow();
+      }
+
       await persistState();
       render();
     };
@@ -2172,6 +2278,7 @@ function renderButtons(){
     viewBtn.title = "이 버튼의 내용을 우측에 표시";
     viewBtn.onclick = async () => {
       selectedNodeId = child.id;
+      noteEditMode = false;
 
       if (state.ui.moveMode){
         moveState.sourceId = (selectedNodeId !== "root") ? selectedNodeId : null;
@@ -2180,8 +2287,12 @@ function renderButtons(){
         hideMoveDropdown();
         updateMovePills();
       }
-      noteEditMode = false;
-      logSelected.clear();
+
+      if (state.ui.memoOpen) {
+        memoSelected.clear();
+        renderMemoWindow();
+      }
+
       await persistState();
       render();
       $("rightScrollWrap").scrollTop = 0;
@@ -2195,6 +2306,7 @@ function renderButtons(){
       if (n === null || !n) return;
       child.label = n;
       await persistState(); render();
+      if (state.ui.memoOpen) renderMemoWindow();
     };
 
     const delBtn = document.createElement("button");
@@ -2207,13 +2319,15 @@ function renderButtons(){
       const parent = getCurrentParentNode();
       parent.children = parent.children.filter(x => x.id !== child.id);
 
-      // 이 버튼에 귀속된 클릭기록도 같이 삭제(옵션)
+      // 이 버튼에 귀속된 메모도 같이 삭제
       state.clickLog = (state.clickLog||[]).filter(x => x.nodeId !== child.id);
 
       if (selectedNodeId === child.id) selectedNodeId = parent.id;
-      logSelected.clear();
+
+      memoSelected.clear();
       await persistState();
       render();
+      if (state.ui.memoOpen) renderMemoWindow();
     };
 
     const upBtn = document.createElement("button");
@@ -2223,8 +2337,8 @@ function renderButtons(){
     upBtn.onclick = async () => {
       const parent = getCurrentParentNode();
       const idx = parent.children.findIndex(x => x.id === child.id);
-      const targetIdx = idx + (-1);
-      if (targetIdx < 0 || targetIdx >= parent.children.length) return;
+      const targetIdx = idx - 1;
+      if (targetIdx < 0) return;
 
       const tmp = parent.children[idx];
       parent.children[idx] = parent.children[targetIdx];
@@ -2241,8 +2355,8 @@ function renderButtons(){
     downBtn.onclick = async () => {
       const parent = getCurrentParentNode();
       const idx = parent.children.findIndex(x => x.id === child.id);
-      const targetIdx = idx + (1);
-      if (targetIdx < 0 || targetIdx >= parent.children.length) return;
+      const targetIdx = idx + 1;
+      if (targetIdx >= parent.children.length) return;
 
       const tmp = parent.children[idx];
       parent.children[idx] = parent.children[targetIdx];
@@ -2264,18 +2378,19 @@ function renderButtons(){
   });
 }
 
+/* ===== Render ===== */
 function render(){
   syncModeButtons();
   renderBreadcrumb();
   renderButtons();
   renderNotePanel();
-  renderLogPanel();
+  if (state.ui.memoOpen) renderMemoWindow();
 }
 
 /* ===== Events ===== */
 function bindEvents(){
   bindNameModalEvents();
-  bindLogEditModalEvents();
+  bindMemoEditModalEvents();
   bindEditorTools();
   bindStatsEvents();
   bindHCtrl("left");
@@ -2293,7 +2408,12 @@ function bindEvents(){
       hideMoveDropdown();
       updateMovePills();
     }
-    logSelected.clear();
+
+    if (state.ui.memoOpen) {
+      memoSelected.clear();
+      renderMemoWindow();
+    }
+
     await persistState();
     render();
   });
@@ -2306,7 +2426,12 @@ function bindEvents(){
       hideMoveDropdown();
       updateMovePills();
     }
-    logSelected.clear();
+
+    if (state.ui.memoOpen) {
+      memoSelected.clear();
+      renderMemoWindow();
+    }
+
     await persistState();
     render();
   });
@@ -2337,7 +2462,6 @@ function bindEvents(){
     currentParentId = node.id;
     selectedNodeId = newId;
 
-    logSelected.clear();
     await persistState();
     render();
   });
@@ -2366,9 +2490,7 @@ function bindEvents(){
     hideSearchDropdown();
     $("searchInput").focus();
   });
-  onInput("searchInput", (e) => {
-    runSearch(e.target.value);
-  });
+  onInput("searchInput", (e) => { runSearch(e.target.value); });
   $("searchInput").addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -2406,19 +2528,24 @@ function bindEvents(){
     renderNotePanel();
   });
 
-  /* ===== ✅ 클릭 기록 이벤트 ===== */
-  $("logInput").addEventListener("keydown", async (e) => {
+  /* ===== ✅ 메모모드 버튼/창 ===== */
+  onClick("btnMemoMode", () => {
+    toggleMemoWindow();
+  });
+  onClick("memoClose", () => closeMemoWindow());
+
+  $("memoInput").addEventListener("keydown", async (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      await addLogFromInput();
+      await addMemoFromInput();
     }
   });
 
-  onClick("logAllSelect", async () => { await logAllSelectToggle(); });
-  onClick("logAllCopy", async () => { await logAllCopy(); });
-  onClick("logSelCopy", async () => { await logSelCopy(); });
-  onClick("logSelEdit", async () => { await logSelEdit(); });
-  onClick("logSelDel", async () => { await logSelDel(); });
+  onClick("memoAllSelect", async () => { await memoAllSelectToggle(); });
+  onClick("memoAllCopy", async () => { await memoAllCopy(); });
+  onClick("memoSelCopy", async () => { await memoSelCopy(); });
+  onClick("memoSelEdit", async () => { await memoSelEdit(); });
+  onClick("memoSelDel", async () => { await memoSelDel(); });
 }
 
 (async function init(){
@@ -2426,19 +2553,27 @@ function bindEvents(){
     await loadState();
     ensureNodeFields(state.tree);
     migrateRootLabel(state.tree);
-    ensureLogFields();
+    ensureMemoFields();
 
     ensureMainButtonPx();
     applySplitFromState();
-    applyLogDockFromState();
-
     bindSplitDrag();
-    bindLogDockDrag();
+    bindMemoWindowDragResize();
+
     bindEvents();
+
+    applyMemoWindowFromState();
+    renderMemoButtonCount();
+
     render();
 
     if (state.ui.moveMode) setMoveMode(true);
     if (state.ui.searchMode) setSearchMode(true);
+    if (state.ui.memoOpen) {
+      // 켜진 상태로 저장돼 있으면 그대로
+      $("memoWindow").classList.add("show");
+      renderMemoWindow();
+    }
   } catch (err) {
     console.error(err);
     alert("초기화 중 오류가 발생했습니다. 콘솔(F12)을 확인해주세요.");
