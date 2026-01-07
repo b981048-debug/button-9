@@ -299,7 +299,7 @@
       font-weight: 900;
       padding: 10px 12px;
       border-radius: 12px;
-      background: #fafafa;
+      background:#fafafa;
       border-color: #ddd;
       flex: 1;
       max-width: 320px;
@@ -377,13 +377,14 @@
     .note-editor td:focus, .note-editor th:focus{ outline: 2px solid #b3d4ff; }
     .note-editor:empty::before{ content:"여기에 내용을 입력하세요..."; color:#999; }
 
+    /* ✅ (수정) 모달 z-index를 메모창보다 위로 올림 */
     .modal-backdrop{
       position: fixed; inset: 0;
       background: rgba(0,0,0,.35);
       display:none;
       align-items:center;
       justify-content:center;
-      z-index: 9999;
+      z-index: 100000; /* ← memo-window(99999)보다 크게 */
       padding: 12px;
     }
     .modal-backdrop.show{ display:flex; }
@@ -419,6 +420,18 @@
       white-space: pre-wrap;
       line-height: 1.3;
     }
+    /* ✅ (추가) 백업 파일명 입력용 */
+    .modal input[type="text"]{
+      width: 100%;
+      padding:8px 10px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      outline:none;
+      background:#fff;
+      font-size:13px;
+      line-height: 1.3;
+    }
+
     .modal .actions{
       display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;
     }
@@ -435,7 +448,6 @@
 
     /* =========================================================
        ✅ 메모모드: 떠있는 창 (드래그 이동 + resize)
-       - 창 켜진 상태로 작업 가능 (모달 아님)
        ========================================================= */
     .memo-window{
       position: fixed;
@@ -450,7 +462,7 @@
       z-index: 99999;
       display:none;
       overflow:hidden;
-      resize: both;     /* ✅ 크기 자유롭게 */
+      resize: both;
     }
     .memo-window.show{ display:block; }
 
@@ -462,7 +474,7 @@
       padding: 8px 10px;
       background:#fafafa;
       border-bottom:1px solid #eee;
-      cursor: grab;     /* ✅ 이동 핸들 */
+      cursor: grab;
       user-select:none;
       touch-action:none;
     }
@@ -598,6 +610,14 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
+
+    /* ✅ (추가) 메모 수정 모달 드래그 핸들 */
+    #memoEditModal .modal h3{
+      cursor: grab;
+      user-select:none;
+      touch-action:none;
+    }
+    #memoEditModal .modal h3:active{ cursor: grabbing; }
   </style>
 </head>
 
@@ -827,7 +847,7 @@ Shift+Enter = 줄바꿈
   </div>
 </div>
 
-<!-- ✅ 메모 수정 모달 -->
+<!-- ✅ 메모 수정 모달 (✅ 드래그 가능 + 메모창 위로 표시) -->
 <div class="modal-backdrop" id="memoEditModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="memoEditModalTitle">
     <h3 id="memoEditModalTitle">메모 수정</h3>
@@ -842,6 +862,24 @@ Shift+Enter = 줄바꿈
       <button id="memoEditOk" type="button">확인</button>
     </div>
     <div class="hint">※ 한 개만 선택했을 때 수정할 수 있습니다.</div>
+  </div>
+</div>
+
+<!-- ✅ (추가) 백업 파일명 지정 모달 -->
+<div class="modal-backdrop" id="backupNameModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="backupNameModalTitle">
+    <h3 id="backupNameModalTitle">백업 파일 이름 지정</h3>
+    <div class="row">
+      <label>
+        파일 이름 (.json은 자동으로 붙습니다)
+        <input id="backupNameInput" type="text" placeholder="예) 내버튼트리_20260107" />
+      </label>
+    </div>
+    <div class="actions">
+      <button id="backupNameCancel" type="button">취소</button>
+      <button id="backupNameOk" type="button">확인</button>
+    </div>
+    <div class="hint">※ Enter=확인 / Esc=취소</div>
   </div>
 </div>
 
@@ -986,16 +1024,21 @@ function bindNameModalEvents(){
 
 /* ===========================
    ✅ 메모 수정 모달
+   (✅ 수정: 메모창 위 + 드래그 이동)
    =========================== */
 let memoEditResolve = null;
 function openMemoEditModal({ initialValue="" } = {}){
   const ta = $("memoEditTextarea");
   ta.value = String(initialValue ?? "");
   $("memoEditModal").classList.add("show");
+
+  // ✅ (추가) 처음 뜰 때: 메모창(있으면) 근처 위쪽으로 위치 잡기
   setTimeout(() => {
+    positionMemoEditModalInitial();
     ta.focus();
     ta.selectionStart = ta.selectionEnd = ta.value.length;
   }, 0);
+
   return new Promise((resolve) => { memoEditResolve = resolve; });
 }
 function closeMemoEditModal(val){
@@ -1017,6 +1060,61 @@ function bindMemoEditModalEvents(){
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       closeMemoEditModal(normalizeLabel(ta.value));
+    }
+  });
+}
+
+/* ===========================
+   ✅ (추가) 백업 파일명 모달
+   =========================== */
+let backupNameResolve = null;
+function sanitizeFilename(name){
+  name = String(name ?? "").trim();
+  // Windows 금지 문자 제거
+  name = name.replace(/[\\\/:*?"<>|]+/g, "_");
+  // 끝의 점/공백 제거
+  name = name.replace(/[ .]+$/g, "");
+  return name.trim();
+}
+function ensureJsonExt(name){
+  const n = String(name ?? "");
+  return n.toLowerCase().endsWith(".json") ? n : (n + ".json");
+}
+function openBackupNameModal({ initialValue="" } = {}){
+  const input = $("backupNameInput");
+  input.value = String(initialValue ?? "");
+  $("backupNameModal").classList.add("show");
+
+  setTimeout(() => {
+    input.focus();
+    input.selectionStart = 0;
+    input.selectionEnd = input.value.length;
+  }, 0);
+
+  return new Promise((resolve) => { backupNameResolve = resolve; });
+}
+function closeBackupNameModal(val){
+  $("backupNameModal").classList.remove("show");
+  const r = backupNameResolve;
+  backupNameResolve = null;
+  if (r) r(val);
+}
+function bindBackupNameModalEvents(){
+  const input = $("backupNameInput");
+  onClick("backupNameCancel", () => closeBackupNameModal(null));
+  onClick("backupNameOk", () => closeBackupNameModal(input.value));
+
+  $("backupNameModal").addEventListener("click", (e) => {
+    if (e.target.id === "backupNameModal") closeBackupNameModal(null);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      closeBackupNameModal(input.value);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closeBackupNameModal(null);
     }
   });
 }
@@ -1127,13 +1225,23 @@ let lastBackupRestoreInfo = null; // { type:"backup"|"restore", at:number }
 async function doBackupDownload(){
   try{
     await persistState();
+
+    // ✅ (수정) 파일명 지정 모달 띄우기
+    const defaultBase = makeBackupFilename().replace(/\.json$/i, "");
+    const rawName = await openBackupNameModal({ initialValue: defaultBase });
+    if (rawName === null) return; // 취소
+
+    let clean = sanitizeFilename(rawName);
+    if (!clean) clean = defaultBase;
+    const filename = ensureJsonExt(clean);
+
     const obj = buildBackupObject();
     const json = JSON.stringify(obj, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = makeBackupFilename();
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1408,7 +1516,6 @@ function syncModeButtons(){
   $("moveBox").classList.toggle("show", !!state.ui.moveMode);
   $("searchBox").classList.toggle("show", !!state.ui.searchMode);
 
-  // 메모 버튼 라벨 갱신
   renderMemoButtonCount();
 }
 
@@ -1886,11 +1993,7 @@ function bindEditorTools(){
 }
 
 /* =========================================================
-   ✅ 메모모드 기능 (2번 캡처의 기능)
-   - Enter 저장 / Shift+Enter 줄바꿈
-   - 전체선택/전체복사/선택복사/선택수정/선택삭제
-   - 창 드래그 이동 + resize + 켜놓고 작업 가능
-   - 버튼 라벨: 메모모드(XX개)
+   ✅ 메모모드 기능
    ========================================================= */
 function formatKoreanDateTime(ts){
   try{
@@ -1911,12 +2014,7 @@ function getSelectedLabelForMemo(){
 function getMemosForCurrentLocation(){
   const { nodeId } = getSelectedLabelForMemo();
   const all = Array.isArray(state.clickLog) ? state.clickLog : [];
-  // 캡처 느낌: "위치: ROOT"처럼 현재 위치 기준으로 목록
   return all.filter(x => x.nodeId === nodeId).sort((a,b)=>b.at-a.at);
-}
-function getAllMemos(){
-  const all = Array.isArray(state.clickLog) ? state.clickLog : [];
-  return all.slice().sort((a,b)=>b.at-a.at);
 }
 async function safeCopyText(text){
   text = String(text ?? "");
@@ -1995,7 +2093,6 @@ function renderMemoWindow(){
   const { label, nodeId } = getSelectedLabelForMemo();
   $("memoHeaderLoc").textContent = `위치: ${nodeId === "root" ? "ROOT" : label}`;
 
-  // ✅ 캡처 느낌대로: "현재 위치" 메모만 보여줌
   const memos = getMemosForCurrentLocation();
 
   const list = $("memoList");
@@ -2157,7 +2254,6 @@ function bindMemoWindowDragResize(){
   if (!win || !header) return;
 
   header.addEventListener("pointerdown", (e) => {
-    // 버튼/입력 클릭은 제외
     const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
     if (tag === "button" || tag === "input" || tag === "textarea") return;
 
@@ -2204,7 +2300,6 @@ function bindMemoWindowDragResize(){
     await persistState();
   });
 
-  // ResizeObserver로 크기 저장
   if (memoResizeObs) memoResizeObs.disconnect();
   memoResizeObs = new ResizeObserver(async () => {
     if (!state.ui.memoOpen) return;
@@ -2216,6 +2311,98 @@ function bindMemoWindowDragResize(){
   memoResizeObs.observe(win);
 
   window.addEventListener("resize", () => applyMemoWindowFromState());
+}
+
+/* =========================================================
+   ✅ (추가) 메모 수정 모달 드래그 + 초기 위치
+   ========================================================= */
+let memoEditDragging = false;
+let memoEditStartX = 0, memoEditStartY = 0;
+let memoEditStartLeft = 0, memoEditStartTop = 0;
+
+function positionMemoEditModalInitial(){
+  const backdrop = $("memoEditModal");
+  const modal = backdrop?.querySelector(".modal");
+  if (!backdrop || !modal) return;
+
+  // flex 중앙정렬 대신, 고정 좌표로 배치
+  modal.style.position = "fixed";
+
+  const pad = 12;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // 기준: 메모창이 열려있으면 그 위쪽에 뜨게
+  const memoWin = $("memoWindow");
+  let x = Math.floor(vw/2 - modal.getBoundingClientRect().width/2);
+  let y = Math.floor(vh/2 - modal.getBoundingClientRect().height/2);
+
+  if (state.ui.memoOpen && memoWin && memoWin.classList.contains("show")){
+    const r = memoWin.getBoundingClientRect();
+    x = Math.round(r.left + 40);
+    y = Math.round(r.top + 24);  // "위에 나타나는" 느낌으로 조금 위쪽
+  }
+
+  // clamp
+  const rect = modal.getBoundingClientRect();
+  const mw = rect.width || 520;
+  const mh = rect.height || 220;
+
+  x = Math.max(pad, Math.min(vw - mw - pad, x));
+  y = Math.max(pad, Math.min(vh - mh - pad, y));
+
+  modal.style.left = x + "px";
+  modal.style.top  = y + "px";
+}
+
+function bindMemoEditModalDrag(){
+  const backdrop = $("memoEditModal");
+  const modal = backdrop?.querySelector(".modal");
+  const handle = modal?.querySelector("h3");
+  if (!backdrop || !modal || !handle) return;
+
+  handle.addEventListener("pointerdown", (e) => {
+    // 드래그 시작
+    memoEditDragging = true;
+    handle.setPointerCapture?.(e.pointerId);
+
+    // fixed 기반 좌표 확보
+    modal.style.position = "fixed";
+    const r = modal.getBoundingClientRect();
+    memoEditStartX = e.clientX;
+    memoEditStartY = e.clientY;
+    memoEditStartLeft = r.left;
+    memoEditStartTop  = r.top;
+
+    e.preventDefault();
+  });
+
+  window.addEventListener("pointermove", (e) => {
+    if (!memoEditDragging) return;
+    const dx = e.clientX - memoEditStartX;
+    const dy = e.clientY - memoEditStartY;
+
+    const pad = 12;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const r = modal.getBoundingClientRect();
+    const mw = r.width;
+    const mh = r.height;
+
+    let nx = memoEditStartLeft + dx;
+    let ny = memoEditStartTop + dy;
+
+    nx = Math.max(pad, Math.min(vw - mw - pad, nx));
+    ny = Math.max(pad, Math.min(vh - mh - pad, ny));
+
+    modal.style.left = nx + "px";
+    modal.style.top  = ny + "px";
+  });
+
+  window.addEventListener("pointerup", () => {
+    memoEditDragging = false;
+  });
 }
 
 /* ===== Render Buttons ===== */
@@ -2259,7 +2446,6 @@ function renderButtons(){
         updateMovePills();
       }
 
-      // 메모창이 켜져 있으면 헤더/리스트만 새 위치로 갱신
       if (state.ui.memoOpen) {
         memoSelected.clear();
         renderMemoWindow();
@@ -2319,7 +2505,6 @@ function renderButtons(){
       const parent = getCurrentParentNode();
       parent.children = parent.children.filter(x => x.id !== child.id);
 
-      // 이 버튼에 귀속된 메모도 같이 삭제
       state.clickLog = (state.clickLog||[]).filter(x => x.nodeId !== child.id);
 
       if (selectedNodeId === child.id) selectedNodeId = parent.id;
@@ -2391,6 +2576,7 @@ function render(){
 function bindEvents(){
   bindNameModalEvents();
   bindMemoEditModalEvents();
+  bindBackupNameModalEvents(); // ✅ 추가
   bindEditorTools();
   bindStatsEvents();
   bindHCtrl("left");
@@ -2528,10 +2714,7 @@ function bindEvents(){
     renderNotePanel();
   });
 
-  /* ===== ✅ 메모모드 버튼/창 ===== */
-  onClick("btnMemoMode", () => {
-    toggleMemoWindow();
-  });
+  onClick("btnMemoMode", () => { toggleMemoWindow(); });
   onClick("memoClose", () => closeMemoWindow());
 
   $("memoInput").addEventListener("keydown", async (e) => {
@@ -2562,6 +2745,9 @@ function bindEvents(){
 
     bindEvents();
 
+    // ✅ (추가) 메모 수정 모달 드래그 바인딩
+    bindMemoEditModalDrag();
+
     applyMemoWindowFromState();
     renderMemoButtonCount();
 
@@ -2570,7 +2756,6 @@ function bindEvents(){
     if (state.ui.moveMode) setMoveMode(true);
     if (state.ui.searchMode) setSearchMode(true);
     if (state.ui.memoOpen) {
-      // 켜진 상태로 저장돼 있으면 그대로
       $("memoWindow").classList.add("show");
       renderMemoWindow();
     }
