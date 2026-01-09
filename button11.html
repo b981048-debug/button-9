@@ -777,6 +777,14 @@
             </label>
             <button class="toolbtn" id="toolApplyBorder" type="button">선적용</button>
 
+            <!-- ✅✅✅ (추가) 셀/표 배경색 변경 기능 -->
+            <label style="display:flex; align-items:center; gap:6px; font-size:12px;">
+              배경색
+              <input class="colorpick" id="toolCellBgColor" type="color" value="#ffffff" />
+            </label>
+            <button class="toolbtn" id="toolApplyCellBg" type="button">배경적용</button>
+            <!-- ✅✅✅ (추가 끝) -->
+
             <button class="toolbtn" id="toolClear" type="button">서식제거</button>
           </div>
 
@@ -1942,6 +1950,29 @@ function applyBorder(){
     td.style.borderStyle = "solid";
   });
 }
+
+/* ✅✅✅ (추가) 셀/표 배경색 적용 */
+function applyCellBackground(){
+  const cell = getSelectedCell();
+  if (!cell) return alert("셀을 선택해주세요.");
+  const table = findTableFromCell(cell);
+  if (!table) return alert("표 안에서 사용해주세요.");
+  const color = $("toolCellBgColor").value || "#ffffff";
+
+  // 셀 선택이 있으면: 셀 우선 적용
+  // (원하면 표 전체도 가능하도록: Shift 누르면 표 전체 적용 같은 확장도 가능하지만, 요청대로 최소 기능만)
+  // 여기서는: 셀 적용 + '원하면 표 전체'까지 지원(아래 한 줄 변경으로)
+  const applyAll = confirm("선택한 '셀'만 배경색을 바꿀까요?\n확인=셀만 / 취소=표 전체");
+  if (applyAll){
+    cell.style.backgroundColor = color;
+  } else {
+    Array.from(table.querySelectorAll("td,th")).forEach(td => {
+      td.style.backgroundColor = color;
+    });
+  }
+}
+/* ✅✅✅ (추가 끝) */
+
 function bindEditorTools(){
   onClick("toolBold", () => exec("bold"));
   onClick("toolItalic", () => exec("italic"));
@@ -1989,6 +2020,11 @@ function bindEditorTools(){
   onClick("toolDelTable", () => deleteTable());
 
   onClick("toolApplyBorder", () => applyBorder());
+
+  /* ✅✅✅ (추가) 배경 적용 버튼 연결 */
+  onClick("toolApplyCellBg", () => applyCellBackground());
+  /* ✅✅✅ (추가 끝) */
+
   onClick("toolClear", () => exec("removeFormat"));
 }
 
