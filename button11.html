@@ -377,14 +377,16 @@
     .note-editor td:focus, .note-editor th:focus{ outline: 2px solid #b3d4ff; }
     .note-editor:empty::before{ content:"여기에 내용을 입력하세요..."; color:#999; }
 
-    /* ✅ 오른쪽 내용칸 내부 분할(속성칸 ↔ 내용칸) */
+    /* ✅ (추가) 오른쪽 내용 영역 내부: 위(속성/툴바) ↔ 아래(내용) 드래그 분할 */
     .inner-split{
       display:flex;
+      flex-direction: column;
       min-width:0;
       border:1px solid #eee;
       border-radius:12px;
-      overflow:hidden; /* ← 가려지는 느낌(클리핑) */
+      overflow:hidden;
       background:#fff;
+      height: calc(100% - 0px);
     }
     .inner-pane{
       min-width:0;
@@ -393,21 +395,23 @@
       flex-direction:column;
     }
     #propPane{
-      flex: 0 0 auto; /* 폭 고정(드래그로) */
-      width: 360px;
+      flex: 0 0 auto;
+      height: 220px; /* 기본 */
+      width: 100%;
       background:#fff;
-      border-right: none;
     }
     #contentPane{
-      flex: 1 1 auto; /* 나머지 */
+      flex: 1 1 auto;
+      width: 100%;
       background:#fff;
     }
     .inner-divider{
-      width: 8px;
+      height: 8px;
+      width: 100%;
       background:#f2f2f2;
-      border-left:1px solid #e6e6e6;
-      border-right:1px solid #e6e6e6;
-      cursor: col-resize;
+      border-top:1px solid #e6e6e6;
+      border-bottom:1px solid #e6e6e6;
+      cursor: row-resize;
       position:relative;
       flex: 0 0 auto;
       user-select:none;
@@ -416,19 +420,19 @@
     .inner-divider::after{
       content:"";
       position:absolute; top:50%; left:50%;
-      width:3px; height:44px; transform:translate(-50%,-50%);
+      width:44px; height:3px; transform:translate(-50%,-50%);
       border-radius:999px; background:#d7d7d7;
-      box-shadow:-6px 0 0 #d7d7d7, 6px 0 0 #d7d7d7;
+      box-shadow: 0 -6px 0 #d7d7d7, 0 6px 0 #d7d7d7;
       opacity:.9;
     }
     .prop-scroll{
       padding: 10px;
-      overflow:auto; /* 속성칸 내부 스크롤 */
+      overflow:auto;
       min-height: 100%;
     }
     .content-scroll{
       padding: 10px;
-      overflow:auto; /* 내용칸 내부 스크롤 */
+      overflow:auto;
       min-height: 100%;
     }
 
@@ -439,7 +443,7 @@
       display:none;
       align-items:center;
       justify-content:center;
-      z-index: 100000;
+      z-index: 100000; /* ← memo-window(99999)보다 크게 */
       padding: 12px;
     }
     .modal-backdrop.show{ display:flex; }
@@ -475,6 +479,7 @@
       white-space: pre-wrap;
       line-height: 1.3;
     }
+    /* ✅ (추가) 백업 파일명 입력용 */
     .modal input[type="text"]{
       width: 100%;
       padding:8px 10px;
@@ -754,7 +759,6 @@
 
     <div class="pane" id="rightPane">
       <div class="scrollWrap" id="rightScrollWrap">
-
         <div class="note-head">
           <div class="note-title">
             내용
@@ -768,16 +772,12 @@
           </div>
         </div>
 
-        <!-- ✅✅✅ (추가) 오른쪽 내용칸 내부 split -->
+        <!-- ✅ (변경) 속성(위) ↔ 내용(아래) 드래그 split -->
         <div class="inner-split" id="rightInnerSplit">
+          <!-- 위: 속성/툴바 -->
           <div class="inner-pane" id="propPane">
-            <div class="prop-scroll" id="propScroll">
-              <div id="propPlaceholder" class="empty-text" style="display:none; margin-bottom:8px;">
-                (수정 버튼을 누르면 글자크기/표/선/배경 같은 속성 도구가 나타납니다)
-              </div>
-
-              <!-- ✅ 툴바를 속성칸(왼쪽)으로 이동 -->
-              <div class="editor-toolbar" id="editorToolbar" style="display:none;">
+            <div class="prop-scroll">
+              <div class="editor-toolbar">
                 <button class="toolbtn" id="toolBold" type="button"><b>B</b></button>
                 <button class="toolbtn" id="toolItalic" type="button"><i>I</i></button>
                 <button class="toolbtn" id="toolUnderline" type="button"><u>U</u></button>
@@ -807,6 +807,13 @@
                   <input class="colorpick" id="toolColor" type="color" value="#000000" />
                 </label>
                 <button class="toolbtn" id="toolTextColor" type="button">글자색</button>
+
+                <!-- ✅ (추가) 표 셀 배경색 -->
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px;">
+                  배경색
+                  <input class="colorpick" id="toolBgColor" type="color" value="#ffffff" />
+                </label>
+                <button class="toolbtn" id="toolCellBg" type="button">배경색</button>
 
                 <button class="toolbtn" id="toolTable" type="button">표 삽입</button>
                 <button class="toolbtn" id="toolMerge" type="button">셀합침</button>
@@ -838,21 +845,21 @@
                 </label>
                 <button class="toolbtn" id="toolApplyBorder" type="button">선적용</button>
 
-                <label style="display:flex; align-items:center; gap:6px; font-size:12px;">
-                  배경색
-                  <input class="colorpick" id="toolCellBgColor" type="color" value="#ffffff" />
-                </label>
-                <button class="toolbtn" id="toolApplyCellBg" type="button">배경적용</button>
-
                 <button class="toolbtn" id="toolClear" type="button">서식제거</button>
+              </div>
+
+              <div class="hint" style="margin:0;">
+                ※ 표 배경색은 “현재 선택된 셀” 기준으로 적용됩니다.
               </div>
             </div>
           </div>
 
-          <div class="inner-divider" id="propDivider" title="드래그로 속성칸/내용칸 폭 조절"></div>
+          <!-- 드래그 바 -->
+          <div class="inner-divider" id="propDivider" title="드래그로 위/아래 높이 조절"></div>
 
+          <!-- 아래: 내용(보기/입력) -->
           <div class="inner-pane" id="contentPane">
-            <div class="content-scroll" id="contentScroll">
+            <div class="content-scroll">
               <div class="note-view" id="noteView"></div>
 
               <div id="editorWrap" style="display:none;">
@@ -861,8 +868,6 @@
             </div>
           </div>
         </div>
-        <!-- ✅✅✅ (추가 끝) -->
-
       </div>
 
       <div class="hctrl" id="rightHCtrl">
@@ -910,7 +915,7 @@ Shift+Enter = 줄바꿈
   </div>
 </div>
 
-<!-- ✅ 버튼 이름 입력 모달 -->
+<!-- ✅ 버튼 이름 입력 모달: Enter=확인, Shift+Enter=줄바꿈 -->
 <div class="modal-backdrop" id="nameModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
     <h3 id="nameModalTitle">버튼 이름 입력</h3>
@@ -928,7 +933,7 @@ Shift+Enter = 줄바꿈
   </div>
 </div>
 
-<!-- ✅ 메모 수정 모달 -->
+<!-- ✅ 메모 수정 모달 (✅ 드래그 가능 + 메모창 위로 표시) -->
 <div class="modal-backdrop" id="memoEditModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="memoEditModalTitle">
     <h3 id="memoEditModalTitle">메모 수정</h3>
@@ -946,7 +951,7 @@ Shift+Enter = 줄바꿈
   </div>
 </div>
 
-<!-- ✅ 백업 파일명 지정 모달 -->
+<!-- ✅ (추가) 백업 파일명 지정 모달 -->
 <div class="modal-backdrop" id="backupNameModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="backupNameModalTitle">
     <h3 id="backupNameModalTitle">백업 파일 이름 지정</h3>
@@ -1035,19 +1040,19 @@ let state = {
     searchMode: false,
     moveMode: false,
 
+    /* ✅ (추가) 오른쪽 내부(속성/내용) 분할 높이 */
+    propSplitPx: 220,
+
     /* ✅ 메모 창 상태/좌표/크기 */
     memoOpen: false,
     memoX: 60,
     memoY: 120,
     memoW: 760,
     memoH: 420,
-
-    /* ✅✅✅ (추가) 오른쪽 내부 split: 속성칸 폭(px) */
-    propSplitPx: null,
   },
   tree: { id:"root", label:"전체", note:"", noteHtml:null, children:[] },
 
-  /* ✅ 메모 데이터 */
+  /* ✅ 메모 데이터 (기존 clickLog 유지) */
   clickLog: [], // {id, at, text, nodeId}
 };
 
@@ -1062,7 +1067,7 @@ let moveState = { sourceId: null, targetId: null };
 let memoSelected = new Set(); // logId
 
 /* ===========================
-   ✅ 이름 모달
+   ✅ 이름 모달 (Enter=확인 / Shift+Enter=줄바꿈)
    =========================== */
 let nameModalResolve = null;
 function openNameModal({ title="버튼 이름 입력", initialValue="" } = {}) {
@@ -1108,6 +1113,7 @@ function bindNameModalEvents(){
 
 /* ===========================
    ✅ 메모 수정 모달
+   (✅ 수정: 메모창 위 + 드래그 이동)
    =========================== */
 let memoEditResolve = null;
 function openMemoEditModal({ initialValue="" } = {}){
@@ -1115,6 +1121,7 @@ function openMemoEditModal({ initialValue="" } = {}){
   ta.value = String(initialValue ?? "");
   $("memoEditModal").classList.add("show");
 
+  // ✅ 처음 뜰 때 위치 + 포커스
   setTimeout(() => {
     positionMemoEditModalInitial();
     ta.focus();
@@ -1147,7 +1154,7 @@ function bindMemoEditModalEvents(){
 }
 
 /* ===========================
-   ✅ 백업 파일명 모달
+   ✅ (추가) 백업 파일명 모달
    =========================== */
 let backupNameResolve = null;
 function sanitizeFilename(name){
@@ -1244,6 +1251,8 @@ function ensureNodeFields(node){
   for (const c of node.children) ensureNodeFields(c);
 }
 function migrateRootLabel(tree){ if (tree && tree.id === "root") tree.label = "전체"; }
+
+/* ✅ 메모 보정 */
 function ensureMemoFields(){
   if (!Array.isArray(state.clickLog)) state.clickLog = [];
   state.clickLog = state.clickLog
@@ -1276,11 +1285,15 @@ async function loadState(){
   ensureNodeFields(state.tree);
   migrateRootLabel(state.tree);
   ensureMemoFields();
+
+  // ✅ 새 값 기본 보정
+  if (!Number.isFinite(state.ui.propSplitPx)) state.ui.propSplitPx = 220;
+
   await persistState();
 }
 
 /* ===========================
-   ✅ 백업/복원
+   ✅ 백업/복원 (파일 1개 JSON)
    =========================== */
 function makeBackupFilename(){
   const d = new Date();
@@ -1298,11 +1311,12 @@ function buildBackupObject(){
     payload: state
   };
 }
-let lastBackupRestoreInfo = null;
+let lastBackupRestoreInfo = null; // { type:"backup"|"restore", at:number }
 
 async function doBackupDownload(){
   try{
     await persistState();
+
     const defaultBase = makeBackupFilename().replace(/\.json$/i, "");
     const rawName = await openBackupNameModal({ initialValue: defaultBase });
     if (rawName === null) return;
@@ -1339,6 +1353,8 @@ async function applyRestoredState(restored){
   migrateRootLabel(state.tree);
   ensureMemoFields();
 
+  if (!Number.isFinite(state.ui.propSplitPx)) state.ui.propSplitPx = 220;
+
   currentParentId = "root";
   selectedNodeId = "root";
   noteEditMode = false;
@@ -1346,8 +1362,8 @@ async function applyRestoredState(restored){
 
   ensureMainButtonPx();
   applySplitFromState();
-  applyPropSplitFromState(); // ✅ 추가
   applyMemoWindowFromState();
+  applyPropSplitFromState();
 
   await persistState();
   syncModeButtons();
@@ -1418,9 +1434,11 @@ function countButtonsAndContent(){
   let totalButtons = 0;
   let hasContent = 0;
   let totalChars = 0;
+
   function dfs(node){
     if (!node) return;
     if (node.id !== "root") totalButtons++;
+
     const text = (node.note || "").trim();
     if (text.length > 0){
       hasContent++;
@@ -1505,30 +1523,30 @@ function bindSplitDrag(){
   window.addEventListener("pointerup", () => { dragging = false; });
 }
 
-/* ✅✅✅ (추가) 오른쪽 내부 split(속성칸 ↔ 내용칸) */
+/* ✅✅✅ 오른쪽 내부 split(속성/내용) 위아래 드래그 */
 function applyPropSplitFromState(){
   const split = $("rightInnerSplit");
   const prop = $("propPane");
   if (!split || !prop) return;
 
-  const total = split.clientWidth;
-  // divider(8px) 고려해도 무방하지만 단순하게 clamp로 처리
+  const total = split.clientHeight;
   let px = state.ui.propSplitPx;
-  if (typeof px !== "number" || isNaN(px)) px = 360;
-  // 너무 작거나 너무 크면 제한(가려지는 느낌은 유지하되, 드래그가 말이 되게)
-  const minPx = 120;
-  const maxPx = Math.max(minPx, Math.floor(total - 120)); // 내용칸 최소 120px
+  if (typeof px !== "number" || isNaN(px)) px = 220;
+
+  const minPx = 80;
+  const maxPx = Math.max(minPx, Math.floor(total - 120));
   px = Math.max(minPx, Math.min(maxPx, px));
-  prop.style.width = px + "px";
+
+  prop.style.height = px + "px";
   state.ui.propSplitPx = px;
 }
 function bindPropSplitDrag(){
   const divider = $("propDivider");
   const split = $("rightInnerSplit");
-  const prop = $("propPane");
-  if (!divider || !split || !prop) return;
+  if (!divider || !split) return;
 
   let dragging = false;
+
   divider.addEventListener("pointerdown", (e) => {
     dragging = true;
     divider.setPointerCapture?.(e.pointerId);
@@ -1538,17 +1556,15 @@ function bindPropSplitDrag(){
   window.addEventListener("pointermove", async (e) => {
     if (!dragging) return;
     const rect = split.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    state.ui.propSplitPx = Math.floor(x);
+    const y = e.clientY - rect.top;
+    state.ui.propSplitPx = Math.floor(y);
     applyPropSplitFromState();
     await persistState();
   });
 
   window.addEventListener("pointerup", () => { dragging = false; });
-
   window.addEventListener("resize", () => applyPropSplitFromState());
 }
-/* ✅✅✅ (추가 끝) */
 
 /* ===== Horizontal controls ===== */
 function bindHCtrl(side){
@@ -1870,10 +1886,9 @@ function renderNotePanel(){
   $("btnNoteSave").style.display = noteEditMode ? "" : "none";
   $("btnNoteCancel").style.display = noteEditMode ? "" : "none";
 
-  // ✅ 속성칸 표시/숨김
-  $("editorToolbar").style.display = noteEditMode ? "" : "none";
-  $("propPlaceholder").style.display = noteEditMode ? "none" : "";
-
+  // ✅ 툴바/속성칸은 "편집 중"일 때만 쓰는 게 자연스럽지만,
+  // 사용자가 드래그로 높이 조절을 원하므로 항상 보여주되,
+  // 편집 아닐 때는 에디터만 숨김/보기만 표시.
   if (!noteEditMode){
     editorWrap.style.display = "none";
     view.style.display = "";
@@ -2066,21 +2081,13 @@ function applyBorder(){
     td.style.borderStyle = "solid";
   });
 }
-function applyCellBackground(){
-  const cell = getSelectedCell();
-  if (!cell) return alert("셀을 선택해주세요.");
-  const table = findTableFromCell(cell);
-  if (!table) return alert("표 안에서 사용해주세요.");
-  const color = $("toolCellBgColor").value || "#ffffff";
 
-  const applyAll = confirm("선택한 '셀'만 배경색을 바꿀까요?\n확인=셀만 / 취소=표 전체");
-  if (applyAll){
-    cell.style.backgroundColor = color;
-  } else {
-    Array.from(table.querySelectorAll("td,th")).forEach(td => {
-      td.style.backgroundColor = color;
-    });
-  }
+/* ✅ (추가) 셀 배경색 적용 */
+function applyCellBg(){
+  const cell = getSelectedCell();
+  if (!cell) return alert("배경색을 바꾸려면 표의 셀을 먼저 클릭(선택)하세요.");
+  const color = $("toolBgColor").value || "#ffffff";
+  cell.style.backgroundColor = color;
 }
 
 function bindEditorTools(){
@@ -2108,6 +2115,9 @@ function bindEditorTools(){
     exec("foreColor", c);
   });
 
+  // ✅ (추가) 셀 배경색
+  onClick("toolCellBg", () => applyCellBg());
+
   onClick("toolTable", async () => {
     const r = prompt("행 개수?", "2");
     if (r === null) return;
@@ -2130,8 +2140,6 @@ function bindEditorTools(){
   onClick("toolDelTable", () => deleteTable());
 
   onClick("toolApplyBorder", () => applyBorder());
-  onClick("toolApplyCellBg", () => applyCellBackground());
-
   onClick("toolClear", () => exec("removeFormat"));
 }
 
@@ -2456,7 +2464,9 @@ function bindMemoWindowDragResize(){
   window.addEventListener("resize", () => applyMemoWindowFromState());
 }
 
-/* ===== Memo edit modal drag + initial position ===== */
+/* =========================================================
+   ✅ (추가) 메모 수정 모달 드래그 + 초기 위치
+   ========================================================= */
 let memoEditDragging = false;
 let memoEditStartX = 0, memoEditStartY = 0;
 let memoEditStartLeft = 0, memoEditStartTop = 0;
@@ -2536,7 +2546,9 @@ function bindMemoEditModalDrag(){
     modal.style.top  = ny + "px";
   });
 
-  window.addEventListener("pointerup", () => { memoEditDragging = false; });
+  window.addEventListener("pointerup", () => {
+    memoEditDragging = false;
+  });
 }
 
 /* ===== Render Buttons ===== */
@@ -2703,6 +2715,7 @@ function render(){
   renderBreadcrumb();
   renderButtons();
   renderNotePanel();
+  applyPropSplitFromState(); // ✅ 내부 split 반영
   if (state.ui.memoOpen) renderMemoWindow();
 }
 
@@ -2837,11 +2850,7 @@ function bindEvents(){
     renderButtons();
   });
 
-  onClick("btnNoteEdit", () => {
-    noteEditMode = true;
-    renderNotePanel();
-    setTimeout(()=>$("noteEditor").focus(),0);
-  });
+  onClick("btnNoteEdit", () => { noteEditMode = true; renderNotePanel(); setTimeout(()=>$("noteEditor").focus(),0); });
   onClick("btnNoteCancel", () => { noteEditMode = false; renderNotePanel(); });
   onClick("btnNoteSave", async () => {
     const node = findNodeById(state.tree, selectedNodeId) || state.tree;
@@ -2880,7 +2889,7 @@ function bindEvents(){
     applySplitFromState();
     bindSplitDrag();
 
-    // ✅✅✅ 내부 split 적용 + 드래그 바인딩
+    // ✅ 내부 split 바인딩
     applyPropSplitFromState();
     bindPropSplitDrag();
 
@@ -2892,6 +2901,13 @@ function bindEvents(){
     renderMemoButtonCount();
 
     render();
+
+    if (state.ui.moveMode) setMoveMode(true);
+    if (state.ui.searchMode) setSearchMode(true);
+    if (state.ui.memoOpen) {
+      $("memoWindow").classList.add("show");
+      renderMemoWindow();
+    }
   } catch (err) {
     console.error(err);
     alert("초기화 중 오류가 발생했습니다. 콘솔(F12)을 확인해주세요.");
